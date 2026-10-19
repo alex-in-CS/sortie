@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Loading, PageHeader } from "@/components/ui";
 import { applicationCounts } from "@/lib/applications";
 import { jobCounts, lastTask, listCompanies } from "@/lib/jobs";
-import { BULK_MODEL, MODEL, hasApiKey } from "@/lib/llm";
+import { AI, BULK_MODEL, KEY_NAME, MODEL, hasApiKey } from "@/lib/llm";
 import { formatCount, formatDateTime } from "@/lib/format";
 import { answersStore, getProfile, latestDocument, preferencesStore, searchesStore } from "@/lib/store";
 
@@ -63,10 +63,10 @@ async function Setup() {
   const steps: Step[] = [
     {
       done: hasApiKey(),
-      title: "Anthropic API key",
+      title: `${AI} API key`,
       detail: hasApiKey()
         ? `Set. ${MODEL} tailors and checks; ${BULK_MODEL} reviews jobs.`
-        : "Add ANTHROPIC_API_KEY to .env.local and restart the dev server.",
+        : `Add ${KEY_NAME} to .env.local (or GEMINI_API_KEY / ANTHROPIC_API_KEY for the other) and restart the dev server.`,
     },
     {
       done: Boolean(resume),

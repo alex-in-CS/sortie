@@ -1,7 +1,6 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
-import Anthropic from "@anthropic-ai/sdk";
 import type { Browser, Page } from "playwright-core";
 import {
   type Application,
@@ -13,7 +12,7 @@ import {
 } from "../applications";
 import { DATA_DIR } from "../db";
 import { getJob } from "../jobs";
-import { describeError, hasApiKey } from "../llm";
+import { AI, describeError, hasApiKey, isAuthError } from "../llm";
 import { launchChrome } from "../pdf";
 import { answersStore, preferencesStore, profileStore, searchesStore } from "../store";
 import { challengeVisible, type Files, fillForm, submit, waitForConfirmation } from "./fill";
@@ -95,8 +94,8 @@ async function planWithGrounding(fields: FormField[], ctx: PlanContext, app: App
     try {
       plan = await groundAnswers(plan, { profile: ctx.profile, prefs: ctx.prefs, answers: ctx.answers, job });
     } catch (err) {
-      if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) throw err;
-      log(`  Claude couldn't answer the open questions: ${describeError(err)}`);
+      if (isAuthError(err)) throw err;
+      log(`  ${AI} couldn't answer the open questions: ${describeError(err)}`);
     }
   }
   return plan;
@@ -207,8 +206,8 @@ export async function applyOne(app: Application, log: (line: string) => void = (
           : "Sortie clicked submit but never saw a confirmation. Check your email and the company's site before applying again.",
     });
   } catch (err) {
-    if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
-      saveFormOutcome(app.id, { status: "needs_you", detail: "The Anthropic API key was refused", error: describeError(err) });
+    if (isAuthError(err)) {
+      saveFormOutcome(app.id, { status: "needs_you", detail: `The ${AI} API key was refused`, error: describeError(err) });
       throw err;
     }
     const msg = (err as Error).message.split("\n")[0];

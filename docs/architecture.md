@@ -12,7 +12,7 @@
    app/applications       picked jobs by status: review, PDFs, truth report, form plan, screenshot,
                           open questions, Open in Chrome / I submitted it / fill again / skip
    app/companies          syncs the registry, lists boards, on/off switches, Fetch now
-   app/api/resume         POST multipart → parseResume (Claude) → mergeResume → save
+   app/api/resume         POST multipart → parseResume (Claude or Gemini) → mergeResume → save
    app/api/profile        GET / PUT (zod-validated, blank bullet lines stripped)
    app/api/{searches,answers,preferences}  GET / PUT via settingRoute()
    app/api/companies/[id] PATCH {enabled}
@@ -27,7 +27,7 @@
    schema.ts     zod: Profile, ParsedResume, Preferences, Search(es), Answers   (D-006)
    store.ts      setting(key, schema, fallback) → get/save; documents table
    db.ts         getDb(): lazy open, WAL, busy timeout, migrations v1–v5        (D-023)
-   llm.ts        Anthropic client; structured() call; parseResume              (D-007, D-035)
+   llm.ts        Claude or Gemini behind one structured() call; parseResume   (D-007, D-035, D-057)
    merge.ts      mergeResume: fill gaps, append new, never overwrite             (D-009)
    sources/      one adapter per ATS → SourceJob; polite fetch (http.ts)         (D-039)
    registry.ts   the verified company list (registry/companies.json)             (D-038)
@@ -94,7 +94,7 @@
                             ▼          ▼          ▼          ▼
                career-site feeds   Anthropic   Gmail API   Telegram Bot API
                (Greenhouse, Lever,  (Claude)   (read-only)
-               Ashby, SmartRecruiters,
+               Ashby, SmartRecruiters, or Google (Gemini)
                Workday)   + optional jobs API (discovery)
 ```
 

@@ -77,7 +77,7 @@ submission (by design).
 
 | Before | What | Why |
 | --- | --- | --- |
-| **Now** (phases 3 and 4 are built and waiting on it) | `ANTHROPIC_API_KEY` in `.env.local`, then upload your real resume | Resume parsing, reviews, tailoring and grounded form answers need it. Nothing has gone to Claude yet. |
+| **Now** (phases 3 and 4 are built and waiting on it) | `ANTHROPIC_API_KEY` **or** `GEMINI_API_KEY` (billing enabled, D-057) in `.env.local`, then upload your real resume | Resume parsing, reviews, tailoring and grounded form answers need it. Nothing has gone to an AI provider yet. |
 | Now | Fill in **Answers** (salary, notice period via Preferences, how you heard) | Fewer form questions come back to you. |
 | When you're ready | Decide on `SORTIE_AUTO_SUBMIT` (Q-3) | Off by default: you press Submit on every form. |
 | Now | Fill in Preferences (countries, cities, work authorization, years) and check the default search | Matching is only as good as these. |

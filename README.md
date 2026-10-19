@@ -149,7 +149,8 @@ These shape every phase, not just the current one:
 ## Setup
 
 Requirements: **Node.js 24+** (for built-in `node:sqlite`), **Google Chrome** (for PDFs and forms), and an
-[Anthropic API key](https://console.anthropic.com/).
+[Anthropic API key](https://console.anthropic.com/) **or** a [Gemini API key](https://aistudio.google.com/apikey)
+on a project with billing enabled (the free tier may use your resume for training).
 
 ```bash
 git clone https://github.com/alex-in-CS/sortie.git

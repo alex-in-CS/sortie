@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { BULK_MODEL, structured } from "../llm";
+import { AI, BULK_MODEL, structured } from "../llm";
 import { constraintsText, profileText } from "../profile-text";
 import type { Answers, Preferences, Profile } from "../schema";
 import type { PlannedField } from "./types";
@@ -50,17 +50,17 @@ const numbers = (s: string) => s.match(/\d+(?:[.,]\d+)*/g) ?? [];
 // Accepts Claude's answer for one field, or says why not.
 export function checkGrounded(f: PlannedField, answer: string[], evidence: string, facts: string): { value: string[] } | { reason: string } {
   const value = answer.map((a) => a.trim()).filter(Boolean);
-  if (!value.length) return { reason: "Claude found nothing in your data that answers this" };
-  if (!evidence.trim() || !norm(facts).includes(norm(evidence))) return { reason: "Claude's answer wasn't backed by your data" };
+  if (!value.length) return { reason: `${AI} found nothing in your data that answers this` };
+  if (!evidence.trim() || !norm(facts).includes(norm(evidence))) return { reason: `${AI}'s answer wasn't backed by your data` };
   if (f.options.length) {
     const picked = value.map((v) => f.options.find((o) => norm(o) === norm(v)));
-    if (picked.some((p) => !p)) return { reason: "Claude's answer isn't one of the options" };
-    if (f.kind !== "checkbox" && picked.length > 1) return { reason: "Claude picked more than one option" };
+    if (picked.some((p) => !p)) return { reason: `${AI}'s answer isn't one of the options` };
+    if (f.kind !== "checkbox" && picked.length > 1) return { reason: `${AI} picked more than one option` };
     return { value: picked as string[] };
   }
-  if (value.length > 1) return { reason: "Claude gave more than one answer" };
+  if (value.length > 1) return { reason: `${AI} gave more than one answer` };
   const known = new Set(numbers(facts));
-  if (numbers(value[0]).some((n) => !known.has(n))) return { reason: "Claude's answer has a number that isn't in your data" };
+  if (numbers(value[0]).some((n) => !known.has(n))) return { reason: `${AI}'s answer has a number that isn't in your data` };
   return { value };
 }
 
@@ -100,9 +100,9 @@ export async function groundAnswers(plan: PlannedField[], input: GroundInput): P
   return plan.map((f) => {
     if (!todo.includes(f)) return f;
     const a = byKey.get(f.key);
-    if (!a) return { ...f, source: "Claude found nothing in your data that answers this" };
+    if (!a) return { ...f, source: `${AI} found nothing in your data that answers this` };
     const r = checkGrounded(f, a.answer, a.evidence, facts);
     if ("reason" in r) return { ...f, source: r.reason };
-    return { ...f, value: r.value, state: "ok", by: "claude", source: `Claude, from: "${a.evidence.trim().slice(0, 120)}"` };
+    return { ...f, value: r.value, state: "ok", by: "claude", source: `${AI}, from: "${a.evidence.trim().slice(0, 120)}"` };
   });
 }

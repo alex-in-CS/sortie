@@ -5,6 +5,7 @@ import { ApplyButton } from "@/components/apply-button";
 import { Empty, Loading, PageHeader } from "@/components/ui";
 import { applicationsForJobs, reviewsFor, type StoredReview } from "@/lib/applications";
 import { formatCount, formatDate } from "@/lib/format";
+import { AI } from "@/lib/llm";
 import { jobCounts, listMatches, matchSummary, type MatchRow, type MatchView } from "@/lib/jobs";
 import { matchAll } from "@/lib/pipeline";
 import type { ApplicationStatus } from "@/lib/schema";
@@ -21,7 +22,7 @@ export default function JobsPage(props: PageProps<"/jobs">) {
     <>
       <PageHeader title="Jobs">
         Open roles from your companies, scored against your skills for each search. The big number is the quick rule
-        score; jobs near or above your bar also get a closer read by Claude, shown under the title.
+        score; jobs near or above your bar also get a closer read by {AI}, shown under the title.
       </PageHeader>
       <Suspense fallback={<Loading />}>
         <JobsData searchParams={props.searchParams} />
@@ -158,7 +159,7 @@ function JobRow({
           {review && !r.rejected && (
             <p className="mt-1.5 text-xs">
               <span className={`font-medium ${VERDICT_TONE[review.verdict]}`}>
-                Claude: {review.score}, {review.verdict}
+                {AI}: {review.score}, {review.verdict}
               </span>
               {review.dealbreaker ? (
                 <span className="text-danger"> · {review.dealbreaker}</span>

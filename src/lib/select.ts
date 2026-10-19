@@ -63,7 +63,7 @@ export function selectJobs(
       searchId: c.searchId,
       score,
       mode: search.mode,
-      reason: `${search.name}: ${c.reviewScore !== null ? `Claude scored ${score}` : `rules scored ${score}`} (bar ${search.minMatch})`,
+      reason: `${search.name}: ${c.reviewScore !== null ? `the AI review scored ${score}` : `rules scored ${score}`} (bar ${search.minMatch})`,
     });
   }
   return { picks, waiting, capped };

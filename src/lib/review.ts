@@ -1,9 +1,8 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
 import * as z from "zod";
 import { type Review, reviewCandidates, saveReview } from "./applications";
 import { sha1 } from "./jobs";
-import { BULK_MODEL, describeError, structured } from "./llm";
+import { BULK_MODEL, describeError, isAuthError, structured } from "./llm";
 import { constraintsText, profileText } from "./profile-text";
 import { preferencesStore, profileStore, searchesStore } from "./store";
 
@@ -113,7 +112,7 @@ export async function reviewAll(log: (line: string) => void = () => {}, limit = 
           if (!result.errors.includes(msg)) result.errors.push(msg);
           log(`  Review failed for ${c.company} – ${c.title}: ${msg}`);
           // A bad key fails every call the same way; stop instead of burning through the list.
-          if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) next = work.length;
+          if (isAuthError(err)) next = work.length;
         }
       }
     }),

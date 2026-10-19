@@ -11,7 +11,7 @@ import { applicationCounts, listApplications, type ApplicationView } from "@/lib
 import { profileGaps } from "@/lib/autopilot";
 import { formatDateTime } from "@/lib/format";
 import { lastTask } from "@/lib/jobs";
-import { hasApiKey } from "@/lib/llm";
+import { AI, hasApiKey, KEY_NAME } from "@/lib/llm";
 import type { ApplicationStatus } from "@/lib/schema";
 import { preferencesStore, profileStore, searchesStore } from "@/lib/store";
 
@@ -59,7 +59,7 @@ async function ApplicationsData() {
   const gaps = profileGaps(profileStore.get().value);
   const last = lastTask("fetch", "done");
   const blocked = !hasApiKey()
-    ? "Add ANTHROPIC_API_KEY to .env.local and restart the worker. Until then Sortie picks jobs by the rule score alone and can't tailor."
+    ? `Add ${KEY_NAME} to .env.local and restart the worker. Until then Sortie picks jobs by the rule score alone and can't tailor.`
     : gaps.length
       ? `Add ${gaps.join(", ")} to your profile. Tailoring waits until it can say something true about you.`
       : null;
@@ -120,7 +120,7 @@ function ApplicationCard({ app: a, searchName }: { app: ApplicationView; searchN
             <div className="mt-2 text-xs">
               <p>
                 <span className={`font-medium ${VERDICT_TONE[a.review.verdict]}`}>
-                  Claude: {a.review.score}, {a.review.verdict}
+                  {AI}: {a.review.score}, {a.review.verdict}
                 </span>
                 {a.review.reasons.length > 0 && <span className="text-muted"> · {a.review.reasons.join(" ")}</span>}
               </p>
@@ -195,7 +195,7 @@ function lastWord(a: ApplicationView) {
   return a.last_detail ?? null;
 }
 
-const BY = { rule: "", bank: "answer bank", claude: "Claude" } as const;
+const BY = { rule: "", bank: "answer bank", claude: AI } as const;
 
 function PlanDetails({ app: a }: { app: ApplicationView }) {
   const fill = new Map((a.fill ?? []).map((f) => [f.key, f]));
@@ -205,7 +205,7 @@ function PlanDetails({ app: a }: { app: ApplicationView }) {
     <details className="mt-1.5 text-xs" open={claude > 0 && a.status === "held"}>
       <summary className="cursor-pointer text-muted">
         What Sortie enters ({filled.length} field{filled.length === 1 ? "" : "s"}
-        {claude ? `, ${claude} answered by Claude: check them` : ""})
+        {claude ? `, ${claude} answered by ${AI}: check them` : ""})
       </summary>
       <ul className="mt-1.5 space-y-1">
         {(a.plan ?? [])

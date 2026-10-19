@@ -1,7 +1,6 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
-import Anthropic from "@anthropic-ai/sdk";
 import {
   type Application,
   capUsage,
@@ -18,7 +17,7 @@ import {
 import { applyOne } from "./apply";
 import { DATA_DIR } from "./db";
 import { getJob } from "./jobs";
-import { describeError, hasApiKey } from "./llm";
+import { AI, describeError, hasApiKey, isAuthError, KEY_NAME } from "./llm";
 import { htmlToPdf } from "./pdf";
 import { coverLetterHtml, resumeHtml } from "./resume-html";
 import { reviewAll, type ReviewResult } from "./review";
@@ -81,7 +80,7 @@ export async function tailorOne(app: Application, log: (line: string) => void = 
     const msg = describeError(err);
     failTailoring(app, msg);
     log(`  Tailoring failed for ${job.company} – ${job.title}: ${msg}`);
-    if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) throw err;
+    if (isAuthError(err)) throw err;
     return false;
   }
 }
@@ -106,7 +105,7 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
   const gaps = profileGaps(profile);
 
   const reviews = llm && !gaps.length ? await reviewAll(log) : null;
-  if (reviews) log(`Reviewed ${reviews.reviewed} jobs with Claude${reviews.failed ? `, ${reviews.failed} failed` : ""}.`);
+  if (reviews) log(`Reviewed ${reviews.reviewed} jobs with ${AI}${reviews.failed ? `, ${reviews.failed} failed` : ""}.`);
 
   const enabled = searches.filter((s) => s.enabled);
   const candidates = selectionCandidates(enabled.map((s) => s.id)).map((c) => ({
@@ -133,7 +132,7 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
   );
 
   let blocked: string | null = null;
-  if (!llm) blocked = "Add ANTHROPIC_API_KEY to .env.local to tailor resumes.";
+  if (!llm) blocked = `Add ${KEY_NAME} to .env.local to tailor resumes.`;
   else if (gaps.length) blocked = `Add ${gaps.join(", ")} to your profile before Sortie can tailor resumes.`;
   let tailored = 0;
   let tailorFailed = 0;

@@ -4,6 +4,21 @@ Newest first. What was built, what broke, how it was fixed, and how it was check
 
 ## 2026-10-19 (Mon)
 
+### Gemini as a second AI provider (D-057)
+- The owner has Gemini (Google AI Pro) and asked to use it, or free OpenRouter models, instead of
+  Claude. `structured()` now runs on Claude or Gemini (the `@google/genai` 2.30 SDK), picked by
+  `SORTIE_LLM` or by whichever key is set. Schemas are trimmed to Gemini's JSON Schema subset, PDFs
+  go in as `inlineData`, effort maps to `thinkingLevel`, and the same plain errors come out. UI text
+  names the active provider.
+- Checked the facts first: the current Gemini model list (`gemini-4-argon`, `gemini-3.8-flash`) and
+  the API terms. The unpaid tier may train on and human-review prompts, and says not to send
+  personal data. A Google AI Pro subscription doesn't cover API keys. So the docs require a
+  billing-enabled key. OpenRouter free models were rejected (about 50 requests a day, logging, no
+  PDFs).
+- Checked: 8 new tests (the schema subset for every real schema; the request shape; MAX_TOKENS,
+  safety, blocked, bad JSON and wrong shape; retry without thinking; key errors; provider choice).
+  93 tests, tsc, lint and build all pass. **Not yet checked:** a live Gemini call (no key yet).
+
 ### Phase 4: filling application forms, held for you to submit
 - **Form model (D-054):** Greenhouse questions come from its public API (with the phone country, the
   city search and education added). Lever questions are read from the page. Other boards hand off by

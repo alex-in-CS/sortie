@@ -20,11 +20,13 @@ npm run dev                    # http://127.0.0.1:3000
 
 | Variable | Required | Default | Notes |
 | --- | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | yes | | Resume parsing, scoring, tailoring, email sorting. |
-| `SORTIE_MODEL` | no | `claude-opus-5-5` | Resume reading, tailoring and the truth check (D-035). |
+| `ANTHROPIC_API_KEY` | one of these two | | Claude: resume parsing, reviews, tailoring, form answers, email sorting. |
+| `GEMINI_API_KEY` | one of these two | | Gemini instead of Claude (D-057). Create it at aistudio.google.com/apikey on a project **with billing enabled**: the free tier may use your data for training. |
+| `SORTIE_LLM` | no | whichever key is set, Claude first | `claude` or `gemini`. |
+| `SORTIE_MODEL` | no | `claude-opus-5-5` / `gemini-4-argon` | Resume reading, tailoring and the truth check (D-035, D-057). |
 | `SORTIE_DATA_DIR` | no | `./data` | Database and uploads. Absolute or relative to the project. |
 | `SORTIE_FETCH_HOURS` | no | `2` | Hours between fetch cycles in the worker (±10% jitter). |
-| `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` | Job reviews and answers to form questions; later email sorting (D-035, D-055). |
+| `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` / `gemini-3.8-flash` | Job reviews and answers to form questions; later email sorting (D-035, D-055, D-057). |
 | `SORTIE_REVIEWS_PER_CYCLE` | no | `40` | Most Claude job reviews per cycle (D-050). |
 | `SORTIE_TAILOR_PER_CYCLE` | no | `10` | Most applications tailored per cycle. |
 | `SORTIE_APPLY_PER_CYCLE` | no | `10` | Most forms read, filled and checked per cycle (D-056). |
@@ -133,6 +135,8 @@ weekly unless the app is moved to production (see [risks.md](risks.md)).
 | --- | --- | --- |
 | Overview says the API key is missing | `.env.local` absent or the server wasn't restarted | Add the key; restart. |
 | "The Anthropic API key was rejected." | Wrong or revoked key | Replace it. |
+| "The Gemini API key was rejected (or billing isn't set up for it)." | Wrong key, or a project without billing | Check the key in AI Studio and that its Cloud project has billing enabled. |
+| "Rate limited by the Gemini API (or out of quota)" | Free-tier or project quota reached | Enable billing, or lower `SORTIE_REVIEWS_PER_CYCLE` and `SORTIE_TAILOR_PER_CYCLE`. |
 | `database is locked` during build | (Fixed by D-023.) Something opened the DB at import time | Keep DB access behind `getDb()`; never at module scope. |
 | Build error: `Route segment config "dynamic" is not compatible with nextConfig.cacheComponents` | Next 16 Cache Components | Use `<Suspense>` + `await connection()` (D-024). |
 | React "hydration mismatch" on dates | Server/browser locale differ | Use `formatDate`/`formatDateTime` from `src/lib/format.ts` (D-025). |

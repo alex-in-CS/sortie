@@ -200,7 +200,7 @@ describe("selection", () => {
     expect(capped).toEqual({ company: 1, daily: 1 });
   });
 
-  it("counts earlier applications and prefers Claude's score when it requires one", () => {
+  it("counts earlier applications and prefers the AI review score when it requires one", () => {
     const cands = [
       cand({ jobId: 1, ruleScore: 90, reviewScore: 60, verdict: "stretch" }),
       cand({ jobId: 2, ruleScore: 72, reviewScore: 88, verdict: "strong" }),
@@ -209,7 +209,7 @@ describe("selection", () => {
     ];
     const usage = { perCompany: new Map([[1, 1]]), today: 1 };
     const { picks, waiting } = selectJobs(cands, [search("s1")], caps, usage, true);
-    expect(picks).toEqual([expect.objectContaining({ jobId: 2, score: 88, reason: "s1: Claude scored 88 (bar 70)" })]);
+    expect(picks).toEqual([expect.objectContaining({ jobId: 2, score: 88, reason: "s1: the AI review scored 88 (bar 70)" })]);
     expect(waiting).toBe(1);
   });
 

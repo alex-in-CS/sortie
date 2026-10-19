@@ -25,6 +25,7 @@ Likelihood/Impact: L · M · H.
 | R-17 | **Companies the owner named aren't fetchable** (Deloitte, EY, KPMG, SanDisk, Google, Microsoft, …) | H | M | Listed on the Companies page with their ATS and a careers link (D-044); discovery API (FR-13) is the path to cover them. | Owner |
 | R-18 | **A submit goes through without Sortie seeing it** (no confirmation page detected) | L | M | Marked Needs you with a warning and never retried (D-056); check email before re-applying. Phase 5's inbox confirms submissions. | Dev |
 | R-19 | **CAPTCHAs on Greenhouse and Lever** stop auto-submit | H | L | Expected: the form is held and you submit it in Chrome (D-013, D-056). Never solved or bypassed. | Owner |
+| R-20 | **Personal data on a free AI tier** (Gemini's unpaid tier may train on and human-review prompts) | M | H | Docs and `.env.example` require a billing-enabled Gemini key (D-057); OpenRouter free models rejected. Sortie can't detect the tier, so this rests on the owner. | Owner |
 
 ## Open questions
 

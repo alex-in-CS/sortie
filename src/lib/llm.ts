@@ -1,19 +1,42 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
+import { ApiError, FinishReason, GoogleGenAI, type Part, ThinkingLevel } from "@google/genai";
 import mammoth from "mammoth";
-import type * as z from "zod";
+import * as z from "zod";
 import { ParsedResume } from "./schema";
 
-// Opus for work where quality decides the outcome (reading a resume, tailoring,
-// the truth check); Sonnet for the per-job review that runs many times a day (D-035).
-export const MODEL = process.env.SORTIE_MODEL ?? "claude-opus-5-5";
-export const BULK_MODEL = process.env.SORTIE_BULK_MODEL ?? "claude-sonnet-5-5";
+// Two providers behind one structured() call (D-057): Claude (Anthropic) or
+// Gemini (Google). SORTIE_LLM picks one; otherwise whichever key is set, Claude
+// first. Each has a quality model (reading a resume, tailoring, the truth check)
+// and a bulk model (job reviews, form answers) (D-035).
+export type Provider = "claude" | "gemini";
 
-export const hasApiKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
+export const PROVIDER: Provider =
+  process.env.SORTIE_LLM === "gemini" || process.env.SORTIE_LLM === "claude"
+    ? process.env.SORTIE_LLM
+    : !process.env.ANTHROPIC_API_KEY && process.env.GEMINI_API_KEY
+      ? "gemini"
+      : "claude";
+
+// For the UI and messages: "Claude reviewed…", "Gemini declined…".
+export const AI = PROVIDER === "gemini" ? "Gemini" : "Claude";
+export const KEY_NAME = PROVIDER === "gemini" ? "GEMINI_API_KEY" : "ANTHROPIC_API_KEY";
+
+const DEFAULTS = {
+  claude: { model: "claude-opus-5-5", bulk: "claude-sonnet-5-5" },
+  gemini: { model: "gemini-4-argon", bulk: "gemini-3.8-flash" },
+} as const;
+
+export const MODEL = process.env.SORTIE_MODEL ?? DEFAULTS[PROVIDER].model;
+export const BULK_MODEL = process.env.SORTIE_BULK_MODEL ?? DEFAULTS[PROVIDER].bulk;
+
+export const hasApiKey = () => Boolean(process.env[KEY_NAME]);
 
 let client: Anthropic | null = null;
 const anthropic = () => (client ??= new Anthropic());
+let gclient: GoogleGenAI | null = null;
+const google = () => (gclient ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }));
 
 export class LlmError extends Error {}
 
@@ -53,6 +76,7 @@ export type StructuredRequest<S extends z.ZodType> = {
   system: string;
   // Cached across calls: the part of the prompt that repeats (the profile).
   context?: string;
+  // Text and PDF blocks, in Anthropic's shape; translated for Gemini.
   content: Anthropic.Beta.BetaContentBlockParam[];
   schema: S;
   effort: "low" | "medium" | "high";
@@ -64,8 +88,11 @@ export type StructuredRequest<S extends z.ZodType> = {
 // One structured call: the answer is parsed against the zod schema, and every
 // way it can come back unusable becomes an LlmError with a plain message.
 export async function structured<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z.infer<S>> {
-  if (!hasApiKey()) throw new LlmError("Add ANTHROPIC_API_KEY to .env.local first.");
+  if (!hasApiKey()) throw new LlmError(`Add ${KEY_NAME} to .env.local first.`);
+  return PROVIDER === "gemini" ? gemini(req) : claude(req);
+}
 
+async function claude<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z.infer<S>> {
   const system: Anthropic.Beta.BetaTextBlockParam[] = [{ type: "text", text: req.system }];
   if (req.context) system.push({ type: "text", text: req.context, cache_control: { type: "ephemeral" } });
 
@@ -86,8 +113,82 @@ export async function structured<S extends z.ZodType>(req: StructuredRequest<S>)
   return response.parsed_output as z.infer<S>;
 }
 
+// ---------- Gemini ----------
+
+// Gemini's structured output takes a subset of JSON Schema; drop what it
+// doesn't read (the answer is still validated against the full zod schema).
+const GEMINI_SCHEMA_KEYS = new Set([
+  "$id", "$defs", "$ref", "$anchor", "type", "format", "title", "description", "enum", "items", "prefixItems",
+  "minItems", "maxItems", "minimum", "maximum", "anyOf", "oneOf", "properties", "additionalProperties", "required",
+]);
+
+export function geminiSchema(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(geminiSchema);
+  if (!node || typeof node !== "object") return node;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(node)) {
+    if (k === "const") out.enum = [v];
+    else if (k === "properties" || k === "$defs")
+      out[k] = Object.fromEntries(Object.entries(v as object).map(([name, s]) => [name, geminiSchema(s)]));
+    else if (GEMINI_SCHEMA_KEYS.has(k)) out[k] = typeof v === "object" ? geminiSchema(v) : v;
+  }
+  return out;
+}
+
+const parts = (content: Anthropic.Beta.BetaContentBlockParam[]): Part[] =>
+  content.map((c) => {
+    if (c.type === "text") return { text: c.text };
+    if (c.type === "document" && c.source.type === "base64")
+      return { inlineData: { mimeType: c.source.media_type, data: c.source.data } };
+    throw new LlmError(`Gemini can't take a "${c.type}" block.`);
+  });
+
+const LEVEL = { low: ThinkingLevel.LOW, medium: ThinkingLevel.MEDIUM, high: ThinkingLevel.HIGH } as const;
+
+async function gemini<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z.infer<S>> {
+  const call = (thinking: boolean) =>
+    google().models.generateContent({
+      model: req.model,
+      // The repeated context comes last in the instruction, so Gemini's implicit
+      // prefix cache can reuse it across jobs.
+      contents: [{ role: "user", parts: parts(req.content) }],
+      config: {
+        systemInstruction: req.context ? `${req.system}\n\n${req.context}` : req.system,
+        responseMimeType: "application/json",
+        responseJsonSchema: geminiSchema(z.toJSONSchema(req.schema)),
+        maxOutputTokens: req.maxTokens,
+        ...(thinking ? { thinkingConfig: { thinkingLevel: LEVEL[req.effort] } } : {}),
+      },
+    });
+
+  let response;
+  try {
+    response = await call(true);
+  } catch (err) {
+    // Some models don't take a thinking level: ask again without one.
+    if (err instanceof ApiError && err.status === 400 && /thinking/i.test(err.message)) response = await call(false);
+    else throw err;
+  }
+
+  if (response.promptFeedback?.blockReason) throw new LlmError(`Gemini declined to ${req.task}.`);
+  const finish = response.candidates?.[0]?.finishReason;
+  if (finish === FinishReason.MAX_TOKENS) throw new LlmError(`The answer was too long to ${req.task} in one pass.`);
+  if (finish && finish !== FinishReason.STOP) throw new LlmError(`Gemini declined to ${req.task} (${finish.toLowerCase()}).`);
+  let json: unknown;
+  try {
+    json = JSON.parse(response.text ?? "");
+  } catch {
+    throw new LlmError(`Gemini's answer wasn't valid JSON (${req.task}).`);
+  }
+  const parsed = req.schema.safeParse(json);
+  if (!parsed.success) throw new LlmError(`Gemini's answer didn't match the expected format (${req.task}).`);
+  return parsed.data as z.infer<S>;
+}
+
+// ---------- shared ----------
+
 export async function parseResume(file: ResumeFile): Promise<ParsedResume> {
-  if (!hasApiKey()) throw new LlmError("Add ANTHROPIC_API_KEY to .env.local first.");
+  if (!hasApiKey()) throw new LlmError(`Add ${KEY_NAME} to .env.local first.`);
   return structured({
     model: MODEL,
     system: RESUME_SYSTEM,
@@ -99,6 +200,15 @@ export async function parseResume(file: ResumeFile): Promise<ParsedResume> {
   });
 }
 
+// A refused key fails every other call the same way, so batches stop on it.
+export function isAuthError(err: unknown) {
+  if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) return true;
+  return (
+    err instanceof ApiError &&
+    (err.status === 401 || err.status === 403 || (err.status === 400 && /api key not valid|API_KEY_INVALID/i.test(err.message)))
+  );
+}
+
 export function describeError(err: unknown): string {
   if (err instanceof LlmError) return err.message;
   if (err instanceof Anthropic.AuthenticationError) return "The Anthropic API key was rejected.";
@@ -106,5 +216,11 @@ export function describeError(err: unknown): string {
   if (err instanceof Anthropic.BadRequestError) return `The Anthropic API rejected the request: ${err.message}`;
   if (err instanceof Anthropic.APIConnectionError) return "Couldn't reach the Anthropic API.";
   if (err instanceof Anthropic.APIError) return `Anthropic API error ${err.status}.`;
+  if (err instanceof ApiError) {
+    if (isAuthError(err)) return "The Gemini API key was rejected (or billing isn't set up for it).";
+    if (err.status === 429) return "Rate limited by the Gemini API (or out of quota). Try again later.";
+    if (err.status === 400) return `The Gemini API rejected the request: ${err.message.slice(0, 200)}`;
+    return `Gemini API error ${err.status}.`;
+  }
   return err instanceof Error ? err.message : "Something went wrong.";
 }

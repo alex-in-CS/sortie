@@ -64,6 +64,7 @@ Index
 | [D-054](#d-054-one-form-model-greenhouse-from-its-api-lever-from-the-page) | One form model: Greenhouse from its API, Lever from the page | Accepted |
 | [D-055](#d-055-answers-come-from-rules-then-the-answer-bank-then-grounded-claude-consent-is-yours) | Answers: rules, then the bank, then grounded Claude; consent is yours | Accepted |
 | [D-056](#d-056-fill-and-check-without-files-hold-for-you-auto-submit-only-through-a-strict-gate) | Fill and check without files, hold for you, auto-submit through a strict gate | Accepted |
+| [D-057](#d-057-claude-or-gemini-behind-one-structured-call-paid-tier-only) | Claude or Gemini behind one structured call; paid tier only | Accepted |
 
 ---
 
@@ -792,3 +793,42 @@ Index
   - The worker handles one handoff at a time and waits on it. A fetch cycle can be delayed by up to
     20 minutes while a window is open.
   - The screenshot shows the form without files, since those are attached when it's sent.
+
+### D-057: Claude or Gemini behind one structured call; paid tier only
+- **Date:** 2026-10-19 · **Status:** Accepted (owner's request; amends D-007 and D-035)
+- **Context:** The owner has a Google AI Pro subscription and asked to use Gemini (or free OpenRouter
+  models) instead of Claude.
+- **Decision:** `llm.ts` has two providers behind the same `structured()` call.
+  - **Choosing.** `SORTIE_LLM=claude|gemini` picks one. Otherwise Sortie uses whichever key is set,
+    Claude first.
+  - **Gemini** goes through the official `@google/genai` SDK (`models.generateContent`).
+    - The zod schema is sent as `responseJsonSchema`, trimmed to the JSON Schema subset Gemini reads.
+      The answer is still validated against the full zod schema.
+    - PDFs go in as `inlineData`.
+    - Effort maps to `thinkingLevel`, and the call is retried without it if a model refuses one.
+    - Every unusable answer becomes the same plain error as with Claude.
+  - **Models.** For Gemini, `gemini-4-argon` handles quality work (resume reading, tailoring, the
+    truth check) and `gemini-3.8-flash` handles bulk work (reviews, form answers). For Claude, Opus
+    5.5 and Sonnet 5.5 as before. Both can be overridden with `SORTIE_MODEL` and
+    `SORTIE_BULK_MODEL`.
+  - **Messages.** Every message, label and banner names the active provider ("Gemini: 82, good",
+    "Add GEMINI_API_KEY…"). A refused key stops a batch on either provider (`isAuthError`).
+  - **Gemini needs a key on a project with billing enabled.** The Gemini API terms say the unpaid
+    tier uses what you send to improve Google products, may have human reviewers read it, and should
+    not be sent personal information. Sortie sends your resume, contact details and salary with
+    nearly every call. A Google AI Pro subscription covers the AI Studio website, not API keys.
+    Google's docs say subscribers with Cloud Billing enabled are eligible for monthly Developer
+    Program cloud credits.
+- **Alternatives:**
+  - OpenRouter free models. Rejected: about 50 requests a day without credit, free endpoints may log
+    or train on prompts, most can't read a PDF, and structured output varies.
+  - A generic multi-provider library. Rejected: one more dependency for two providers, and Claude
+    would lose its structured-output and refusal-fallback features.
+- **Tradeoffs:**
+  - Prompts were written and tuned for Claude, and Gemini's output hasn't been checked live yet
+    (no key). The safety checks don't depend on the model: the truth check's rules, the quote check
+    on form answers, and the read-back.
+  - Claude's explicit prompt caching becomes Gemini's implicit caching. The repeated profile text is
+    kept at the end of the system instruction so its prefix can be reused.
+  - Reviews are cached by a hash that includes the model, so switching provider re-reviews jobs once.
+

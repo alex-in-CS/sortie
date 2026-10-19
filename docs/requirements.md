@@ -114,7 +114,7 @@ Status: ✅ done · 🟡 partial · ⬜ not started. Phase numbers match [plan.m
 | ID | Requirement | How it's met |
 | --- | --- | --- |
 | NFR-1 | **Truthfulness.** Sortie never states something about the user that isn't in their stored data. | Parse prompt rule (FR-2); merge never invents; truth check (FR-19); grounded answers only (FR-23). |
-| NFR-2 | **Privacy.** Personal data stays on the machine except calls to Anthropic, Google, Telegram and the target employer. | `data/` is gitignored; server binds 127.0.0.1; secrets live in `.env.local`. See [D-017](decisions.md). |
+| NFR-2 | **Privacy.** Personal data stays on the machine except calls to the AI provider (Anthropic, or Google Gemini on a billed key), Google (Gmail), Telegram and the target employer. | `data/` is gitignored; server binds 127.0.0.1; secrets live in `.env.local`. See [D-017](decisions.md), [D-057](decisions.md). |
 | NFR-3 | **Respect for sites.** No scraping of sites that forbid it, no CAPTCHA solving, no bot-protection bypass, polite rates. | Use public job feeds only; hand off when blocked. See [D-012](decisions.md), [risks](risks.md). |
 | NFR-4 | **Quality over volume.** Defaults of 3 per company and 25 per day; review mode by default. | [D-014](decisions.md), [D-015](decisions.md). |
 | NFR-5 | **Idempotence.** No job is applied to twice; restarts are safe. | One application per job (`job_id` unique); a submit without a confirmation is never retried; restarts reset `applying` and `submitting` (D-056). |

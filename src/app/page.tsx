@@ -3,16 +3,17 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Loading, PageHeader } from "@/components/ui";
 import { MODEL, hasApiKey } from "@/lib/llm";
-import { getPreferences, getProfile, latestDocument } from "@/lib/store";
+import { answersStore, getProfile, latestDocument, preferencesStore, searchesStore } from "@/lib/store";
 
 type Step = { done: boolean; title: string; detail: string; href?: string; cta?: string };
 
 const ROADMAP = [
-  ["Jobs", "Pull openings from ~250 companies' career sites daily, plus discovery of new ones, and score each against your skills."],
+  ["Jobs", "Check ~250 companies' career sites every 2 hours, plus discovery of new ones, and score each job against your skills."],
   ["Tailoring", "A resume and cover letter per job, built only from your profile, exported as PDF."],
-  ["Applying", "Auto-submit simple forms above your match threshold; prefill Workday-style portals for a one-click submit."],
-  ["Inbox", "Read Gmail (read-only), match replies to applications, sort rejections, next rounds and interview invites."],
-  ["Telegram", "Pings only when something needs you, a daily digest, and approve-from-phone."],
+  ["Applying", "Auto-submit where forms allow, a browser extension that fills Workday-style portals for your click, a kanban tracker, and answers learned from your edits."],
+  ["Inbox", "Read Gmail (read-only), match replies to applications and move them on the board: rejection, next round, interview."],
+  ["Telegram", "Pings only when something needs you, a daily recap, and approve-from-phone."],
+  ["Interview prep", "When an invite lands: a prep pack for that company and role, plus a mock interview."],
 ];
 
 export default function Overview() {
@@ -46,7 +47,10 @@ export default function Overview() {
 async function Setup() {
   await connection();
   const { value: profile } = getProfile();
-  const { updatedAt: prefsSaved } = getPreferences();
+  const { updatedAt: prefsSaved } = preferencesStore.get();
+  const { value: searches, updatedAt: searchesSaved } = searchesStore.get();
+  const { value: answers, updatedAt: answersSaved } = answersStore.get();
+  const running = searchesSaved ? searches.filter((s) => s.enabled) : [];
   const resume = latestDocument("resume");
 
   const steps: Step[] = [
@@ -82,6 +86,24 @@ async function Setup() {
           : "Email and phone for application forms.",
       href: "/profile",
       cta: "Edit",
+    },
+    {
+      done: running.length > 0,
+      title: "Searches",
+      detail: running.length
+        ? `${running.length} running: ${running.map((s) => s.name).join(", ")}.`
+        : "Save at least one search so Sortie knows what to look for.",
+      href: "/searches",
+      cta: running.length ? "Edit" : "Set up",
+    },
+    {
+      done: Boolean(answersSaved),
+      title: "Screening answers",
+      detail: answersSaved
+        ? `Saved, with ${answers.custom.length} in the answer bank.`
+        : "Salary, notice and the questions forms always ask. Answer once.",
+      href: "/answers",
+      cta: answersSaved ? "Edit" : "Set up",
     },
     {
       done: Boolean(prefsSaved),

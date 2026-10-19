@@ -10,7 +10,9 @@ export const DATA_DIR = process.env.SORTIE_DATA_DIR
   : path.join(process.cwd(), "data");
 export const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
 
-const MIGRATIONS: string[] = [
+type Migration = string | ((db: DatabaseSync) => void);
+
+const MIGRATIONS: Migration[] = [
   // v1: profile, preferences, uploaded documents
   `
   CREATE TABLE profile (
@@ -32,6 +34,41 @@ const MIGRATIONS: string[] = [
     created_at TEXT NOT NULL
   );
   `,
+  // v2: one keyed table for single-document settings (profile, preferences,
+  // searches, answers). Role filters moved from preferences into a search.
+  (db) => {
+    db.exec(`CREATE TABLE settings (
+      key TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`);
+    db.exec(`INSERT INTO settings (key, data, updated_at)
+      SELECT 'profile', data, updated_at FROM profile
+      UNION ALL SELECT 'preferences', data, updated_at FROM preferences`);
+
+    const old = db.prepare("SELECT data, updated_at FROM preferences").get() as
+      | { data: string; updated_at: string }
+      | undefined;
+    if (old) {
+      const p = JSON.parse(old.data);
+      const search = {
+        id: crypto.randomUUID(),
+        name: "Software engineering",
+        enabled: true,
+        titles: p.targetRoles ?? [],
+        seniority: p.seniority ?? ["entry", "mid"],
+        employmentTypes: p.employmentTypes ?? ["full-time"],
+        excludeKeywords: p.excludeKeywords ?? [],
+        minMatch: p.autoSubmitThreshold ?? 70,
+        mode: "review",
+      };
+      db.prepare("INSERT INTO settings (key, data, updated_at) VALUES ('searches', ?, ?)").run(
+        JSON.stringify([search]),
+        old.updated_at,
+      );
+    }
+    db.exec("DROP TABLE profile; DROP TABLE preferences;");
+  },
 ];
 
 const userVersion = (db: DatabaseSync) =>
@@ -51,7 +88,9 @@ function open(): DatabaseSync {
     try {
       const v = userVersion(db);
       if (v < MIGRATIONS.length) {
-        db.exec(MIGRATIONS[v]);
+        const step = MIGRATIONS[v];
+        if (typeof step === "string") db.exec(step);
+        else step(db);
         db.exec(`PRAGMA user_version = ${v + 1}`);
       }
       db.exec("COMMIT");

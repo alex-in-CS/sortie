@@ -126,46 +126,38 @@ export const ParsedResume = z.object({
 });
 export type ParsedResume = z.infer<typeof ParsedResume>;
 
-// Preferences decide which jobs are worth applying to and how hard the
-// autopilot is allowed to push.
-
 export const SENIORITY = ["intern", "entry", "mid", "senior", "lead"] as const;
 export const WORK_MODES = ["remote", "hybrid", "onsite"] as const;
 export const EMPLOYMENT_TYPES = ["full-time", "internship", "contract", "part-time"] as const;
 
+export const Money = z.object({
+  amount: z.number(),
+  currency: z.string(),
+  period: z.enum(["year", "month"]),
+});
+export type Money = z.infer<typeof Money>;
+
+// Preferences hold the facts and limits that apply to every search: where you
+// can work, pay floor, and how hard the autopilot may push overall.
 export const Preferences = z.object({
-  targetRoles: z.array(z.string()),
-  seniority: z.array(z.enum(SENIORITY)),
   yearsOfExperience: z.number().nullable(),
-  employmentTypes: z.array(z.enum(EMPLOYMENT_TYPES)),
   workModes: z.array(z.enum(WORK_MODES)),
   countries: z.array(z.string()),
   cities: z.array(z.string()),
   willingToRelocate: z.boolean(),
   authorizedCountries: z.array(z.string()),
   needsSponsorshipElsewhere: z.boolean(),
-  minSalary: z
-    .object({
-      amount: z.number(),
-      currency: z.string(),
-      period: z.enum(["year", "month"]),
-    })
-    .nullable(),
+  minSalary: Money.nullable(),
   noticePeriodDays: z.number().nullable(),
   excludeCompanies: z.array(z.string()),
-  excludeKeywords: z.array(z.string()),
   maxPerCompany: z.number().int().min(1).max(10),
   dailyLimit: z.number().int().min(1).max(200),
-  autoSubmitThreshold: z.number().int().min(0).max(100),
   discovery: z.boolean(),
 });
 export type Preferences = z.infer<typeof Preferences>;
 
 export const defaultPreferences = (): Preferences => ({
-  targetRoles: [],
-  seniority: ["entry", "mid"],
   yearsOfExperience: null,
-  employmentTypes: ["full-time"],
   workModes: ["remote", "hybrid", "onsite"],
   countries: [],
   cities: [],
@@ -175,9 +167,75 @@ export const defaultPreferences = (): Preferences => ({
   minSalary: null,
   noticePeriodDays: null,
   excludeCompanies: [],
-  excludeKeywords: [],
   maxPerCompany: 3,
   dailyLimit: 25,
-  autoSubmitThreshold: 80,
   discovery: true,
+});
+
+// A search is one hunt running in parallel with the others, e.g. "Backend"
+// and "ML engineer", each with its own titles, bar and apply mode.
+export const APPLY_MODES = ["auto", "review"] as const;
+
+export const Search = z.object({
+  id: z.string(),
+  name: z.string(),
+  enabled: z.boolean(),
+  titles: z.array(z.string()), // empty = any software role the skills match
+  seniority: z.array(z.enum(SENIORITY)),
+  employmentTypes: z.array(z.enum(EMPLOYMENT_TYPES)),
+  excludeKeywords: z.array(z.string()),
+  minMatch: z.number().int().min(0).max(100), // selectivity: skip jobs scoring below this
+  mode: z.enum(APPLY_MODES), // auto: submit where the form allows; review: prepare and wait
+});
+export type Search = z.infer<typeof Search>;
+export const Searches = z.array(Search);
+
+export const newSearch = (name = "Software engineering"): Search => ({
+  id: crypto.randomUUID(),
+  name,
+  enabled: true,
+  titles: [],
+  seniority: ["entry", "mid"],
+  employmentTypes: ["full-time"],
+  excludeKeywords: [],
+  minMatch: 70,
+  mode: "review",
+});
+
+// Screening answers are given once and reused on every form. `custom` is the
+// answer bank: questions you add by hand now, and (from phase 4) answers you
+// correct during review, which are remembered for next time.
+export const DECLINE = "Decline to self-identify";
+
+export const CustomAnswer = z.object({
+  id: z.string(),
+  question: z.string(),
+  answer: z.string(),
+  source: z.enum(["manual", "learned"]),
+});
+export type CustomAnswer = z.infer<typeof CustomAnswer>;
+
+export const Answers = z.object({
+  expectedSalary: Money.nullable(),
+  currentSalary: Money.nullable(),
+  salaryFallback: z.string(), // for free-text salary fields when no figure fits
+  hearAbout: z.string(),
+  gender: z.string(),
+  ethnicity: z.string(),
+  veteran: z.string(),
+  disability: z.string(),
+  custom: z.array(CustomAnswer),
+});
+export type Answers = z.infer<typeof Answers>;
+
+export const defaultAnswers = (): Answers => ({
+  expectedSalary: null,
+  currentSalary: null,
+  salaryFallback: "Negotiable",
+  hearAbout: "Company careers page",
+  gender: DECLINE,
+  ethnicity: DECLINE,
+  veteran: DECLINE,
+  disability: DECLINE,
+  custom: [],
 });

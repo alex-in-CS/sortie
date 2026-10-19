@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 const LIVE = [
   { href: "/", label: "Overview" },
   { href: "/profile", label: "Profile" },
+  { href: "/searches", label: "Searches" },
+  { href: "/answers", label: "Answers" },
   { href: "/preferences", label: "Preferences" },
 ];
 

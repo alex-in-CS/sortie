@@ -1,10 +1,12 @@
 "use client";
 
-import { EMPLOYMENT_TYPES, SENIORITY, WORK_MODES, type Preferences } from "@/lib/schema";
-import { ChoiceGroup, Field, SaveBar, Section, Select, TagInput, TextInput, Toggle } from "./ui";
+import { WORK_MODES, type Preferences } from "@/lib/schema";
+import { MoneyInput } from "./money-input";
+import { ChoiceGroup, Field, SaveBar, Section, TagInput, TextInput, Toggle } from "./ui";
 import { useSavedState } from "./use-saved-state";
 
 const num = (v: string) => (v === "" ? null : Number(v));
+const clamp = (v: string, min: number, max: number) => Math.max(min, Math.min(max, Number(v) || min));
 
 export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; updatedAt: string | null }) {
   const state = useSavedState<Preferences>("/api/preferences", "preferences", initial, updatedAt);
@@ -13,51 +15,6 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
 
   return (
     <>
-      <Section title="Roles" hint="What to look for.">
-        <div className="space-y-5">
-          <Field
-            label="Target roles"
-            hint="Optional. Empty means any software role your skills match: backend, full-stack, data, ML, DevOps and so on."
-          >
-            {(id) => (
-              <TagInput
-                id={id}
-                value={p.targetRoles}
-                onChange={(targetRoles) => set({ targetRoles })}
-                placeholder="Backend Engineer, Software Engineer, ML Engineer"
-              />
-            )}
-          </Field>
-          <Field label="Seniority">
-            {() => <ChoiceGroup options={SENIORITY} value={p.seniority} onChange={(seniority) => set({ seniority })} />}
-          </Field>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Years of professional experience">
-              {(id) => (
-                <TextInput
-                  id={id}
-                  type="number"
-                  min={0}
-                  step={0.5}
-                  value={p.yearsOfExperience ?? ""}
-                  onChange={(e) => set({ yearsOfExperience: num(e.target.value) })}
-                />
-              )}
-            </Field>
-            <Field label="Employment type">
-              {() => (
-                <ChoiceGroup
-                  options={EMPLOYMENT_TYPES}
-                  labels={{ "full-time": "Full-time", "part-time": "Part-time" }}
-                  value={p.employmentTypes}
-                  onChange={(employmentTypes) => set({ employmentTypes })}
-                />
-              )}
-            </Field>
-          </div>
-        </div>
-      </Section>
-
       <Section title="Location & eligibility" hint="Sortie skips jobs you can't legally take or don't want to move for.">
         <div className="space-y-5">
           <Field label="Work mode">
@@ -84,7 +41,19 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
                 />
               )}
             </Field>
-            <Field label="Notice period (days)">
+            <Field label="Years of professional experience">
+              {(id) => (
+                <TextInput
+                  id={id}
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={p.yearsOfExperience ?? ""}
+                  onChange={(e) => set({ yearsOfExperience: num(e.target.value) })}
+                />
+              )}
+            </Field>
+            <Field label="Notice period (days)" hint="0 if you can start immediately.">
               {(id) => (
                 <TextInput
                   id={id}
@@ -114,43 +83,10 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
 
       <Section title="Pay & exclusions">
         <div className="space-y-5">
-          <Field label="Minimum salary" hint="Only applied when a posting lists pay. Leave empty for no floor.">
-            {(id) => (
-              <div className="grid grid-cols-[1fr_6rem_7rem] gap-2">
-                <TextInput
-                  id={id}
-                  type="number"
-                  min={0}
-                  value={p.minSalary?.amount ?? ""}
-                  onChange={(e) => {
-                    const amount = num(e.target.value);
-                    set({
-                      minSalary:
-                        amount === null ? null : { currency: "INR", period: "year", ...p.minSalary, amount },
-                    });
-                  }}
-                />
-                <TextInput
-                  aria-label="Currency"
-                  value={p.minSalary?.currency ?? "INR"}
-                  disabled={!p.minSalary}
-                  onChange={(e) => p.minSalary && set({ minSalary: { ...p.minSalary, currency: e.target.value.toUpperCase() } })}
-                />
-                <Select
-                  aria-label="Period"
-                  value={p.minSalary?.period ?? "year"}
-                  disabled={!p.minSalary}
-                  onChange={(e) =>
-                    p.minSalary && set({ minSalary: { ...p.minSalary, period: e.target.value as "year" | "month" } })
-                  }
-                >
-                  <option value="year">per year</option>
-                  <option value="month">per month</option>
-                </Select>
-              </div>
-            )}
+          <Field label="Minimum salary" hint="Jobs that list pay below this are skipped. Leave empty for no floor.">
+            {(id) => <MoneyInput id={id} value={p.minSalary} onChange={(minSalary) => set({ minSalary })} />}
           </Field>
-          <Field label="Never apply to">
+          <Field label="Never apply to" hint="Applies to every search.">
             {(id) => (
               <TagInput
                 id={id}
@@ -160,24 +96,14 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
               />
             )}
           </Field>
-          <Field label="Skip postings mentioning" hint="Matched against title and description.">
-            {(id) => (
-              <TagInput
-                id={id}
-                value={p.excludeKeywords}
-                onChange={(excludeKeywords) => set({ excludeKeywords })}
-                placeholder="unpaid, commission only, night shift"
-              />
-            )}
-          </Field>
         </div>
       </Section>
 
       <Section
         title="Autopilot limits"
-        hint="Guard rails. Recruiters see every application you send them, so more is not better."
+        hint="Guard rails across all searches. Recruiters see every application you send them, so more is not better."
       >
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Max applications per company" hint="Best-matching roles win.">
             {(id) => (
               <TextInput
@@ -186,7 +112,7 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
                 min={1}
                 max={10}
                 value={p.maxPerCompany}
-                onChange={(e) => set({ maxPerCompany: Math.max(1, Math.min(10, Number(e.target.value) || 1)) })}
+                onChange={(e) => set({ maxPerCompany: clamp(e.target.value, 1, 10) })}
               />
             )}
           </Field>
@@ -198,21 +124,7 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
                 min={1}
                 max={200}
                 value={p.dailyLimit}
-                onChange={(e) => set({ dailyLimit: Math.max(1, Math.min(200, Number(e.target.value) || 1)) })}
-              />
-            )}
-          </Field>
-          <Field label="Auto-submit at match score ≥" hint="Below this, it waits for your OK.">
-            {(id) => (
-              <TextInput
-                id={id}
-                type="number"
-                min={0}
-                max={100}
-                value={p.autoSubmitThreshold}
-                onChange={(e) =>
-                  set({ autoSubmitThreshold: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })
-                }
+                onChange={(e) => set({ dailyLimit: clamp(e.target.value, 1, 200) })}
               />
             )}
           </Field>
@@ -221,8 +133,8 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
           <Toggle
             checked={p.discovery}
             onChange={(discovery) => set({ discovery })}
-            label="Daily discovery"
-            hint="Besides the curated company list, search job boards every day for new companies hiring for your skills."
+            label="Discovery"
+            hint="Besides the curated company list, search for new companies hiring for your skills."
           />
         </div>
       </Section>

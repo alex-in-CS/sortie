@@ -2,14 +2,13 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { PreferencesForm } from "@/components/preferences-form";
 import { Loading, PageHeader } from "@/components/ui";
-import { getPreferences } from "@/lib/store";
+import { preferencesStore } from "@/lib/store";
 
 export default function PreferencesPage() {
   return (
     <>
       <PageHeader title="Preferences">
-        Which jobs count as a fit and how hard the autopilot may push. Leave target roles empty to let your
-        skills decide.
+        Where you can work, your pay floor, and the limits that hold across every search.
       </PageHeader>
       <Suspense fallback={<Loading />}>
         <PreferencesData />
@@ -20,6 +19,6 @@ export default function PreferencesPage() {
 
 async function PreferencesData() {
   await connection();
-  const { value, updatedAt } = getPreferences();
+  const { value, updatedAt } = preferencesStore.get();
   return <PreferencesForm initial={value} updatedAt={updatedAt} />;
 }

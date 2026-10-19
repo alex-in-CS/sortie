@@ -69,6 +69,123 @@ const MIGRATIONS: Migration[] = [
     }
     db.exec("DROP TABLE profile; DROP TABLE preferences;");
   },
+  // v3: phase 2. The company registry, normalised jobs, one match row per
+  // (job, search), and the worker's task queue, which doubles as the run log.
+  `
+  CREATE TABLE companies (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    board TEXT NOT NULL,
+    origin TEXT NOT NULL DEFAULT 'registry',
+    careers_url TEXT,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    added_at TEXT NOT NULL,
+    last_fetched_at TEXT,
+    last_job_count INTEGER,
+    last_error TEXT,
+    UNIQUE (provider, board)
+  );
+  CREATE TABLE jobs (
+    id INTEGER PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    provider_job_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    location TEXT NOT NULL,
+    country_codes TEXT NOT NULL DEFAULT '[]',
+    work_mode TEXT,
+    employment_type TEXT,
+    department TEXT,
+    level TEXT,
+    description TEXT,
+    url TEXT NOT NULL,
+    apply_url TEXT,
+    salary TEXT,
+    posted_at TEXT,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    closed_at TEXT,
+    hash TEXT NOT NULL,
+    UNIQUE (company_id, provider_job_id)
+  );
+  CREATE INDEX jobs_open ON jobs (closed_at, company_id);
+  CREATE TABLE matches (
+    job_id INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    search_id TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    rejected TEXT,
+    seniority TEXT NOT NULL,
+    matched TEXT NOT NULL,
+    missing TEXT NOT NULL,
+    notes TEXT NOT NULL,
+    llm_score INTEGER,
+    llm_reasons TEXT,
+    input_hash TEXT NOT NULL,
+    scored_at TEXT NOT NULL,
+    PRIMARY KEY (job_id, search_id)
+  );
+  CREATE INDEX matches_search ON matches (search_id, rejected, score);
+  CREATE TABLE tasks (
+    id INTEGER PRIMARY KEY,
+    type TEXT NOT NULL,
+    payload TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'queued',
+    attempts INTEGER NOT NULL DEFAULT 0,
+    run_after TEXT NOT NULL,
+    started_at TEXT,
+    finished_at TEXT,
+    result TEXT,
+    last_error TEXT,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX tasks_due ON tasks (status, run_after);
+  `,
+  // v4: phase 3. Claude's review of a (job, search) lives apart from the rule
+  // score, so the daily rule re-score never throws a paid review away. An
+  // application is one job Sortie chose (or you chose) to apply to, with its
+  // tailored resume and truth report; events are its step history.
+  `
+  ALTER TABLE matches DROP COLUMN llm_score;
+  ALTER TABLE matches DROP COLUMN llm_reasons;
+  CREATE TABLE reviews (
+    job_id INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    search_id TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    verdict TEXT NOT NULL,
+    reasons TEXT NOT NULL,
+    gaps TEXT NOT NULL,
+    dealbreaker TEXT,
+    model TEXT NOT NULL,
+    input_hash TEXT NOT NULL,
+    reviewed_at TEXT NOT NULL,
+    PRIMARY KEY (job_id, search_id)
+  );
+  CREATE TABLE applications (
+    id INTEGER PRIMARY KEY,
+    job_id INTEGER NOT NULL UNIQUE REFERENCES jobs(id) ON DELETE CASCADE,
+    search_id TEXT NOT NULL,
+    origin TEXT NOT NULL,
+    status TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    mode TEXT NOT NULL,
+    resume TEXT,
+    truth TEXT,
+    resume_file TEXT,
+    error TEXT,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+  CREATE INDEX applications_status ON applications (status, created_at);
+  CREATE TABLE application_events (
+    id INTEGER PRIMARY KEY,
+    application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+    at TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    detail TEXT
+  );
+  CREATE INDEX application_events_app ON application_events (application_id, id);
+  `,
 ];
 
 const userVersion = (db: DatabaseSync) =>

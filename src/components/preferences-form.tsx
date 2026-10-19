@@ -104,7 +104,7 @@ export function PreferencesForm({ initial, updatedAt }: { initial: Preferences; 
         hint="Guard rails across all searches. Recruiters see every application you send them, so more is not better."
       >
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Max applications per company" hint="Best-matching roles win.">
+          <Field label="Max applications per company" hint="Over any 30 days. Best-matching roles win.">
             {(id) => (
               <TextInput
                 id={id}

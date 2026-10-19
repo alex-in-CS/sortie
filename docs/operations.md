@@ -21,8 +21,13 @@ npm run dev                    # http://127.0.0.1:3000
 | Variable | Required | Default | Notes |
 | --- | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | yes | | Resume parsing, scoring, tailoring, email sorting. |
-| `SORTIE_MODEL` | no | `claude-opus-5-5` | Model for LLM calls. |
+| `SORTIE_MODEL` | no | `claude-opus-5-5` | Resume reading, tailoring and the truth check (D-035). |
 | `SORTIE_DATA_DIR` | no | `./data` | Database and uploads. Absolute or relative to the project. |
+| `SORTIE_FETCH_HOURS` | no | `2` | Hours between fetch cycles in the worker (±10% jitter). |
+| `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` | Job reviews, and later email sorting (D-035). |
+| `SORTIE_REVIEWS_PER_CYCLE` | no | `40` | Most Claude job reviews per cycle (D-050). |
+| `SORTIE_TAILOR_PER_CYCLE` | no | `10` | Most applications tailored per cycle. |
+| `SORTIE_CHROME_PATH` | no | Chrome | A Chromium-based browser for PDFs, if Google Chrome isn't installed (D-052). |
 | *(Day 3)* `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | for Gmail | | From the Desktop OAuth client. |
 | *(Day 3)* `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | for alerts | | Chat ID is captured on the first `/start`. |
 | *(optional)* `JOBS_API_KEY` | for discovery | | JSearch/SerpAPI. |
@@ -36,12 +41,39 @@ Restart the dev server after changing `.env.local`.
 | `npm run dev` | Dev server on 127.0.0.1:3000 (Turbopack, hot reload). |
 | `npm run build` | Production build. Doesn't touch the database (D-023). |
 | `npm start` | Production server on 127.0.0.1:3000. |
-| `npm test` | Vitest (merge rules, migrations). |
+| `npm test` | Vitest (merge rules, migrations, adapters, matching, job store, queue). |
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm run lint` | ESLint (flat config). |
-| *(planned)* `npm run worker` | Background worker (D-033). |
+| `npm run worker` | Background worker: fetches every ~2 h and runs queued tasks ("Fetch now"). Leave it running in a second terminal. |
+| `npm run fetch` | One full cycle now (fetch, match, review, select, tailor), printed line by line, then exit. Doesn't need the worker. |
+| `npm run registry:verify` | Re-probe every candidate and enterprise feed live and rewrite `src/lib/registry/companies.json` (takes a few minutes). |
 
 Before every commit: `npm run typecheck && npm run lint && npm test && npm run build`.
+
+## Running the job pipeline
+
+1. Fill in your profile, a search and preferences (countries especially), then start the app with
+   `npm run dev`.
+2. In a second terminal, run `npm run worker` and leave it running. It fetches every board on start
+   and then every ~2 h. Or run `npm run fetch` once to fetch and exit.
+3. Open **Jobs**. Matching reruns on every page load for anything that changed (D-041), so edits to
+   skills, searches or preferences show up straight away.
+4. With an API key and a complete profile, each cycle then reviews the best candidates with Claude,
+   picks jobs within your limits, and tailors a resume and cover letter for each (D-050 to D-052).
+   **Applications** shows them with their PDFs and what the truth check changed. Press **Apply** on
+   any job to pick it by hand; the worker tailors it within ~30 s.
+5. **Companies** lists every board with its last result. Switch off companies you don't want, or use
+   **Fetch now**, which queues a run for the worker.
+
+### Changing the company list
+
+- Product companies: add a line to `scripts/candidates.txt` (`Name` or `Name | slug1, slug2`).
+- Enterprises on Workday or SmartRecruiters: add an entry to `scripts/enterprise.json`
+  (`{"company", "provider", "board", "careersUrl"}`; Workday boards are `tenant.wdN/Site`).
+  To find a board, open the company's careers page and look for `myworkdayjobs.com` or
+  `smartrecruiters.com` in the network requests or the page source.
+- Then `npm run registry:verify` and check the first jobs of any new board belong to the right
+  company (R-16). Commit the regenerated `companies.json`.
 
 ## Data
 
@@ -90,4 +122,13 @@ weekly unless the app is moved to production (see [risks.md](risks.md)).
 | `npm warn allow-scripts … not yet covered` | npm 11 blocks install scripts by default | Harmless for current deps. Approve only what you've reviewed: `npm approve-scripts <pkg>`. This is why we use `node:sqlite` and not `better-sqlite3` (D-004). |
 | PowerShell reports exit code 1/255 though the command worked | Windows PowerShell 5.1 treats native stderr output as an error | Run through `cmd /c "… 2>&1"` or check the real exit code. |
 | Git warns "LF will be replaced by CRLF" | Windows autocrlf | `.gitattributes` pins LF for source files. |
+| A company shows "Failed: HTTP 404" | The board moved or was renamed | Re-run `npm run registry:verify`; fix its entry in the candidates or enterprise file. |
+| A company shows "Rate-limited, resting 12 h" | The board answered HTTP 429 even after backoff (D-048) | Nothing to do: it's retried after 12 hours. Its stored jobs stay open. |
+| "Couldn't start Chrome to make the PDF" | Google Chrome isn't installed where Playwright looks | Install Chrome, or set `SORTIE_CHROME_PATH` to `msedge.exe` / `chrome.exe` (D-052). |
+| An application sits in **Needs you** | Tailoring failed three times (the error is shown) | Fix the cause (key, rate limit, Chrome), then **Try again**. |
+| Applications page says tailoring is paused | No API key, or the profile lacks a name, email, a role/project or skills | Add what it names; the next cycle continues. |
+| "Fetching…" never ends after a killed `npm run fetch` | The task row was left `running` | Fixed by D-053: after 3 h it's abandoned automatically; starting the worker requeues it at once. |
+| Page error: "Only plain objects can be passed to Client Components" | A `node:sqlite` row (null prototype) reached a client prop | Return it through `plain()` in `jobs.ts` (D-047). |
+| "Waiting for the worker" never clears | No worker is running | Start `npm run worker`, or run `npm run fetch`. |
+| A Workday company has jobs but few matches | Only titles matching the queries get a description fetched, at most 100 per board per cycle (D-039, D-049) | Wait a few cycles, or add the role title to a search. |
 | Turbopack warning: "Dynamic filesystem access causes tracing of the whole project" | A computed path in a server module | Keep paths scoped (`path.join(process.cwd(), "data")`) or mark them `/*turbopackIgnore: true*/` (see `db.ts`). |

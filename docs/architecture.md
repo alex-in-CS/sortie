@@ -1,39 +1,64 @@
 # Architecture
 
-## 1. Today (phase 1 + searches/answers)
+## 1. Today (phases 1–3)
 
 ```
  Browser (127.0.0.1:3000)
-   │  pages: / · /profile · /searches · /answers · /preferences      (React client editors)
-   │  fetch JSON
+   │  pages: / · /jobs · /applications · /companies · /profile · /searches · /answers · /preferences
    ▼
  Next.js 16 server  ─────────────────────────────────────────────────────────────────────
    app/*/page.tsx         server components: static shell + <Suspense> data child (D-024)
+   app/jobs               runs matchAll() (cheap, hash-skipped) then lists matches, reviews, Apply (D-041)
+   app/applications       picked jobs by status: review, PDFs, truth report, skip/restore/re-tailor
+   app/companies          syncs the registry, lists boards, on/off switches, Fetch now
    app/api/resume         POST multipart → parseResume (Claude) → mergeResume → save
    app/api/profile        GET / PUT (zod-validated, blank bullet lines stripped)
-   app/api/searches       GET / PUT  ┐
-   app/api/answers        GET / PUT  ├─ settingRoute(): one helper, same contract
-   app/api/preferences    GET / PUT  ┘
+   app/api/{searches,answers,preferences}  GET / PUT via settingRoute()
+   app/api/companies/[id] PATCH {enabled}
+   app/api/fetch          POST → enqueue("fetch") · GET → last fetch task
+   app/api/applications   POST {jobId, searchId} → manual pick + enqueue("prepare")
+   app/api/applications/[id]              PATCH {action: skip | restore | retailor}
+   app/api/applications/[id]/files/[kind] GET resume | cover-letter PDF
         │
         ▼
- src/lib  (framework-free; the future worker imports it too, D-003)
-   schema.ts   zod: Profile, ParsedResume, Preferences, Search(es), Answers   (D-006)
-   store.ts    setting(key, schema, fallback) → get/save; documents table
-   db.ts       getDb(): lazy open, WAL, busy timeout, versioned migrations    (D-023)
-   llm.ts      Anthropic client, parseResume (structured output + fallback)  (D-007)
-   merge.ts    mergeResume: fill gaps, append new, never overwrite             (D-009)
-   skills.ts   category dictionary + labels
-   format.ts   fixed-locale dates                                             (D-025)
+ src/lib  (framework-free; the worker imports it too, D-003)
+   schema.ts     zod: Profile, ParsedResume, Preferences, Search(es), Answers   (D-006)
+   store.ts      setting(key, schema, fallback) → get/save; documents table
+   db.ts         getDb(): lazy open, WAL, busy timeout, migrations v1–v4        (D-023)
+   llm.ts        Anthropic client; structured() call; parseResume              (D-007, D-035)
+   merge.ts      mergeResume: fill gaps, append new, never overwrite             (D-009)
+   sources/      one adapter per ATS → SourceJob; polite fetch (http.ts)         (D-039)
+   registry.ts   the verified company list (registry/companies.json)             (D-038)
+   jobs.ts       companies, jobs (upsert/close), matches, tasks queue
+   geo.ts        location text → ISO countries; city aliases
+   match.ts      hard filters + deterministic score with reasons                (D-032, D-040)
+   pipeline.ts   runCycle(): registry → fetch boards → details → matchAll() → prepare()
+   autopilot.ts  prepare(): reviewAll → selectJobs → tailorOne × N               (D-050)
+   review.ts     Claude (Sonnet) review per (job, search), hash-cached           (D-050)
+   select.ts     pure: bar, dealbreakers, per-company and daily caps            (D-050)
+   tailor.ts     Claude (Opus) tailoring + Claude truth check                   (D-051)
+   truth.ts      pure: rule truth check, claims, apply rejections               (D-051)
+   resume-html.ts  pure: ATS-friendly resume + cover letter HTML                (D-052)
+   pdf.ts        HTML → PDF via playwright-core + installed Chrome              (D-052)
+   applications.ts  reviews, applications, events, caps usage
+   profile-text.ts  the profile and constraints as prompt text
         │
         ▼
  data/  (gitignored)
-   sortie.db          settings(profile|preferences|searches|answers), documents
-   uploads/<uuid>.*   original resumes (written only after a successful parse, D-010)
+   sortie.db   settings, documents, companies, jobs, matches, tasks, reviews, applications, events
+   uploads/    original resumes
+   resumes/    <application id>/<Name>-Resume.pdf, <Name>-Cover-Letter.pdf
 
- External: api.anthropic.com (resume parsing)
+ Worker (npm run worker | npm run fetch, D-033, D-042)
+   src/worker/index.ts  schedule a cycle every ~2 h ± 10%, claim tasks (fetch, prepare, match), run,
+                        record result, close Chrome after each task
+
+ External: api.anthropic.com (parsing, reviews, tailoring, truth check); local Chrome (PDF);
+           boards-api.greenhouse.io, api.lever.co,
+           api.ashbyhq.com, api.smartrecruiters.com, *.myworkdayjobs.com (job feeds)
 ```
 
-## 2. Target at the end of the 3 days
+## 2. Target
 
 ```
                          ┌──────────────── Next.js (UI + API) ────────────────┐
@@ -104,15 +129,34 @@ Every step writes to `application_events`, so the history of any application can
 | `src/components/preferences-form.tsx` | Location/eligibility, pay floor, exclusions, caps, discovery. |
 | `src/components/money-input.tsx` | Amount + currency + period input. |
 | `src/components/nav.tsx` | Sidebar / top nav, with live and upcoming sections. |
+| `src/app/jobs/page.tsx` | Jobs: per-search tabs; Qualifying / Below your bar / Filtered out; score, matched and missing skills, notes, rejection reason. |
+| `src/app/applications/page.tsx` | Applications grouped by status (needs you, ready, being prepared, skipped): Claude's review, PDF links, the truth report, actions. |
+| `src/app/api/applications/**` | Manual pick (POST), skip/restore/re-tailor (PATCH), PDF download (GET, confined to `data/`). |
+| `src/components/apply-button.tsx` | Apply on a job row; shows the application's status once it exists. |
+| `src/components/application-actions.tsx` | Skip / Restore / Re-tailor / Try again buttons per status. |
+| `src/app/companies/page.tsx` | Companies: registry table with switches, last fetch result, unsupported and not-found lists. |
+| `src/app/api/companies/[id]/route.ts` | Switch a company on or off. |
+| `src/app/api/fetch/route.ts` | Queue a fetch for the worker; read the last fetch task. |
+| `src/components/company-list.tsx` | Filterable company table with optimistic on/off switches. |
+| `src/components/fetch-button.tsx` | Queues a fetch, polls until done, refreshes; hints when no worker is running. |
+| `src/lib/sources/*` | `greenhouse`, `lever`, `ashby`, `smartrecruiters`, `workday` adapters; `http.ts` (UA, per-host gap, retries); `text.ts` (HTML → text, dates, enums); `fixtures/` recorded responses. |
+| `src/lib/registry/companies.json` | Generated by `npm run registry:verify`. Do not edit by hand; edit `scripts/candidates.txt` / `scripts/enterprise.json` and re-run. |
+| `src/worker/index.ts` | The worker process. |
+| `scripts/verify-registry.ts` | Probes candidates and enterprise feeds live, writes the registry. |
+| `scripts/candidates.txt`, `scripts/enterprise.json` | Registry inputs: guessed slugs for product companies; hand-found feeds (and unsupported ATS notes) for enterprises. |
 | `src/lib/*` | See §1. Must not import `next/*`. |
-| `src/lib/*.test.ts` | Vitest: merge rules, migrations. |
+| `src/lib/*.test.ts`, `src/lib/sources/sources.test.ts` | Vitest: merge rules, migrations, adapters on fixtures, geo, filters and scoring, job store, queue, matchAll, truth rules, selection caps, resume HTML, and the whole prepare path with Claude and Chrome faked (`autopilot.test.ts`). |
 | `src/test/empty.ts` | Stub for `server-only` under Vitest. |
 | `docs/` | This documentation. |
 
 ## 4. Conventions
 
-- **Server-only modules** (`db`, `store`, `llm`, `setting-route`) start with `import "server-only"` so
-  they can't leak into client bundles.
+- **Server-only modules** (`db`, `store`, `llm`, `setting-route`, `jobs`, `pipeline`, `applications`,
+  `review`, `tailor`, `autopilot`, `pdf`) start with
+  `import "server-only"` so they can't leak into client bundles. The worker runs Node with
+  `--conditions=react-server`, which resolves that import to an empty module (D-042).
+- **Pure modules** (`match`, `geo`, `sources/*`, `skills`, `schema`) have no server-only import, so
+  scripts and tests can use them directly.
 - **Validation at the edges:** every API write goes through `safeParse`, and every DB read through
   `parse`.
 - **Errors for humans:** API errors return `{ error: "<plain sentence>" }` with a fitting status.

@@ -1,0 +1,152 @@
+import "server-only";
+import fs from "node:fs";
+import path from "node:path";
+import Anthropic from "@anthropic-ai/sdk";
+import {
+  type Application,
+  capUsage,
+  claimForTailoring,
+  createApplication,
+  failTailoring,
+  pruneReviews,
+  saveTailored,
+  selectionCandidates,
+  setStatus,
+} from "./applications";
+import { DATA_DIR } from "./db";
+import { getJob } from "./jobs";
+import { describeError, hasApiKey } from "./llm";
+import { htmlToPdf } from "./pdf";
+import { coverLetterHtml, resumeHtml } from "./resume-html";
+import { reviewAll, type ReviewResult } from "./review";
+import type { Profile } from "./schema";
+import { selectJobs } from "./select";
+import { preferencesStore, profileStore, searchesStore } from "./store";
+import { tailorAndCheck } from "./tailor";
+
+// Phase 3 of every cycle, after fetching and matching: Claude reviews the best
+// candidates, Sortie picks jobs within the caps, and each pick gets a tailored
+// resume and cover letter that passed the truth check (D-050, D-051, D-052).
+
+const TAILOR_PER_CYCLE = Number(process.env.SORTIE_TAILOR_PER_CYCLE) || 10;
+
+export const RESUME_DIR = path.join(DATA_DIR, "resumes");
+
+// What tailoring needs before it can say anything true about you.
+export function profileGaps(p: Profile) {
+  const gaps: string[] = [];
+  if (!p.contact.fullName.trim()) gaps.push("your name");
+  if (!p.contact.email.trim()) gaps.push("an email address");
+  if (!p.experience.length && !p.projects.length) gaps.push("at least one role or project");
+  if (!p.skills.length) gaps.push("skills");
+  return gaps;
+}
+
+const fileSlug = (s: string) =>
+  s
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-") || "Candidate";
+
+export const coverLetterFile = (resumeFile: string) => resumeFile.replace(/Resume\.pdf$/, "Cover-Letter.pdf");
+
+export async function tailorOne(app: Application, log: (line: string) => void = () => {}) {
+  const job = getJob(app.job_id);
+  if (!job || job.closed_at) {
+    setStatus(app.id, "skipped", "The posting closed before tailoring");
+    return false;
+  }
+  const profile = profileStore.get().value;
+  const prefs = preferencesStore.get().value;
+  try {
+    const { resume, truth } = await tailorAndCheck(profile, prefs, job);
+    const dir = path.join(RESUME_DIR, String(app.id));
+    fs.mkdirSync(dir, { recursive: true });
+    const base = fileSlug(profile.contact.fullName);
+    const resumeFile = `resumes/${app.id}/${base}-Resume.pdf`;
+    fs.writeFileSync(path.join(DATA_DIR, resumeFile), await htmlToPdf(resumeHtml(profile, resume)));
+    if (resume.coverLetter.trim())
+      fs.writeFileSync(
+        path.join(DATA_DIR, coverLetterFile(resumeFile)),
+        await htmlToPdf(coverLetterHtml(profile, resume.coverLetter, job.company)),
+      );
+    saveTailored(app.id, resume, truth, resumeFile);
+    log(`  Tailored for ${job.company} – ${job.title}${truth.issues.length ? ` (truth check fixed ${truth.issues.length})` : ""}`);
+    return true;
+  } catch (err) {
+    const msg = describeError(err);
+    failTailoring(app, msg);
+    log(`  Tailoring failed for ${job.company} – ${job.title}: ${msg}`);
+    if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) throw err;
+    return false;
+  }
+}
+
+export type PrepareResult = {
+  reviews: ReviewResult | null;
+  selected: number;
+  waitingForReview: number;
+  capped: { company: number; daily: number };
+  tailored: number;
+  tailorFailed: number;
+  blocked: string | null;
+};
+
+export async function prepare(log: (line: string) => void = () => {}): Promise<PrepareResult> {
+  const searches = searchesStore.get().value;
+  const prefs = preferencesStore.get().value;
+  const profile = profileStore.get().value;
+  pruneReviews(searches.map((s) => s.id));
+  const llm = hasApiKey();
+  const gaps = profileGaps(profile);
+
+  const reviews = llm && !gaps.length ? await reviewAll(log) : null;
+  if (reviews) log(`Reviewed ${reviews.reviewed} jobs with Claude${reviews.failed ? `, ${reviews.failed} failed` : ""}.`);
+
+  const enabled = searches.filter((s) => s.enabled);
+  const candidates = selectionCandidates(enabled.map((s) => s.id)).map((c) => ({
+    jobId: c.job_id,
+    searchId: c.search_id,
+    companyId: c.company_id,
+    company: c.company,
+    title: c.title,
+    ruleScore: c.rule_score,
+    reviewScore: c.review_score,
+    verdict: c.verdict,
+    dealbreaker: c.dealbreaker,
+    firstSeenAt: c.first_seen_at,
+  }));
+  const { picks, waiting, capped } = selectJobs(candidates, searches, prefs, capUsage(), llm);
+  let selected = 0;
+  for (const p of picks) if (createApplication({ ...p, origin: "auto" }).created) selected++;
+  log(
+    `Selected ${selected} job${selected === 1 ? "" : "s"}` +
+      (waiting ? `, ${waiting} waiting for a review` : "") +
+      (capped.daily ? `, ${capped.daily} over today's limit` : "") +
+      (capped.company ? `, ${capped.company} over a company's limit` : "") +
+      ".",
+  );
+
+  let blocked: string | null = null;
+  if (!llm) blocked = "Add ANTHROPIC_API_KEY to .env.local to tailor resumes.";
+  else if (gaps.length) blocked = `Add ${gaps.join(", ")} to your profile before Sortie can tailor resumes.`;
+  let tailored = 0;
+  let tailorFailed = 0;
+  if (!blocked) {
+    for (let i = 0; i < TAILOR_PER_CYCLE; i++) {
+      const app = claimForTailoring();
+      if (!app) break;
+      try {
+        if (await tailorOne(app, log)) tailored++;
+        else tailorFailed++;
+      } catch (err) {
+        // The key itself was refused: every other job would fail the same way.
+        tailorFailed++;
+        blocked = describeError(err);
+        break;
+      }
+    }
+  } else log(`Tailoring paused: ${blocked}`);
+  return { reviews, selected, waitingForReview: waiting, capped, tailored, tailorFailed, blocked };
+}

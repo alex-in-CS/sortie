@@ -54,9 +54,9 @@ matches our rules.
 
 ## 3. Job sources
 
-Public, unauthenticated job-board endpoints that the providers' own careers widgets use. Shapes are
-from provider docs and common knowledge; **each one gets verified live and pinned with a recorded
-fixture in phase 2.**
+Public, unauthenticated job-board endpoints that the providers' own careers widgets use. **All five
+were verified live on 2026-10-19** (Stripe, Palantir, Notion, Bosch, NVIDIA) and are pinned with
+recorded fixtures in `src/lib/sources/fixtures/`.
 
 | Provider | List endpoint | Status |
 | --- | --- | --- |
@@ -64,10 +64,40 @@ fixture in phase 2.**
 | Lever | `GET https://api.lever.co/v0/postings/{company}?mode=json` | Documented public postings API. |
 | Ashby | `GET https://api.ashbyhq.com/posting-api/job-board/{board}?includeCompensation=true` | Documented public job-board API. |
 | SmartRecruiters | `GET https://api.smartrecruiters.com/v1/companies/{company}/postings` | Documented public Posting API. |
-| Workday | `POST https://{tenant}.wd{n}.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs` with `{limit, offset, searchText, appliedFacets}` | **Unverified, not a documented public API**: it's what Workday careers pages call. Verify with REA; keep request rates low. Apply = handoff (account + CAPTCHA). |
+| Workday | `POST https://{tenant}.wd{n}.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs` with `{limit, offset, searchText, appliedFacets}` | **Verified live, but not a documented public API**: it's what Workday careers pages call. Pages are capped at 20; `total` is only reliable on the first page and tops out at 2000. Detail: `GET …/wday/cxs/{tenant}/{site}/job/{path}` → `jobPostingInfo` (description HTML, country alpha-2, time type). Apply = handoff (account + CAPTCHA). |
 | SuccessFactors, Taleo, iCIMS, custom sites | various | Out of scope for fetching in the 3 days unless a company on the list needs it. Apply = handoff. |
 | Discovery | JSearch (RapidAPI) or SerpAPI Google Jobs | Optional, paid with free tiers; aggregates listings including LinkedIn/Glassdoor *legally via the provider*. |
 
-**Which provider each target company uses** (Big 4, SanDisk and so on) gets recorded in the registry
-as we verify it. Large enterprises lean towards Workday/SuccessFactors, and startups towards
-Greenhouse/Lever/Ashby.
+Notes from the live checks:
+- **Greenhouse** `content` is HTML escaped twice (`&lt;p&gt;`): decode, strip, decode again. Each job
+  has `company_name`, useful to confirm a guessed slug. No structured salary.
+- **Lever** has `country` (alpha-2), `workplaceType`, `categories.commitment`, and sometimes `salaryRange`.
+- **Ashby** has `isListed` (skip false), `workplaceType`, `employmentType` (`FullTime`, `Intern`, …),
+  `address.postalAddress.addressCountry` (a name), and `compensation.summaryComponents` when shown.
+- **SmartRecruiters** lists without descriptions; `GET …/postings/{id}` has `jobAd.sections`. A company
+  ID that doesn't exist returns `totalFound: 0`, not 404. The `q` parameter searches.
+- **Workday** `searchText` is broad (NVIDIA: "software engineer" matched 1754 of 2000), so it narrows
+  only a little.
+
+### Which ATS the big names use (verified 2026-10-19)
+
+A background agent checked 103 large companies by fetching their careers pages and calling the feed
+it found. Every "supported" entry returned a job count above 0. The full table is
+`scripts/enterprise.json`.
+
+| ATS | Companies |
+| --- | --- |
+| **Workday** (fetched) | PwC, Accenture, Micron, Intel, Broadcom, Analog Devices, Marvell, NXP, Applied Materials, KLA, Cadence, HP Inc, HPE, Cisco, Salesforce, Adobe, Workday, Autodesk, Red Hat, CrowdStrike, PayPal, Mastercard, Visa, Target, Palo Alto Networks, Wells Fargo, Citi, Barclays, BlackRock, Philips, GE Aerospace, GE Vernova, Boeing, Airbus |
+| **SmartRecruiters** (fetched) | ServiceNow, Freshworks, Bosch, Western Digital, Arista, Canva, Wise, Delivery Hero, Grab, Swiggy, Unacademy, Ixigo, Wayfair, Whatfix, Cars24 |
+| **Greenhouse / Lever / Ashby** (fetched) | Thoughtworks, Zscaler, Okta, Razorpay, Paytm, CRED, Meesho, Snowflake, and the product companies in the registry |
+| Avature | Deloitte, SanDisk, Synopsys, HSBC, Intuit, IBM, Siemens |
+| SuccessFactors | EY, Wipro, HCLTech, Globant, Seagate, SAP |
+| Eightfold | Microsoft, Qualcomm, Lam Research, NetApp, Ericsson, Infineon, Morgan Stanley |
+| Oracle Cloud HCM | Oracle, JPMorgan Chase, Texas Instruments, Dell, Nokia, Fortinet, Honeywell, American Express |
+| iCIMS | AMD, Atlassian, Arm |
+| Own system | KPMG, Google, Amazon, Apple, Meta, Uber, Infosys, TCS, Capgemini, Cognizant, Tech Mahindra, EPAM, McKinsey, Bain, Goldman Sachs, Deutsche Bank, UBS, MediaTek, Walmart Global Tech, PhonePe, Zomato |
+| Other | BCG (Phenom), LTIMindtree (RippleHire), Flipkart (TurboHire), Zoho (Zoho Recruit) |
+
+Big enterprises split roughly evenly between Workday (fetchable) and portals with no public feed.
+Startups are almost all on Greenhouse, Ashby or Lever. Many Indian startups host jobs on their own
+pages or on Indian ATSs, which is why 141 candidates weren't found.

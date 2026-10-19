@@ -8,12 +8,16 @@
     "start": "next start -H 127.0.0.1",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "worker": "tsx --conditions=react-server src/worker/index.ts",
+    "fetch": "tsx --conditions=react-server src/worker/index.ts --once",
+    "registry:verify": "tsx scripts/verify-registry.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
     "mammoth": "^1.13.0",
     "next": "16.4.2",
+    "playwright-core": "^1.64.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",
@@ -27,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.5"
   }

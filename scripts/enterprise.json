@@ -1,0 +1,842 @@
+[
+ {
+  "company": "PwC",
+  "provider": "workday",
+  "board": "pwc.wd3/Global_Experienced_Careers",
+  "careersUrl": "https://www.pwc.com/gx/en/careers.html",
+  "ats": "Workday",
+  "note": "Global experienced-hire site. India jobs in facets: ~280+ (Bengaluru/Gurugram/Chennai offices); no separate India site found"
+ },
+ {
+  "company": "Micron",
+  "provider": "workday",
+  "board": "micron.wd1/External",
+  "careersUrl": "https://careers.micron.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~330; no separate India site found"
+ },
+ {
+  "company": "Intel",
+  "provider": "workday",
+  "board": "intel.wd1/External",
+  "careersUrl": "https://jobs.intel.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: 66; no separate India site found"
+ },
+ {
+  "company": "Broadcom",
+  "provider": "workday",
+  "board": "broadcom.wd1/External_Career",
+  "careersUrl": "https://www.broadcom.com/company/careers",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~62; no separate India site found"
+ },
+ {
+  "company": "Analog Devices",
+  "provider": "workday",
+  "board": "analogdevices.wd1/External",
+  "careersUrl": "https://www.analog.com/en/about-adi/careers.html",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~200; no separate India site found"
+ },
+ {
+  "company": "Marvell",
+  "provider": "workday",
+  "board": "marvell.wd1/MarvellCareers",
+  "careersUrl": "https://www.marvell.com/company/careers.html",
+  "ats": "Workday",
+  "note": "India jobs in facets: 30; no separate India site found"
+ },
+ {
+  "company": "NXP",
+  "provider": "workday",
+  "board": "nxp.wd3/careers",
+  "careersUrl": "https://www.nxp.com/company/about-nxp/careers:CAREERS",
+  "ats": "Workday",
+  "note": "India jobs in facets: 200; no separate India site found"
+ },
+ {
+  "company": "Applied Materials",
+  "provider": "workday",
+  "board": "amat.wd1/External",
+  "careersUrl": "https://careers.appliedmaterials.com",
+  "ats": "Workday",
+  "note": "total may be capped at 2000. India jobs in facets: 180; no separate India site found"
+ },
+ {
+  "company": "KLA",
+  "provider": "workday",
+  "board": "kla.wd1/Search",
+  "careersUrl": "https://www.kla.com/careers",
+  "ats": "Workday",
+  "note": "India jobs in facets: 50; no separate India site found"
+ },
+ {
+  "company": "Cadence",
+  "provider": "workday",
+  "board": "cadence.wd1/External_Careers",
+  "careersUrl": "https://www.cadence.com/en_US/home/company/careers.html",
+  "ats": "Workday",
+  "note": "India jobs in facets: 196; no separate India site found"
+ },
+ {
+  "company": "HP Inc",
+  "provider": "workday",
+  "board": "hp.wd5/ExternalCareerSite",
+  "careersUrl": "https://jobs.hp.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: 73; no separate India site found"
+ },
+ {
+  "company": "HPE",
+  "provider": "workday",
+  "board": "hpe.wd5/Jobsathpe",
+  "careersUrl": "https://careers.hpe.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~250; no separate India site found"
+ },
+ {
+  "company": "Cisco",
+  "provider": "workday",
+  "board": "cisco.wd5/Cisco_Careers",
+  "careersUrl": "https://jobs.cisco.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~360; no separate India site found"
+ },
+ {
+  "company": "Salesforce",
+  "provider": "workday",
+  "board": "salesforce.wd12/External_Career_Site",
+  "careersUrl": "https://careers.salesforce.com",
+  "ats": "Workday"
+ },
+ {
+  "company": "Adobe",
+  "provider": "workday",
+  "board": "adobe.wd5/external_experienced",
+  "careersUrl": "https://careers.adobe.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: 48; no separate India site found"
+ },
+ {
+  "company": "Workday",
+  "provider": "workday",
+  "board": "workday.wd5/Workday",
+  "careersUrl": "https://www.workday.com/en-us/company/careers.html",
+  "ats": "Workday",
+  "note": "India jobs in facets: 28; no separate India site found"
+ },
+ {
+  "company": "Autodesk",
+  "provider": "workday",
+  "board": "autodesk.wd1/Ext",
+  "careersUrl": "https://www.autodesk.com/careers",
+  "ats": "Workday",
+  "note": "India jobs in facets: 32; no separate India site found"
+ },
+ {
+  "company": "Red Hat",
+  "provider": "workday",
+  "board": "redhat.wd5/jobs",
+  "careersUrl": "https://www.redhat.com/en/jobs",
+  "ats": "Workday",
+  "note": "India jobs in facets: 7; no separate India site found"
+ },
+ {
+  "company": "CrowdStrike",
+  "provider": "workday",
+  "board": "crowdstrike.wd5/crowdstrikecareers",
+  "careersUrl": "https://www.crowdstrike.com/careers",
+  "ats": "Workday",
+  "note": "India jobs in facets: 30; no separate India site found"
+ },
+ {
+  "company": "PayPal",
+  "provider": "workday",
+  "board": "paypal.wd1/jobs",
+  "careersUrl": "https://careers.pypl.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: 16; no separate India site found"
+ },
+ {
+  "company": "Mastercard",
+  "provider": "workday",
+  "board": "mastercard.wd1/CorporateCareers",
+  "careersUrl": "https://careers.mastercard.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~245; no separate India site found"
+ },
+ {
+  "company": "Target",
+  "provider": "workday",
+  "board": "target.wd5/targetcareers",
+  "careersUrl": "https://corporate.target.com/careers",
+  "ats": "Workday",
+  "note": "total may be capped at 2000; includes stores/DC roles. India jobs in facets: 58; no separate India site found"
+ },
+ {
+  "company": "BlackRock",
+  "provider": "workday",
+  "board": "blackrock.wd1/BlackRock_Professional",
+  "careersUrl": "https://careers.blackrock.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: 40; no separate India site found"
+ },
+ {
+  "company": "Philips",
+  "provider": "workday",
+  "board": "philips.wd3/jobs-and-careers",
+  "careersUrl": "https://www.careers.philips.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: 48; no separate India site found"
+ },
+ {
+  "company": "GE Aerospace",
+  "provider": "workday",
+  "board": "geaerospace.wd5/GE_ExternalSite",
+  "careersUrl": "https://careers.geaerospace.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~24; no separate India site found"
+ },
+ {
+  "company": "GE Vernova",
+  "provider": "workday",
+  "board": "gevernova.wd5/Vernova_ExternalSite",
+  "careersUrl": "https://careers.gevernova.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~210; no separate India site found"
+ },
+ {
+  "company": "Boeing",
+  "provider": "workday",
+  "board": "boeing.wd1/EXTERNAL_CAREERS",
+  "careersUrl": "https://jobs.boeing.com",
+  "ats": "Workday",
+  "note": "India jobs in facets: 7; no separate India site found"
+ },
+ {
+  "company": "Airbus",
+  "provider": "workday",
+  "board": "ag.wd3/Airbus",
+  "careersUrl": "https://www.airbus.com/en/careers",
+  "ats": "Workday",
+  "note": "total may be capped at 2000. India jobs in facets: 233-273; no separate India site found"
+ },
+ {
+  "company": "Citi",
+  "provider": "workday",
+  "board": "citi.wd5/2",
+  "careersUrl": "https://jobs.citi.com",
+  "ats": "Workday",
+  "note": "site id is literally '2'; total may be capped at 2000. India jobs in facets: 922; no separate India site found"
+ },
+ {
+  "company": "Barclays",
+  "provider": "workday",
+  "board": "barclays.wd3/External_Career_Site_Barclays",
+  "careersUrl": "https://search.jobs.barclays",
+  "ats": "Workday",
+  "note": "India jobs in facets: ~155; no separate India site found"
+ },
+ {
+  "company": "Visa",
+  "provider": "workday",
+  "board": "visa.wd5/Visa",
+  "careersUrl": "https://corporate.visa.com/en/jobs",
+  "ats": "Workday",
+  "note": "India jobs in facets: 96; no separate India site found"
+ },
+ {
+  "company": "Accenture",
+  "provider": "workday",
+  "board": "accenture.wd103/AccentureCareers",
+  "careersUrl": "https://www.accenture.com/in-en/careers",
+  "ats": "Workday",
+  "note": "total may be capped at 2000. India jobs in facets: 35116 (location facet); no separate India site found"
+ },
+ {
+  "company": "Zscaler",
+  "provider": "greenhouse",
+  "board": "zscaler",
+  "careersUrl": "https://www.zscaler.com/careers",
+  "ats": "Greenhouse"
+ },
+ {
+  "company": "Okta",
+  "provider": "greenhouse",
+  "board": "okta",
+  "careersUrl": "https://www.okta.com/company/careers",
+  "ats": "Greenhouse"
+ },
+ {
+  "company": "Razorpay",
+  "provider": "greenhouse",
+  "board": "razorpaysoftwareprivatelimited",
+  "careersUrl": "https://razorpay.com/jobs",
+  "ats": "Greenhouse"
+ },
+ {
+  "company": "Snowflake",
+  "provider": "ashby",
+  "board": "snowflake",
+  "careersUrl": "https://careers.snowflake.com",
+  "ats": "Ashby"
+ },
+ {
+  "company": "Paytm",
+  "provider": "lever",
+  "board": "paytm",
+  "careersUrl": "https://paytm.com/careers",
+  "ats": "Lever"
+ },
+ {
+  "company": "CRED",
+  "provider": "lever",
+  "board": "cred",
+  "careersUrl": "https://careers.cred.club",
+  "ats": "Lever"
+ },
+ {
+  "company": "Meesho",
+  "provider": "lever",
+  "board": "meesho",
+  "careersUrl": "https://www.meesho.io/careers",
+  "ats": "Lever"
+ },
+ {
+  "company": "ServiceNow",
+  "provider": "smartrecruiters",
+  "board": "ServiceNow",
+  "careersUrl": "https://careers.servicenow.com",
+  "ats": "SmartRecruiters"
+ },
+ {
+  "company": "Freshworks",
+  "provider": "smartrecruiters",
+  "board": "Freshworks",
+  "careersUrl": "https://www.freshworks.com/company/careers",
+  "ats": "SmartRecruiters"
+ },
+ {
+  "company": "Thoughtworks",
+  "provider": "greenhouse",
+  "board": "thoughtworks",
+  "careersUrl": "https://www.thoughtworks.com/careers",
+  "ats": "Greenhouse"
+ },
+ {
+  "company": "Bosch",
+  "provider": "smartrecruiters",
+  "board": "BoschGroup",
+  "careersUrl": "https://www.bosch.com/careers",
+  "ats": "SmartRecruiters"
+ },
+ {
+  "company": "Western Digital",
+  "provider": "smartrecruiters",
+  "board": "WesternDigital",
+  "careersUrl": "https://www.westerndigital.com/careers",
+  "ats": "SmartRecruiters"
+ },
+ {
+  "company": "Arista",
+  "provider": "smartrecruiters",
+  "board": "AristaNetworks",
+  "careersUrl": "https://www.arista.com/en/careers",
+  "ats": "SmartRecruiters"
+ },
+ {
+  "company": "Palo Alto Networks",
+  "provider": "workday",
+  "board": "paloaltonetworks.wd5/panwexternalcareers",
+  "careersUrl": "https://jobs.paloaltonetworks.com",
+  "ats": "Workday",
+  "note": "jobs.paloaltonetworks.com is a front-end over this Workday site. India jobs in facets: ~120; no separate India site found"
+ },
+ {
+  "company": "Wells Fargo",
+  "provider": "workday",
+  "board": "wf.wd1/WellsFargoJobs",
+  "careersUrl": "https://www.wellsfargojobs.com",
+  "ats": "Workday",
+  "note": "also served at wd1.myworkdaysite.com/recruiting/wf/WellsFargoJobs. India jobs in facets: 97; no separate India site found"
+ },
+ {
+  "company": "Deloitte",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://apply.deloitte.com",
+  "ats": "Avature",
+  "note": "US/global apply.deloitte.com"
+ },
+ {
+  "company": "EY",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.ey.com",
+  "ats": "SuccessFactors"
+ },
+ {
+  "company": "Wipro",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.wipro.com",
+  "ats": "SuccessFactors"
+ },
+ {
+  "company": "HCLTech",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.hcltech.com",
+  "ats": "SuccessFactors"
+ },
+ {
+  "company": "Globant",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://career.globant.com",
+  "ats": "SuccessFactors",
+  "note": "SmartRecruiters 'Globant' returns 0"
+ },
+ {
+  "company": "BCG",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.bcg.com",
+  "ats": "Phenom"
+ },
+ {
+  "company": "Texas Instruments",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.ti.com",
+  "ats": "Oracle Cloud HCM"
+ },
+ {
+  "company": "Dell",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.dell.com",
+  "ats": "Oracle Cloud HCM",
+  "note": "redirects to enterpriseplatform.dell.com/hcmUI"
+ },
+ {
+  "company": "Seagate",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://seagatecareers.com",
+  "ats": "SuccessFactors",
+  "note": "SuccessFactors RMK job URLs"
+ },
+ {
+  "company": "Qualcomm",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.qualcomm.com",
+  "ats": "Eightfold"
+ },
+ {
+  "company": "Lam Research",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.lamresearch.com",
+  "ats": "Eightfold"
+ },
+ {
+  "company": "AMD",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.amd.com",
+  "ats": "iCIMS"
+ },
+ {
+  "company": "Synopsys",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.synopsys.com",
+  "ats": "Avature"
+ },
+ {
+  "company": "Capgemini",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.capgemini.com/careers/join-capgemini/job-search/",
+  "ats": "own"
+ },
+ {
+  "company": "Cognizant",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.cognizant.com",
+  "ats": "own"
+ },
+ {
+  "company": "Tech Mahindra",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.techmahindra.com",
+  "ats": "own"
+ },
+ {
+  "company": "LTIMindtree",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.ltm.com/careers",
+  "ats": "RippleHire",
+  "note": "rebranded LTM; jobs on ltm.ripplehire.com"
+ },
+ {
+  "company": "NetApp",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.netapp.com",
+  "ats": "Eightfold"
+ },
+ {
+  "company": "Ericsson",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.ericsson.com",
+  "ats": "Eightfold"
+ },
+ {
+  "company": "Nokia",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.nokia.com",
+  "ats": "Oracle Cloud HCM"
+ },
+ {
+  "company": "HSBC",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://mycareer.hsbc.com",
+  "ats": "Avature"
+ },
+ {
+  "company": "Intuit",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.intuit.com",
+  "ats": "Avature",
+  "note": "Radancy front-end, Avature apply"
+ },
+ {
+  "company": "Fortinet",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.fortinet.com/corporate/careers",
+  "ats": "Oracle Cloud HCM"
+ },
+ {
+  "company": "Honeywell",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.honeywell.com",
+  "ats": "Oracle Cloud HCM"
+ },
+ {
+  "company": "American Express",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.americanexpress.com/en-us/careers/",
+  "ats": "Oracle Cloud HCM / Eightfold"
+ },
+ {
+  "company": "Atlassian",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.atlassian.com/company/careers/all-jobs",
+  "ats": "iCIMS",
+  "note": "Lever 'atlassian' not found"
+ },
+ {
+  "company": "PhonePe",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.phonepe.com/careers/job-openings/",
+  "ats": "own",
+  "note": "Greenhouse 'phonepe' board returns 404"
+ },
+ {
+  "company": "Walmart Global Tech",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.walmart.com",
+  "ats": "own",
+  "note": "own front-end; Workday tenant walmart.wd5 exists but public site id not found (WalmartExternal 422)"
+ },
+ {
+  "company": "SanDisk",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.sandisk.com/careers/jobs-at-sandisk",
+  "ats": "Avature",
+  "note": "avature.sandisk.com; SmartRecruiters 'Sandisk' returns 0"
+ },
+ {
+  "company": "Arm",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.arm.com",
+  "ats": "iCIMS",
+  "note": "Radancy front-end; apply at experienced-arm.icims.com"
+ },
+ {
+  "company": "MediaTek",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.mediatek.com",
+  "ats": "own"
+ },
+ {
+  "company": "Infineon",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.infineon.com/careers",
+  "ats": "Eightfold",
+  "note": "SmartRecruiters 'Infineon' returns 0"
+ },
+ {
+  "company": "KPMG",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.kpmguscareers.com",
+  "ats": "own",
+  "note": "KPMG US: own site; KPMG India (kpmg.com/in careers) uses Oracle Cloud HCM"
+ },
+ {
+  "company": "IBM",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.ibm.com/careers/search",
+  "ats": "Avature",
+  "note": "careers.ibm.com /en_US/careers is Avature; returned 202 bot check"
+ },
+ {
+  "company": "Infosys",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://career.infosys.com",
+  "ats": "own",
+  "note": "careers page 403 to curl"
+ },
+ {
+  "company": "TCS",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://ibegin.tcs.com",
+  "ats": "own",
+  "note": "TCS iBegin; tcs.com 403 to curl"
+ },
+ {
+  "company": "EPAM",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.epam.com/careers",
+  "ats": "own",
+  "note": "403 to curl"
+ },
+ {
+  "company": "McKinsey",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.mckinsey.com/careers/search-jobs",
+  "ats": "own",
+  "note": "site blocked curl"
+ },
+ {
+  "company": "Bain",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.bain.com/careers/find-a-role/",
+  "ats": "own",
+  "note": "JS-driven own job search"
+ },
+ {
+  "company": "Microsoft",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://apply.careers.microsoft.com",
+  "ats": "Eightfold"
+ },
+ {
+  "company": "Google",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.google.com/about/careers/applications/jobs/results",
+  "ats": "own",
+  "note": "well-known own system; not probed"
+ },
+ {
+  "company": "Amazon",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.amazon.jobs",
+  "ats": "own",
+  "note": "well-known own system; not probed"
+ },
+ {
+  "company": "Apple",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.apple.com",
+  "ats": "own",
+  "note": "well-known own system; not probed"
+ },
+ {
+  "company": "Meta",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.metacareers.com",
+  "ats": "own",
+  "note": "well-known own system; not probed"
+ },
+ {
+  "company": "Oracle",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.oracle.com",
+  "ats": "Oracle Cloud HCM",
+  "note": "not probed; Oracle's own product"
+ },
+ {
+  "company": "SAP",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.sap.com",
+  "ats": "SuccessFactors",
+  "note": "not probed; SAP's own product"
+ },
+ {
+  "company": "Uber",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.uber.com/careers",
+  "ats": "own",
+  "note": "406 to curl"
+ },
+ {
+  "company": "Flipkart",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.flipkartcareers.com",
+  "ats": "TurboHire",
+  "note": "flipkart.turbohire.co"
+ },
+ {
+  "company": "Zomato",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.eternal.com/careers/",
+  "ats": "own",
+  "note": "zomato.com/careers redirects to Eternal careers"
+ },
+ {
+  "company": "Zoho",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.zohocorp.com",
+  "ats": "Zoho Recruit"
+ },
+ {
+  "company": "Goldman Sachs",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://higher.gs.com",
+  "ats": "own"
+ },
+ {
+  "company": "JPMorgan Chase",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.jpmorgan.com",
+  "ats": "Oracle Cloud HCM",
+  "note": "site CX_1001"
+ },
+ {
+  "company": "Morgan Stanley",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://www.morganstanley.com/careers/career-opportunities-search",
+  "ats": "Eightfold"
+ },
+ {
+  "company": "Deutsche Bank",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://careers.db.com",
+  "ats": "own"
+ },
+ {
+  "company": "UBS",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.ubs.com",
+  "ats": "own",
+  "note": "403 to curl"
+ },
+ {
+  "company": "Siemens",
+  "provider": "unsupported",
+  "board": null,
+  "careersUrl": "https://jobs.siemens.com",
+  "ats": "Avature"
+ },
+ {
+  "company": "Canva",
+  "provider": "smartrecruiters",
+  "board": "Canva",
+  "careersUrl": "https://www.canva.com/careers/"
+ },
+ {
+  "company": "Wise",
+  "provider": "smartrecruiters",
+  "board": "Wise",
+  "careersUrl": "https://wise.jobs/"
+ },
+ {
+  "company": "Delivery Hero",
+  "provider": "smartrecruiters",
+  "board": "DeliveryHero",
+  "careersUrl": "https://careers.deliveryhero.com/"
+ },
+ {
+  "company": "Grab",
+  "provider": "smartrecruiters",
+  "board": "Grab",
+  "careersUrl": "https://www.grab.careers/"
+ },
+ {
+  "company": "Swiggy",
+  "provider": "smartrecruiters",
+  "board": "Swiggy",
+  "careersUrl": "https://careers.swiggy.com/"
+ },
+ {
+  "company": "Unacademy",
+  "provider": "smartrecruiters",
+  "board": "Unacademy"
+ },
+ {
+  "company": "Ixigo",
+  "provider": "smartrecruiters",
+  "board": "Ixigo"
+ },
+ {
+  "company": "Wayfair",
+  "provider": "smartrecruiters",
+  "board": "Wayfair",
+  "careersUrl": "https://www.aboutwayfair.com/careers"
+ },
+ {
+  "company": "Whatfix",
+  "provider": "smartrecruiters",
+  "board": "Whatfix"
+ },
+ {
+  "company": "Cars24",
+  "provider": "smartrecruiters",
+  "board": "Cars24"
+ }
+]

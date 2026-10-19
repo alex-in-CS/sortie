@@ -2,9 +2,13 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import mammoth from "mammoth";
+import type * as z from "zod";
 import { ParsedResume } from "./schema";
 
+// Opus for work where quality decides the outcome (reading a resume, tailoring,
+// the truth check); Sonnet for the per-job review that runs many times a day (D-035).
 export const MODEL = process.env.SORTIE_MODEL ?? "claude-opus-5-5";
+export const BULK_MODEL = process.env.SORTIE_BULK_MODEL ?? "claude-sonnet-5-5";
 
 export const hasApiKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
 
@@ -44,29 +48,55 @@ async function resumeContent(file: ResumeFile): Promise<Anthropic.Beta.BetaConte
   return { type: "text", text: `<resume filename="${file.filename}">\n${text}\n</resume>` };
 }
 
-export async function parseResume(file: ResumeFile): Promise<ParsedResume> {
+export type StructuredRequest<S extends z.ZodType> = {
+  model: string;
+  system: string;
+  // Cached across calls: the part of the prompt that repeats (the profile).
+  context?: string;
+  content: Anthropic.Beta.BetaContentBlockParam[];
+  schema: S;
+  effort: "low" | "medium" | "high";
+  maxTokens: number;
+  // For error messages: "read this file", "review this job"…
+  task: string;
+};
+
+// One structured call: the answer is parsed against the zod schema, and every
+// way it can come back unusable becomes an LlmError with a plain message.
+export async function structured<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z.infer<S>> {
   if (!hasApiKey()) throw new LlmError("Add ANTHROPIC_API_KEY to .env.local first.");
 
+  const system: Anthropic.Beta.BetaTextBlockParam[] = [{ type: "text", text: req.system }];
+  if (req.context) system.push({ type: "text", text: req.context, cache_control: { type: "ephemeral" } });
+
   const response = await anthropic().beta.messages.parse({
-    model: MODEL,
-    max_tokens: 16000,
-    system: RESUME_SYSTEM,
-    output_config: { effort: "medium", format: betaZodOutputFormat(ParsedResume) },
+    model: req.model,
+    max_tokens: req.maxTokens,
+    system,
+    output_config: { effort: req.effort, format: betaZodOutputFormat(req.schema) },
     // Re-run on a fallback model if a safety classifier declines the request.
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
-    messages: [
-      {
-        role: "user",
-        content: [await resumeContent(file), { type: "text", text: "Extract this resume." }],
-      },
-    ],
+    messages: [{ role: "user", content: req.content }],
   });
 
-  if (response.stop_reason === "refusal") throw new LlmError("Claude declined to read this file.");
-  if (response.stop_reason === "max_tokens") throw new LlmError("The resume was too long to read in one pass.");
-  if (!response.parsed_output) throw new LlmError("Claude's answer didn't match the profile format.");
-  return response.parsed_output;
+  if (response.stop_reason === "refusal") throw new LlmError(`Claude declined to ${req.task}.`);
+  if (response.stop_reason === "max_tokens") throw new LlmError(`The answer was too long to ${req.task} in one pass.`);
+  if (!response.parsed_output) throw new LlmError(`Claude's answer didn't match the expected format (${req.task}).`);
+  return response.parsed_output as z.infer<S>;
+}
+
+export async function parseResume(file: ResumeFile): Promise<ParsedResume> {
+  if (!hasApiKey()) throw new LlmError("Add ANTHROPIC_API_KEY to .env.local first.");
+  return structured({
+    model: MODEL,
+    system: RESUME_SYSTEM,
+    content: [await resumeContent(file), { type: "text", text: "Extract this resume." }],
+    schema: ParsedResume,
+    effort: "medium",
+    maxTokens: 16000,
+    task: "read this file",
+  });
 }
 
 export function describeError(err: unknown): string {

@@ -2,14 +2,15 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Loading, PageHeader } from "@/components/ui";
-import { MODEL, hasApiKey } from "@/lib/llm";
+import { applicationCounts } from "@/lib/applications";
+import { jobCounts, lastTask, listCompanies } from "@/lib/jobs";
+import { BULK_MODEL, MODEL, hasApiKey } from "@/lib/llm";
+import { formatCount, formatDateTime } from "@/lib/format";
 import { answersStore, getProfile, latestDocument, preferencesStore, searchesStore } from "@/lib/store";
 
 type Step = { done: boolean; title: string; detail: string; href?: string; cta?: string };
 
 const ROADMAP = [
-  ["Jobs", "Check ~250 companies' career sites every 2 hours, plus discovery of new ones, and score each job against your skills."],
-  ["Tailoring", "A resume and cover letter per job, built only from your profile, exported as PDF."],
   ["Applying", "Auto-submit where forms allow, a browser extension that fills Workday-style portals for your click, a kanban tracker, and answers learned from your edits."],
   ["Inbox", "Read Gmail (read-only), match replies to applications and move them on the board: rejection, next round, interview."],
   ["Telegram", "Pings only when something needs you, a daily recap, and approve-from-phone."],
@@ -32,7 +33,7 @@ export default function Overview() {
           {ROADMAP.map(([title, text], i) => (
             <li key={title} className="rounded-lg border border-dashed border-line px-4 py-3">
               <p className="text-sm font-medium">
-                <span className="mr-2 font-mono text-xs text-faint">0{i + 2}</span>
+                <span className="mr-2 font-mono text-xs text-faint">0{i + 4}</span>
                 {title}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">{text}</p>
@@ -52,13 +53,19 @@ async function Setup() {
   const { value: answers, updatedAt: answersSaved } = answersStore.get();
   const running = searchesSaved ? searches.filter((s) => s.enabled) : [];
   const resume = latestDocument("resume");
+  const fetched = lastTask("fetch", "done");
+  const jobs = jobCounts();
+  const boards = listCompanies().filter((c) => c.enabled).length;
+  const apps = applicationCounts();
+  const ready = apps.ready ?? 0;
+  const preparing = (apps.queued ?? 0) + (apps.tailoring ?? 0);
 
   const steps: Step[] = [
     {
       done: hasApiKey(),
       title: "Anthropic API key",
       detail: hasApiKey()
-        ? `Set. Using ${MODEL}.`
+        ? `Set. ${MODEL} tailors and checks; ${BULK_MODEL} reviews jobs.`
         : "Add ANTHROPIC_API_KEY to .env.local and restart the dev server.",
     },
     {
@@ -111,6 +118,25 @@ async function Setup() {
       detail: prefsSaved ? "Saved." : "Pick locations, work authorization and limits.",
       href: "/preferences",
       cta: prefsSaved ? "Edit" : "Set up",
+    },
+    {
+      done: Boolean(fetched),
+      title: "Job feeds",
+      detail: fetched?.finished_at
+        ? `${formatCount(jobs.open)} open jobs from ${boards} companies. Last fetched ${formatDateTime(fetched.finished_at)}.`
+        : "Run npm run worker (or npm run fetch) to pull jobs from the company list.",
+      href: fetched ? "/jobs" : "/companies",
+      cta: fetched ? "See jobs" : "Companies",
+    },
+    {
+      done: ready > 0,
+      title: "Tailored applications",
+      detail:
+        ready || preparing || apps.needs_you
+          ? `${ready} ready${preparing ? `, ${preparing} being prepared` : ""}${apps.needs_you ? `, ${apps.needs_you} need you` : ""}.`
+          : "After a cycle, jobs that clear your bar get a tailored, fact-checked resume and cover letter.",
+      href: "/applications",
+      cta: "Open",
     },
   ];
   const doneCount = steps.filter((s) => s.done).length;

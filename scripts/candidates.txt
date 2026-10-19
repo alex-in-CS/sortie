@@ -1,0 +1,328 @@
+# Candidate companies for the registry. One per line: "Name | slug, slug" (slugs optional).
+# scripts/verify-registry.ts probes Greenhouse, Ashby and Lever with these slugs (or ones
+# derived from the name), keeps a board only if a live call returns jobs including at least
+# one software role, and writes src/lib/registry/companies.json. Big enterprises on Workday or
+# SmartRecruiters are in scripts/enterprise.json (found and verified by hand, see docs/research.md).
+#
+# --- Global product and infrastructure companies ---
+Stripe
+Airbnb
+Dropbox
+Databricks
+Cloudflare
+Coinbase
+Robinhood
+Lyft
+Pinterest
+Reddit
+Discord
+Figma
+GitLab
+Twilio
+Datadog
+MongoDB
+Elastic
+Okta
+Asana
+Instacart
+DoorDash | doordashusa, doordash
+Roblox
+Gusto
+Brex
+Chime
+Plaid
+Affirm
+Samsara
+Toast
+Airtable
+Duolingo
+Grammarly
+Anthropic
+Scale AI | scaleai
+Confluent
+HashiCorp
+PagerDuty
+New Relic | newrelic
+Fastly
+Vercel
+Netlify
+Postman
+Canva
+Miro
+Intercom
+HubSpot
+Squarespace
+Etsy
+Wayfair
+Spotify
+Webflow
+Zapier
+Mercury
+Rippling
+Deel
+Retool
+Sourcegraph
+Temporal | temporaltechnologies, temporal
+Cockroach Labs | cockroachlabs
+PlanetScale
+Supabase
+Neon | neondatabase
+Grafana Labs | grafanalabs
+Sentry
+LaunchDarkly
+CircleCI
+JFrog
+Snyk
+1Password | 1password
+Tailscale
+Twitch
+Unity | unity3d, unity
+Epic Games | epicgames
+Riot Games | riotgames
+Niantic
+Revolut
+Monzo
+Wise | transferwise, wise
+N26
+Klarna
+Checkout.com | checkoutcom, checkout
+Adyen
+Delivery Hero | deliveryhero
+Zalando
+HelloFresh | hellofresh
+Celonis
+Personio
+GetYourGuide | getyourguide
+Mollie
+Bitpanda
+Trade Republic | traderepublic, traderepublicbank
+Sumo Logic | sumologic
+Box | boxinc
+DocuSign
+Block | block, squareup
+Nextdoor
+Quora
+Yelp
+Thumbtack
+Faire
+Flexport
+Gopuff
+Nuro
+Aurora | aurorainnovation
+Waymo
+Zoox
+Anduril
+Palantir
+SpaceX
+Rivian
+Cohere
+Mistral AI | mistral
+Hugging Face | huggingface
+Perplexity | perplexity, perplexityai
+OpenAI | openai
+Character.AI | character
+Runway | runwayml
+Stability AI | stabilityai
+Weights & Biases | wandb
+Pinecone
+Replit
+Cursor | anysphere, cursor
+Cognition | cognition
+Harvey
+Ramp
+Linear
+Vanta
+Drata
+Clay | claylabs
+Watershed | watershedclimate
+Benchling
+Flatiron Health | flatironhealth
+Oscar Health | oscar, oscarhealth
+Calm
+Headspace
+Coursera
+Udemy
+Khan Academy | khanacademy
+Quizlet
+Loom
+Calendly
+Typeform
+Qualtrics
+Amplitude
+Mixpanel
+Braze
+Iterable
+Klaviyo
+Attentive | attentive
+Sprout Social | sproutsocial
+Contentful
+Sanity | sanity
+Algolia
+Agora | agora
+Bandwidth
+Hopper
+Tripadvisor
+Skyscanner
+Agoda
+Grab
+Carousell
+Ninja Van | ninjavan
+Xendit
+Notion
+Lattice
+Gong
+Glean | gleanwork
+Snorkel AI | snorkelai
+Anyscale
+Modal | modal
+Fivetran
+dbt Labs | dbtlabsinc, dbtlabs
+Airbyte
+Redpanda | redpandadata
+ClickHouse
+SingleStore
+Starburst | starburstdata, starburst
+MotherDuck | motherduck
+Weaviate
+Zilliz
+Imply
+Chainguard
+Wiz | wizinc
+Abnormal Security | abnormalsecurity
+Arctic Wolf | arcticwolf
+Huntress
+Rubrik
+Nutanix
+Cohesity
+Druva
+Netskope
+Illumio
+Lacework
+Sysdig
+Mux
+Twilio Segment | segment
+Dialpad
+Front | frontapp
+Pendo | pendo
+Gainsight
+Outreach | outreach
+Highspot
+Seismic
+Coupa
+Toptal
+Turing
+Andela
+Remote | remote, remotecom
+Oyster | oysterhr
+Doist
+Automattic
+GitHub
+Atlassian
+Shopify
+Expensify
+Zocdoc
+Nubank
+Mercado Libre | mercadolibre
+Rappi
+Kavak
+# --- India ---
+Razorpay
+Groww
+Zepto
+Meesho
+Unacademy
+Dream11 | dreamsports, dream11
+Sprinklr
+InMobi
+PhonePe
+Freshworks
+Chargebee
+Hasura
+Atlan
+BrowserStack
+Swiggy
+Zomato | zomato, eternal
+CRED | cred, dreamplug
+Paytm
+Ola | olacabs, ola
+Rapido
+Urban Company | urbancompany
+ShareChat | sharechat, mohalla
+Slice | sliceit
+Jupiter | jupitermoney
+Khatabook
+Zerodha
+upGrad | upgrad
+PhysicsWallah | physicswallah
+Licious
+Nykaa
+Lenskart
+Myntra
+Flipkart
+Delhivery
+Shiprocket
+Darwinbox
+Whatfix
+MindTickle
+Innovaccer
+Hevo Data | hevodata
+LambdaTest
+Zeta | zeta, zetasuite
+Juspay
+M2P Fintech | m2pfintech
+Setu | setu
+Ather Energy | atherenergy
+Ultrahuman
+Groww
+Postman
+CleverTap
+MoEngage
+WebEngage
+Druva
+Icertis
+Capillary Technologies | capillarytech
+Uniphore
+Yellow.ai | yellowai
+Gupshup
+Exotel
+Increff
+Fyle
+Rocketlane
+Spinny
+CarDekho
+Cars24
+PolicyBazaar | policybazaar
+Acko
+Digit Insurance | godigit
+Smallcase
+INDmoney | indmoney
+Jar | jar
+Fampay
+Pocket FM | pocketfm
+Kuku FM | kukufm
+Classplus
+Scaler | scaler, interviewbit
+Simplilearn
+Eruditus
+Testbook
+Vedantu
+OYO | oyo, oyorooms
+MakeMyTrip | makemytrip
+Ixigo
+BigBasket
+Udaan
+Zetwerk
+Ofbusiness
+Infra.Market | inframarket
+Park+ | parkplus
+Pine Labs | pinelabs
+BharatPe
+MobiKwik
+Cashfree
+PayU
+Lentra
+Perfios
+Signzy
+HyperVerge
+Sarvam AI | sarvam
+Krutrim

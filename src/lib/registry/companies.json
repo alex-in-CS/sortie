@@ -1,0 +1,2413 @@
+{
+ "verifiedAt": "2026-10-19T11:22:51.809Z",
+ "companies": [
+  {
+   "name": "1Password",
+   "provider": "ashby",
+   "board": "1password",
+   "careersUrl": null,
+   "jobs": 75,
+   "softwareJobs": 24,
+   "sample": "https://jobs.ashbyhq.com/1password/6f78b170-9600-4b2d-9682-feead160100d"
+  },
+  {
+   "name": "Abnormal Security",
+   "provider": "greenhouse",
+   "board": "abnormalsecurity",
+   "careersUrl": null,
+   "jobs": 85,
+   "softwareJobs": 27,
+   "sample": "https://abnormal.ai/careers/jobs/8017129003?gh_jid=8017129003"
+  },
+  {
+   "name": "Accenture",
+   "provider": "workday",
+   "board": "accenture.wd103/AccentureCareers",
+   "careersUrl": "https://www.accenture.com/in-en/careers",
+   "jobs": 100,
+   "softwareJobs": 30,
+   "sample": "https://accenture.wd103.myworkdayjobs.com/AccentureCareers/job/Vilnius/Junior-AI-Native-Engineer_R00346490"
+  },
+  {
+   "name": "Adobe",
+   "provider": "workday",
+   "board": "adobe.wd5/external_experienced",
+   "careersUrl": "https://careers.adobe.com",
+   "jobs": 100,
+   "softwareJobs": 36,
+   "sample": "https://adobe.wd5.myworkdayjobs.com/external_experienced/job/San-Jose/Sr-Manager-Risk---Controls_R172265"
+  },
+  {
+   "name": "Adyen",
+   "provider": "greenhouse",
+   "board": "adyen",
+   "careersUrl": null,
+   "jobs": 250,
+   "softwareJobs": 74,
+   "sample": "https://job-boards.greenhouse.io/adyen/jobs/7586281"
+  },
+  {
+   "name": "Affirm",
+   "provider": "greenhouse",
+   "board": "affirm",
+   "careersUrl": null,
+   "jobs": 214,
+   "softwareJobs": 133,
+   "sample": "https://job-boards.greenhouse.io/affirm/jobs/7850544003"
+  },
+  {
+   "name": "Agoda",
+   "provider": "greenhouse",
+   "board": "agoda",
+   "careersUrl": null,
+   "jobs": 319,
+   "softwareJobs": 58,
+   "sample": "https://job-boards.greenhouse.io/agoda/jobs/8184766"
+  },
+  {
+   "name": "Airbnb",
+   "provider": "greenhouse",
+   "board": "airbnb",
+   "careersUrl": null,
+   "jobs": 172,
+   "softwareJobs": 63,
+   "sample": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
+  },
+  {
+   "name": "Airbus",
+   "provider": "workday",
+   "board": "ag.wd3/Airbus",
+   "careersUrl": "https://www.airbus.com/en/careers",
+   "jobs": 100,
+   "softwareJobs": 18,
+   "sample": "https://ag.wd3.myworkdayjobs.com/Airbus/job/CPO---Copenhagen-Office/S-OP-Project-Manager_JR10451277"
+  },
+  {
+   "name": "Airbyte",
+   "provider": "ashby",
+   "board": "airbyte",
+   "careersUrl": null,
+   "jobs": 13,
+   "softwareJobs": 7,
+   "sample": "https://jobs.ashbyhq.com/airbyte/efe55756-f28b-4030-b9a0-539f6c8ed8ff"
+  },
+  {
+   "name": "Algolia",
+   "provider": "greenhouse",
+   "board": "algolia",
+   "careersUrl": null,
+   "jobs": 37,
+   "softwareJobs": 15,
+   "sample": "https://job-boards.greenhouse.io/algolia/jobs/6141481004"
+  },
+  {
+   "name": "Amplitude",
+   "provider": "ashby",
+   "board": "amplitude",
+   "careersUrl": null,
+   "jobs": 40,
+   "softwareJobs": 18,
+   "sample": "https://jobs.ashbyhq.com/amplitude/548cba17-0fb9-437f-83a8-021c4be3b664"
+  },
+  {
+   "name": "Analog Devices",
+   "provider": "workday",
+   "board": "analogdevices.wd1/External",
+   "careersUrl": "https://www.analog.com/en/about-adi/careers.html",
+   "jobs": 100,
+   "softwareJobs": 66,
+   "sample": "https://analogdevices.wd1.myworkdayjobs.com/External/job/United-Kingdom-Newbury/Analog-Mixed-Signal-Design-Intern_R267108"
+  },
+  {
+   "name": "Andela",
+   "provider": "ashby",
+   "board": "andela",
+   "careersUrl": null,
+   "jobs": 16,
+   "softwareJobs": 3,
+   "sample": "https://jobs.ashbyhq.com/andela/9829c4f1-548f-4ef9-b4a2-c0ba2e11b90c"
+  },
+  {
+   "name": "Anthropic",
+   "provider": "greenhouse",
+   "board": "anthropic",
+   "careersUrl": null,
+   "jobs": 659,
+   "softwareJobs": 297,
+   "sample": "https://job-boards.greenhouse.io/anthropic/jobs/4461450008"
+  },
+  {
+   "name": "Anyscale",
+   "provider": "ashby",
+   "board": "anyscale",
+   "careersUrl": null,
+   "jobs": 20,
+   "softwareJobs": 17,
+   "sample": "https://jobs.ashbyhq.com/anyscale/02698dc0-9416-425f-a13d-0938ffd229a8"
+  },
+  {
+   "name": "Applied Materials",
+   "provider": "workday",
+   "board": "amat.wd1/External",
+   "careersUrl": "https://careers.appliedmaterials.com",
+   "jobs": 100,
+   "softwareJobs": 49,
+   "sample": "https://amat.wd1.myworkdayjobs.com/External/job/SingaporeSGP/FEP-Manufacturing-Engineer_R2611165"
+  },
+  {
+   "name": "Arista",
+   "provider": "smartrecruiters",
+   "board": "AristaNetworks",
+   "careersUrl": "https://www.arista.com/en/careers",
+   "jobs": 100,
+   "softwareJobs": 54,
+   "sample": "https://jobs.smartrecruiters.com/AristaNetworks/744000156084974"
+  },
+  {
+   "name": "Asana",
+   "provider": "greenhouse",
+   "board": "asana",
+   "careersUrl": null,
+   "jobs": 105,
+   "softwareJobs": 48,
+   "sample": "https://www.asana.com/jobs/apply/8165477?gh_jid=8165477"
+  },
+  {
+   "name": "Atlan",
+   "provider": "ashby",
+   "board": "atlan",
+   "careersUrl": null,
+   "jobs": 7,
+   "softwareJobs": 2,
+   "sample": "https://jobs.ashbyhq.com/atlan/254c1250-953b-4323-8d18-9fe5e41d8d7d"
+  },
+  {
+   "name": "Attentive",
+   "provider": "greenhouse",
+   "board": "attentive",
+   "careersUrl": null,
+   "jobs": 27,
+   "softwareJobs": 16,
+   "sample": "https://job-boards.greenhouse.io/attentive/jobs/4443888009"
+  },
+  {
+   "name": "Autodesk",
+   "provider": "workday",
+   "board": "autodesk.wd1/Ext",
+   "careersUrl": "https://www.autodesk.com/careers",
+   "jobs": 100,
+   "softwareJobs": 33,
+   "sample": "https://autodesk.wd1.myworkdayjobs.com/Ext/job/United-Kingdom---Remote/Intern--Research---Context-and-Knowledge-Systems-for-AI_26WD101097-2"
+  },
+  {
+   "name": "Bandwidth",
+   "provider": "greenhouse",
+   "board": "bandwidth",
+   "careersUrl": null,
+   "jobs": 24,
+   "softwareJobs": 7,
+   "sample": "https://job-boards.greenhouse.io/bandwidth/jobs/8244478"
+  },
+  {
+   "name": "Barclays",
+   "provider": "workday",
+   "board": "barclays.wd3/External_Career_Site_Barclays",
+   "careersUrl": "https://search.jobs.barclays",
+   "jobs": 100,
+   "softwareJobs": 34,
+   "sample": "https://barclays.wd3.myworkdayjobs.com/External_Career_Site_Barclays/job/Pune-Gera-Commerzone-SEZ/Automation-Engineer_JR-0000069743"
+  },
+  {
+   "name": "Benchling",
+   "provider": "ashby",
+   "board": "benchling",
+   "careersUrl": null,
+   "jobs": 56,
+   "softwareJobs": 18,
+   "sample": "https://jobs.ashbyhq.com/benchling/63d7d126-efaf-4a48-b328-f8d85b640ebf"
+  },
+  {
+   "name": "Bitpanda",
+   "provider": "greenhouse",
+   "board": "bitpanda",
+   "careersUrl": null,
+   "jobs": 31,
+   "softwareJobs": 5,
+   "sample": "https://job-boards.eu.greenhouse.io/bitpanda/jobs/4721614101"
+  },
+  {
+   "name": "BlackRock",
+   "provider": "workday",
+   "board": "blackrock.wd1/BlackRock_Professional",
+   "careersUrl": "https://careers.blackrock.com",
+   "jobs": 100,
+   "softwareJobs": 25,
+   "sample": "https://blackrock.wd1.myworkdayjobs.com/BlackRock_Professional/job/Mumbai-India/Full-Stack-Developer--UI-UX---Portfolio-Management-Group--Analyst_R264722"
+  },
+  {
+   "name": "Block",
+   "provider": "greenhouse",
+   "board": "block",
+   "careersUrl": null,
+   "jobs": 221,
+   "softwareJobs": 47,
+   "sample": "http://block.xyz/careers/jobs/5317296008?gh_jid=5317296008"
+  },
+  {
+   "name": "Boeing",
+   "provider": "workday",
+   "board": "boeing.wd1/EXTERNAL_CAREERS",
+   "careersUrl": "https://jobs.boeing.com",
+   "jobs": 100,
+   "softwareJobs": 54,
+   "sample": "https://boeing.wd1.myworkdayjobs.com/EXTERNAL_CAREERS/job/GBR---Bristol-UK/Product-Support-Engineer---Bids-and-Growth_JR2026519432-2"
+  },
+  {
+   "name": "Bosch",
+   "provider": "smartrecruiters",
+   "board": "BoschGroup",
+   "careersUrl": "https://www.bosch.com/careers",
+   "jobs": 100,
+   "softwareJobs": 14,
+   "sample": "https://jobs.smartrecruiters.com/BoschGroup/744000156289971"
+  },
+  {
+   "name": "Box",
+   "provider": "greenhouse",
+   "board": "boxinc",
+   "careersUrl": null,
+   "jobs": 128,
+   "softwareJobs": 41,
+   "sample": "https://job-boards.greenhouse.io/boxinc/jobs/7862815"
+  },
+  {
+   "name": "Braze",
+   "provider": "greenhouse",
+   "board": "braze",
+   "careersUrl": null,
+   "jobs": 326,
+   "softwareJobs": 77,
+   "sample": "https://job-boards.greenhouse.io/braze/jobs/8141353"
+  },
+  {
+   "name": "Brex",
+   "provider": "greenhouse",
+   "board": "brex",
+   "careersUrl": null,
+   "jobs": 260,
+   "softwareJobs": 77,
+   "sample": "https://www.brex.com/careers/8871800002?gh_jid=8871800002"
+  },
+  {
+   "name": "Broadcom",
+   "provider": "workday",
+   "board": "broadcom.wd1/External_Career",
+   "careersUrl": "https://www.broadcom.com/company/careers",
+   "jobs": 100,
+   "softwareJobs": 68,
+   "sample": "https://broadcom.wd1.myworkdayjobs.com/External_Career/job/IND-Bangalore-Electronic-City---S1/Identity-and-Cyber-Security-Services_R027409"
+  },
+  {
+   "name": "Cadence",
+   "provider": "workday",
+   "board": "cadence.wd1/External_Careers",
+   "careersUrl": "https://www.cadence.com/en_US/home/company/careers.html",
+   "jobs": 100,
+   "softwareJobs": 67,
+   "sample": "https://cadence.wd1.myworkdayjobs.com/External_Careers/job/VALBONNE-Sophia/Intern-Mixed-Signal-IP_R56280-1"
+  },
+  {
+   "name": "Calendly",
+   "provider": "greenhouse",
+   "board": "calendly",
+   "careersUrl": null,
+   "jobs": 9,
+   "softwareJobs": 5,
+   "sample": "https://job-boards.greenhouse.io/calendly/jobs/8464846002"
+  },
+  {
+   "name": "Canva",
+   "provider": "smartrecruiters",
+   "board": "Canva",
+   "careersUrl": "https://www.canva.com/careers/",
+   "jobs": 100,
+   "softwareJobs": 18,
+   "sample": "https://jobs.smartrecruiters.com/Canva/6000000001501262"
+  },
+  {
+   "name": "Cars24",
+   "provider": "smartrecruiters",
+   "board": "Cars24",
+   "careersUrl": null,
+   "jobs": 1,
+   "softwareJobs": 0,
+   "sample": "https://jobs.smartrecruiters.com/Cars24/743999664899164"
+  },
+  {
+   "name": "Celonis",
+   "provider": "greenhouse",
+   "board": "celonis",
+   "careersUrl": null,
+   "jobs": 199,
+   "softwareJobs": 113,
+   "sample": "https://job-boards.greenhouse.io/celonis/jobs/7887061003?gh_jid=7887061003"
+  },
+  {
+   "name": "Chainguard",
+   "provider": "greenhouse",
+   "board": "chainguard",
+   "careersUrl": null,
+   "jobs": 76,
+   "softwareJobs": 20,
+   "sample": "https://job-boards.greenhouse.io/chainguard/jobs/4676998006"
+  },
+  {
+   "name": "Character.AI",
+   "provider": "ashby",
+   "board": "character",
+   "careersUrl": null,
+   "jobs": 13,
+   "softwareJobs": 11,
+   "sample": "https://jobs.ashbyhq.com/character/13006848-6a69-4467-9274-5d54e80b965d"
+  },
+  {
+   "name": "Chime",
+   "provider": "greenhouse",
+   "board": "chime",
+   "careersUrl": null,
+   "jobs": 72,
+   "softwareJobs": 31,
+   "sample": "https://boards.greenhouse.io/chime/jobs/8869627002?gh_jid=8869627002"
+  },
+  {
+   "name": "CircleCI",
+   "provider": "greenhouse",
+   "board": "circleci",
+   "careersUrl": null,
+   "jobs": 15,
+   "softwareJobs": 6,
+   "sample": "http://www.circleci.com/careers/jobs/8801094002/?gh_jid=8801094002"
+  },
+  {
+   "name": "Cisco",
+   "provider": "workday",
+   "board": "cisco.wd5/Cisco_Careers",
+   "careersUrl": "https://jobs.cisco.com",
+   "jobs": 100,
+   "softwareJobs": 85,
+   "sample": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers/job/Calgary-Alberta-Canada/Software-Technical-Leader_2024116"
+  },
+  {
+   "name": "Citi",
+   "provider": "workday",
+   "board": "citi.wd5/2",
+   "careersUrl": "https://jobs.citi.com",
+   "jobs": 100,
+   "softwareJobs": 29,
+   "sample": "https://citi.wd5.myworkdayjobs.com/2/job/Belfast--United-Kingdom/Equity-Swap-Middle-Office-Analyst_261001223-1"
+  },
+  {
+   "name": "Clay",
+   "provider": "ashby",
+   "board": "claylabs",
+   "careersUrl": null,
+   "jobs": 58,
+   "softwareJobs": 19,
+   "sample": "https://jobs.ashbyhq.com/claylabs/c605042d-1bd4-4e0d-aa82-d92a2abecb59"
+  },
+  {
+   "name": "ClickHouse",
+   "provider": "ashby",
+   "board": "clickhouse",
+   "careersUrl": null,
+   "jobs": 199,
+   "softwareJobs": 122,
+   "sample": "https://jobs.ashbyhq.com/clickhouse/db498a8c-c8d8-405b-b86a-0943a5122e7d"
+  },
+  {
+   "name": "Cloudflare",
+   "provider": "greenhouse",
+   "board": "cloudflare",
+   "careersUrl": null,
+   "jobs": 434,
+   "softwareJobs": 222,
+   "sample": "https://boards.greenhouse.io/cloudflare/jobs/7695702?gh_jid=7695702"
+  },
+  {
+   "name": "Cockroach Labs",
+   "provider": "greenhouse",
+   "board": "cockroachlabs",
+   "careersUrl": null,
+   "jobs": 18,
+   "softwareJobs": 2,
+   "sample": "https://www.cockroachlabs.com/careers/job/?gh_jid=8230572"
+  },
+  {
+   "name": "Cognition",
+   "provider": "ashby",
+   "board": "cognition",
+   "careersUrl": null,
+   "jobs": 103,
+   "softwareJobs": 43,
+   "sample": "https://jobs.ashbyhq.com/cognition/4841bda0-057a-4471-801f-70309c3c02d5"
+  },
+  {
+   "name": "Cohere",
+   "provider": "ashby",
+   "board": "cohere",
+   "careersUrl": null,
+   "jobs": 116,
+   "softwareJobs": 51,
+   "sample": "https://jobs.ashbyhq.com/cohere/7133d205-5421-4336-a8e2-6037b5f55073"
+  },
+  {
+   "name": "Coinbase",
+   "provider": "greenhouse",
+   "board": "coinbase",
+   "careersUrl": null,
+   "jobs": 226,
+   "softwareJobs": 99,
+   "sample": "https://www.coinbase.com/careers/positions/8175363?gh_jid=8175363"
+  },
+  {
+   "name": "Contentful",
+   "provider": "greenhouse",
+   "board": "contentful",
+   "careersUrl": null,
+   "jobs": 22,
+   "softwareJobs": 4,
+   "sample": "https://job-boards.greenhouse.io/contentful/jobs/8278596"
+  },
+  {
+   "name": "Coupa",
+   "provider": "lever",
+   "board": "coupa",
+   "careersUrl": null,
+   "jobs": 38,
+   "softwareJobs": 15,
+   "sample": "https://jobs.lever.co/coupa/d17fb20e-152c-4583-9add-c8bc779f658d"
+  },
+  {
+   "name": "Coursera",
+   "provider": "greenhouse",
+   "board": "coursera",
+   "careersUrl": null,
+   "jobs": 21,
+   "softwareJobs": 11,
+   "sample": "https://job-boards.greenhouse.io/coursera/jobs/6222902004"
+  },
+  {
+   "name": "CRED",
+   "provider": "lever",
+   "board": "cred",
+   "careersUrl": "https://careers.cred.club",
+   "jobs": 9,
+   "softwareJobs": 0,
+   "sample": "https://jobs.lever.co/cred/aa98a938-af3a-45f5-851d-966b2b5bad33"
+  },
+  {
+   "name": "CrowdStrike",
+   "provider": "workday",
+   "board": "crowdstrike.wd5/crowdstrikecareers",
+   "careersUrl": "https://www.crowdstrike.com/careers",
+   "jobs": 100,
+   "softwareJobs": 46,
+   "sample": "https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers/job/USA---Sunnyvale-CA/Engineer-III--CICD---AI-Detection-and-Response--AIDR-_R27090"
+  },
+  {
+   "name": "Cursor",
+   "provider": "ashby",
+   "board": "cursor",
+   "careersUrl": null,
+   "jobs": 133,
+   "softwareJobs": 64,
+   "sample": "https://jobs.ashbyhq.com/cursor/0ec39ed7-a5dc-4551-bb26-b7f4f9fb4a74"
+  },
+  {
+   "name": "Databricks",
+   "provider": "greenhouse",
+   "board": "databricks",
+   "careersUrl": null,
+   "jobs": 898,
+   "softwareJobs": 435,
+   "sample": "https://databricks.com/company/careers/open-positions/job?gh_jid=8805655002"
+  },
+  {
+   "name": "Datadog",
+   "provider": "greenhouse",
+   "board": "datadog",
+   "careersUrl": null,
+   "jobs": 436,
+   "softwareJobs": 94,
+   "sample": "https://careers.datadoghq.com/detail/8257324/?gh_jid=8257324"
+  },
+  {
+   "name": "Delivery Hero",
+   "provider": "smartrecruiters",
+   "board": "DeliveryHero",
+   "careersUrl": "https://careers.deliveryhero.com/",
+   "jobs": 100,
+   "softwareJobs": 10,
+   "sample": "https://jobs.smartrecruiters.com/DeliveryHero/744000156286520"
+  },
+  {
+   "name": "Dialpad",
+   "provider": "greenhouse",
+   "board": "dialpad",
+   "careersUrl": null,
+   "jobs": 55,
+   "softwareJobs": 22,
+   "sample": "https://job-boards.greenhouse.io/dialpad/jobs/8880622002"
+  },
+  {
+   "name": "Discord",
+   "provider": "greenhouse",
+   "board": "discord",
+   "careersUrl": null,
+   "jobs": 47,
+   "softwareJobs": 32,
+   "sample": "https://job-boards.greenhouse.io/discord/jobs/8806482002"
+  },
+  {
+   "name": "DoorDash",
+   "provider": "greenhouse",
+   "board": "doordashusa",
+   "careersUrl": null,
+   "jobs": 455,
+   "softwareJobs": 103,
+   "sample": "https://job-boards.greenhouse.io/doordashusa/jobs/8139265"
+  },
+  {
+   "name": "Drata",
+   "provider": "ashby",
+   "board": "drata",
+   "careersUrl": null,
+   "jobs": 30,
+   "softwareJobs": 7,
+   "sample": "https://jobs.ashbyhq.com/drata/dca52941-f9c0-440b-8b49-c039f700e3f3"
+  },
+  {
+   "name": "Dropbox",
+   "provider": "greenhouse",
+   "board": "dropbox",
+   "careersUrl": null,
+   "jobs": 18,
+   "softwareJobs": 3,
+   "sample": "https://jobs.dropbox.com/listing/8159652?gh_jid=8159652"
+  },
+  {
+   "name": "Druva",
+   "provider": "greenhouse",
+   "board": "druva",
+   "careersUrl": null,
+   "jobs": 34,
+   "softwareJobs": 14,
+   "sample": "https://www.druva.com/why-druva/explore/careers/jobs/7727374002/?gh_jid=7727374002"
+  },
+  {
+   "name": "Duolingo",
+   "provider": "greenhouse",
+   "board": "duolingo",
+   "careersUrl": null,
+   "jobs": 63,
+   "softwareJobs": 23,
+   "sample": "https://careers.duolingo.com/jobs/8851677002?gh_jid=8851677002"
+  },
+  {
+   "name": "Elastic",
+   "provider": "greenhouse",
+   "board": "elastic",
+   "careersUrl": null,
+   "jobs": 380,
+   "softwareJobs": 223,
+   "sample": "https://jobs.elastic.co/jobs?gh_jid=8148720&gh_jid=8148720"
+  },
+  {
+   "name": "Epic Games",
+   "provider": "greenhouse",
+   "board": "epicgames",
+   "careersUrl": null,
+   "jobs": 134,
+   "softwareJobs": 66,
+   "sample": "https://epicgames.com/careers/jobs/6183293004?gh_jid=6183293004"
+  },
+  {
+   "name": "Faire",
+   "provider": "greenhouse",
+   "board": "faire",
+   "careersUrl": null,
+   "jobs": 79,
+   "softwareJobs": 36,
+   "sample": "https://boards.greenhouse.io/faire/jobs/8876236002?gh_jid=8876236002"
+  },
+  {
+   "name": "Fampay",
+   "provider": "lever",
+   "board": "fampay",
+   "careersUrl": null,
+   "jobs": 17,
+   "softwareJobs": 5,
+   "sample": "https://jobs.lever.co/fampay/09c9d0cd-f422-4138-a065-8d45e71d01a7"
+  },
+  {
+   "name": "Fastly",
+   "provider": "greenhouse",
+   "board": "fastly",
+   "careersUrl": null,
+   "jobs": 51,
+   "softwareJobs": 16,
+   "sample": "https://www.fastly.com/about/jobs/apply?gh_jid=8105433"
+  },
+  {
+   "name": "Figma",
+   "provider": "greenhouse",
+   "board": "figma",
+   "careersUrl": null,
+   "jobs": 140,
+   "softwareJobs": 40,
+   "sample": "https://boards.greenhouse.io/figma/jobs/5426468004?gh_jid=5426468004"
+  },
+  {
+   "name": "Fivetran",
+   "provider": "greenhouse",
+   "board": "fivetran",
+   "careersUrl": null,
+   "jobs": 177,
+   "softwareJobs": 67,
+   "sample": "https://www.fivetran.com/careers/job?gh_jid=7790795003"
+  },
+  {
+   "name": "Flatiron Health",
+   "provider": "greenhouse",
+   "board": "flatironhealth",
+   "careersUrl": null,
+   "jobs": 19,
+   "softwareJobs": 4,
+   "sample": "https://flatiron.com/careers/open-positions/job?gh_jid=8122311"
+  },
+  {
+   "name": "Flexport",
+   "provider": "greenhouse",
+   "board": "flexport",
+   "careersUrl": null,
+   "jobs": 210,
+   "softwareJobs": 29,
+   "sample": "https://job-boards.greenhouse.io/flexport/jobs/8222491"
+  },
+  {
+   "name": "Freshworks",
+   "provider": "smartrecruiters",
+   "board": "Freshworks",
+   "careersUrl": "https://www.freshworks.com/company/careers",
+   "jobs": 100,
+   "softwareJobs": 32,
+   "sample": "https://jobs.smartrecruiters.com/Freshworks/744000156077279"
+  },
+  {
+   "name": "Gainsight",
+   "provider": "ashby",
+   "board": "gainsight",
+   "careersUrl": null,
+   "jobs": 17,
+   "softwareJobs": 4,
+   "sample": "https://jobs.ashbyhq.com/gainsight/ddd1f2e4-7a4e-4284-b12e-054251ad1f51"
+  },
+  {
+   "name": "GE Aerospace",
+   "provider": "workday",
+   "board": "geaerospace.wd5/GE_ExternalSite",
+   "careersUrl": "https://careers.geaerospace.com",
+   "jobs": 100,
+   "softwareJobs": 22,
+   "sample": "https://geaerospace.wd5.myworkdayjobs.com/GE_ExternalSite/job/Singapore/Clerk-Customer-Support_R5040849-1"
+  },
+  {
+   "name": "GE Vernova",
+   "provider": "workday",
+   "board": "gevernova.wd5/Vernova_ExternalSite",
+   "careersUrl": "https://careers.gevernova.com",
+   "jobs": 100,
+   "softwareJobs": 25,
+   "sample": "https://gevernova.wd5.myworkdayjobs.com/Vernova_ExternalSite/job/Villeurbanne/Technicien-de-maintenance-industrielle--H-F-_R5053915-2"
+  },
+  {
+   "name": "GetYourGuide",
+   "provider": "greenhouse",
+   "board": "getyourguide",
+   "careersUrl": null,
+   "jobs": 71,
+   "softwareJobs": 17,
+   "sample": "https://job-boards.greenhouse.io/getyourguide/jobs/8066991"
+  },
+  {
+   "name": "GitLab",
+   "provider": "greenhouse",
+   "board": "gitlab",
+   "careersUrl": null,
+   "jobs": 230,
+   "softwareJobs": 98,
+   "sample": "https://job-boards.greenhouse.io/gitlab/jobs/8860302002"
+  },
+  {
+   "name": "Glean",
+   "provider": "greenhouse",
+   "board": "gleanwork",
+   "careersUrl": null,
+   "jobs": 133,
+   "softwareJobs": 61,
+   "sample": "https://job-boards.greenhouse.io/gleanwork/jobs/4739201005"
+  },
+  {
+   "name": "Gopuff",
+   "provider": "lever",
+   "board": "gopuff",
+   "careersUrl": null,
+   "jobs": 807,
+   "softwareJobs": 7,
+   "sample": "https://jobs.lever.co/gopuff/bfa7bc15-793e-486c-a3f5-b27d84c53025"
+  },
+  {
+   "name": "Grab",
+   "provider": "smartrecruiters",
+   "board": "Grab",
+   "careersUrl": "https://www.grab.careers/",
+   "jobs": 100,
+   "softwareJobs": 31,
+   "sample": "https://jobs.smartrecruiters.com/Grab/744000156288490"
+  },
+  {
+   "name": "Grafana Labs",
+   "provider": "greenhouse",
+   "board": "grafanalabs",
+   "careersUrl": null,
+   "jobs": 122,
+   "softwareJobs": 67,
+   "sample": "https://job-boards.greenhouse.io/grafanalabs/jobs/6116452004"
+  },
+  {
+   "name": "Gusto",
+   "provider": "greenhouse",
+   "board": "gusto",
+   "careersUrl": null,
+   "jobs": 104,
+   "softwareJobs": 39,
+   "sample": "https://job-boards.greenhouse.io/gusto/jobs/8078212"
+  },
+  {
+   "name": "Harvey",
+   "provider": "ashby",
+   "board": "harvey",
+   "careersUrl": null,
+   "jobs": 343,
+   "softwareJobs": 85,
+   "sample": "https://jobs.ashbyhq.com/harvey/977e6184-2dc4-422b-8ab3-bc26bb73f778"
+  },
+  {
+   "name": "HelloFresh",
+   "provider": "greenhouse",
+   "board": "hellofresh",
+   "careersUrl": null,
+   "jobs": 407,
+   "softwareJobs": 54,
+   "sample": "https://careers.hellofresh.com/global/en/job/8038010?gh_jid=8038010"
+  },
+  {
+   "name": "Hevo Data",
+   "provider": "lever",
+   "board": "hevodata",
+   "careersUrl": null,
+   "jobs": 54,
+   "softwareJobs": 16,
+   "sample": "https://jobs.lever.co/hevodata/cfdb183c-e9f4-4877-8b8c-bd7a3b4a7fde"
+  },
+  {
+   "name": "Hopper",
+   "provider": "ashby",
+   "board": "hopper",
+   "careersUrl": null,
+   "jobs": 20,
+   "softwareJobs": 13,
+   "sample": "https://jobs.ashbyhq.com/hopper/25934198-2ddf-41cb-a3fe-e896c782a393"
+  },
+  {
+   "name": "HP Inc",
+   "provider": "workday",
+   "board": "hp.wd5/ExternalCareerSite",
+   "careersUrl": "https://jobs.hp.com",
+   "jobs": 100,
+   "softwareJobs": 18,
+   "sample": "https://hp.wd5.myworkdayjobs.com/ExternalCareerSite/job/Fort-Collins-Colorado-United-States-of-America/ACS-Quality-Engineer---Workstation-Products_3164651-2"
+  },
+  {
+   "name": "HPE",
+   "provider": "workday",
+   "board": "hpe.wd5/Jobsathpe",
+   "careersUrl": "https://careers.hpe.com",
+   "jobs": 100,
+   "softwareJobs": 30,
+   "sample": "https://hpe.wd5.myworkdayjobs.com/Jobsathpe/job/Dubai-Dubai-United-Arab-Emirates/Major-Accounts-Manager-Abu-Dhabi_1204975-1"
+  },
+  {
+   "name": "Huntress",
+   "provider": "greenhouse",
+   "board": "huntress",
+   "careersUrl": null,
+   "jobs": 35,
+   "softwareJobs": 15,
+   "sample": "https://job-boards.greenhouse.io/huntress/jobs/8009763003"
+  },
+  {
+   "name": "Illumio",
+   "provider": "ashby",
+   "board": "illumio",
+   "careersUrl": null,
+   "jobs": 63,
+   "softwareJobs": 27,
+   "sample": "https://jobs.ashbyhq.com/illumio/904f4622-39da-4008-bd0f-f23afb70f9f1"
+  },
+  {
+   "name": "Imply",
+   "provider": "greenhouse",
+   "board": "imply",
+   "careersUrl": null,
+   "jobs": 5,
+   "softwareJobs": 3,
+   "sample": "https://imply.io/positions?gh_jid=7590615003"
+  },
+  {
+   "name": "InMobi",
+   "provider": "greenhouse",
+   "board": "inmobi",
+   "careersUrl": null,
+   "jobs": 80,
+   "softwareJobs": 9,
+   "sample": "https://job-boards.greenhouse.io/inmobi/jobs/7925318"
+  },
+  {
+   "name": "Instacart",
+   "provider": "greenhouse",
+   "board": "instacart",
+   "careersUrl": null,
+   "jobs": 126,
+   "softwareJobs": 38,
+   "sample": "https://instacart.careers/job/?gh_jid=8250324"
+  },
+  {
+   "name": "Intel",
+   "provider": "workday",
+   "board": "intel.wd1/External",
+   "careersUrl": "https://jobs.intel.com",
+   "jobs": 100,
+   "softwareJobs": 73,
+   "sample": "https://intel.wd1.myworkdayjobs.com/External/job/US-Oregon-Hillsboro/Yield-Product-Development-Engineer_JR0288027"
+  },
+  {
+   "name": "Intercom",
+   "provider": "greenhouse",
+   "board": "intercom",
+   "careersUrl": null,
+   "jobs": 106,
+   "softwareJobs": 48,
+   "sample": "https://job-boards.greenhouse.io/intercom/jobs/7254820"
+  },
+  {
+   "name": "Iterable",
+   "provider": "ashby",
+   "board": "iterable",
+   "careersUrl": null,
+   "jobs": 10,
+   "softwareJobs": 5,
+   "sample": "https://jobs.ashbyhq.com/iterable/cc105687-7d22-4633-a03b-652f8c8d0018"
+  },
+  {
+   "name": "Ixigo",
+   "provider": "smartrecruiters",
+   "board": "Ixigo",
+   "careersUrl": null,
+   "jobs": 10,
+   "softwareJobs": 6,
+   "sample": "https://jobs.smartrecruiters.com/Ixigo/744000156277720"
+  },
+  {
+   "name": "JFrog",
+   "provider": "greenhouse",
+   "board": "jfrog",
+   "careersUrl": null,
+   "jobs": 63,
+   "softwareJobs": 22,
+   "sample": "https://join.jfrog.com/job/?job=8214881&gh_jid=8214881"
+  },
+  {
+   "name": "Kavak",
+   "provider": "lever",
+   "board": "kavak",
+   "careersUrl": null,
+   "jobs": 11,
+   "softwareJobs": 7,
+   "sample": "https://jobs.lever.co/kavak/201bb542-2b36-42d1-9017-f443ab68f0d7"
+  },
+  {
+   "name": "KLA",
+   "provider": "workday",
+   "board": "kla.wd1/Search",
+   "careersUrl": "https://www.kla.com/careers",
+   "jobs": 100,
+   "softwareJobs": 56,
+   "sample": "https://kla.wd1.myworkdayjobs.com/Search/job/Ann-Arbor-MI/Software-Engineering-Manager-AI-ML_2641955-1"
+  },
+  {
+   "name": "Klaviyo",
+   "provider": "greenhouse",
+   "board": "klaviyo",
+   "careersUrl": null,
+   "jobs": 154,
+   "softwareJobs": 60,
+   "sample": "https://www.klaviyo.com/careers/jobs/8033173003?gh_jid=8033173003"
+  },
+  {
+   "name": "Lattice",
+   "provider": "greenhouse",
+   "board": "lattice",
+   "careersUrl": null,
+   "jobs": 9,
+   "softwareJobs": 3,
+   "sample": "https://lattice.com/job?gh_jid=8576037002"
+  },
+  {
+   "name": "LaunchDarkly",
+   "provider": "greenhouse",
+   "board": "launchdarkly",
+   "careersUrl": null,
+   "jobs": 51,
+   "softwareJobs": 19,
+   "sample": "https://job-boards.greenhouse.io/launchdarkly/jobs/7989233003"
+  },
+  {
+   "name": "Linear",
+   "provider": "ashby",
+   "board": "linear",
+   "careersUrl": null,
+   "jobs": 29,
+   "softwareJobs": 12,
+   "sample": "https://jobs.ashbyhq.com/linear/d3bc1ced-3ce4-4086-a050-555055dbb1ff"
+  },
+  {
+   "name": "Lyft",
+   "provider": "greenhouse",
+   "board": "lyft",
+   "careersUrl": null,
+   "jobs": 184,
+   "softwareJobs": 78,
+   "sample": "https://app.careerpuck.com/job-board/lyft/job/8792050002?gh_jid=8792050002"
+  },
+  {
+   "name": "Marvell",
+   "provider": "workday",
+   "board": "marvell.wd1/MarvellCareers",
+   "careersUrl": "https://www.marvell.com/company/careers.html",
+   "jobs": 100,
+   "softwareJobs": 63,
+   "sample": "https://marvell.wd1.myworkdayjobs.com/MarvellCareers/job/Santa-Clara-CA/Senior-Principal-Switch-Architect_2604929"
+  },
+  {
+   "name": "Mastercard",
+   "provider": "workday",
+   "board": "mastercard.wd1/CorporateCareers",
+   "careersUrl": "https://careers.mastercard.com",
+   "jobs": 100,
+   "softwareJobs": 24,
+   "sample": "https://mastercard.wd1.myworkdayjobs.com/CorporateCareers/job/Paris-France/Manager--Account-Management_R-292179"
+  },
+  {
+   "name": "Meesho",
+   "provider": "lever",
+   "board": "meesho",
+   "careersUrl": "https://www.meesho.io/careers",
+   "jobs": 58,
+   "softwareJobs": 12,
+   "sample": "https://jobs.lever.co/meesho/7d9af9b5-c1c7-48ec-bbb5-9b25e49f6596"
+  },
+  {
+   "name": "Mercury",
+   "provider": "greenhouse",
+   "board": "mercury",
+   "careersUrl": null,
+   "jobs": 77,
+   "softwareJobs": 23,
+   "sample": "https://job-boards.greenhouse.io/mercury/jobs/6199479004"
+  },
+  {
+   "name": "Micron",
+   "provider": "workday",
+   "board": "micron.wd1/External",
+   "careersUrl": "https://careers.micron.com",
+   "jobs": 100,
+   "softwareJobs": 62,
+   "sample": "https://micron.wd1.myworkdayjobs.com/External/job/Taichung---Fab-16-Taiwan/PDE-NPI-PWF-Process-Engineer_JR105575-1"
+  },
+  {
+   "name": "MindTickle",
+   "provider": "lever",
+   "board": "mindtickle",
+   "careersUrl": null,
+   "jobs": 20,
+   "softwareJobs": 6,
+   "sample": "https://jobs.lever.co/mindtickle/203fff0a-f8cc-48cf-bc6f-fcd97a469674"
+  },
+  {
+   "name": "Mixpanel",
+   "provider": "greenhouse",
+   "board": "mixpanel",
+   "careersUrl": null,
+   "jobs": 47,
+   "softwareJobs": 13,
+   "sample": "https://job-boards.greenhouse.io/mixpanel/jobs/8172398"
+  },
+  {
+   "name": "Modal",
+   "provider": "ashby",
+   "board": "modal",
+   "careersUrl": null,
+   "jobs": 43,
+   "softwareJobs": 15,
+   "sample": "https://jobs.ashbyhq.com/modal/9b33ebe7-e829-4f03-97ba-5c94dbd7daf6"
+  },
+  {
+   "name": "Mollie",
+   "provider": "ashby",
+   "board": "mollie",
+   "careersUrl": null,
+   "jobs": 46,
+   "softwareJobs": 17,
+   "sample": "https://jobs.ashbyhq.com/mollie/d056f390-1d70-408e-8f85-2360d41eaa84"
+  },
+  {
+   "name": "MongoDB",
+   "provider": "greenhouse",
+   "board": "mongodb",
+   "careersUrl": null,
+   "jobs": 400,
+   "softwareJobs": 130,
+   "sample": "https://www.mongodb.com/careers/job/?gh_jid=8258279"
+  },
+  {
+   "name": "Monzo",
+   "provider": "greenhouse",
+   "board": "monzo",
+   "careersUrl": null,
+   "jobs": 71,
+   "softwareJobs": 27,
+   "sample": "https://job-boards.greenhouse.io/monzo/jobs/8143930"
+  },
+  {
+   "name": "MotherDuck",
+   "provider": "ashby",
+   "board": "motherduck",
+   "careersUrl": null,
+   "jobs": 3,
+   "softwareJobs": 1,
+   "sample": "https://jobs.ashbyhq.com/motherduck/cb12cd4d-a465-4bed-9182-bd6160e4f1ae"
+  },
+  {
+   "name": "Mux",
+   "provider": "ashby",
+   "board": "mux",
+   "careersUrl": null,
+   "jobs": 1,
+   "softwareJobs": 1,
+   "sample": "https://jobs.ashbyhq.com/mux/bd297d04-e5c5-4ee9-9a3f-db0951825e2d"
+  },
+  {
+   "name": "N26",
+   "provider": "greenhouse",
+   "board": "n26",
+   "careersUrl": null,
+   "jobs": 32,
+   "softwareJobs": 6,
+   "sample": "https://n26.com/en-eu/careers/positions/8184721?gh_jid=8184721"
+  },
+  {
+   "name": "Netlify",
+   "provider": "greenhouse",
+   "board": "netlify",
+   "careersUrl": null,
+   "jobs": 5,
+   "softwareJobs": 1,
+   "sample": "https://job-boards.greenhouse.io/netlify/jobs/8806100002"
+  },
+  {
+   "name": "Netskope",
+   "provider": "greenhouse",
+   "board": "netskope",
+   "careersUrl": null,
+   "jobs": 130,
+   "softwareJobs": 73,
+   "sample": "https://www.netskope.com/company/careers/open-positions/?gh_jid=8078752"
+  },
+  {
+   "name": "New Relic",
+   "provider": "greenhouse",
+   "board": "newrelic",
+   "careersUrl": null,
+   "jobs": 55,
+   "softwareJobs": 15,
+   "sample": "https://job-boards.greenhouse.io/newrelic/jobs/5121001008"
+  },
+  {
+   "name": "Nextdoor",
+   "provider": "greenhouse",
+   "board": "nextdoor",
+   "careersUrl": null,
+   "jobs": 22,
+   "softwareJobs": 8,
+   "sample": "https://about.nextdoor.com/careers-list/?gh_jid=8229367"
+  },
+  {
+   "name": "Notion",
+   "provider": "ashby",
+   "board": "notion",
+   "careersUrl": null,
+   "jobs": 129,
+   "softwareJobs": 29,
+   "sample": "https://jobs.ashbyhq.com/notion/1fc309c8-da20-4ff2-84c7-8b863ece2b0a"
+  },
+  {
+   "name": "Nubank",
+   "provider": "ashby",
+   "board": "nubank",
+   "careersUrl": null,
+   "jobs": 101,
+   "softwareJobs": 50,
+   "sample": "https://jobs.ashbyhq.com/nubank/8b86f6af-d7d7-4f61-8cfb-e50f3b2a6e9c"
+  },
+  {
+   "name": "Nuro",
+   "provider": "greenhouse",
+   "board": "nuro",
+   "careersUrl": null,
+   "jobs": 108,
+   "softwareJobs": 80,
+   "sample": "https://nuro.ai/careersitem?gh_jid=7793005"
+  },
+  {
+   "name": "NXP",
+   "provider": "workday",
+   "board": "nxp.wd3/careers",
+   "careersUrl": "https://www.nxp.com/company/about-nxp/careers:CAREERS",
+   "jobs": 100,
+   "softwareJobs": 56,
+   "sample": "https://nxp.wd3.myworkdayjobs.com/careers/job/Munich/Functional-Safety-Architect-Hardware--f-m-d-_R-10067391-1"
+  },
+  {
+   "name": "Okta",
+   "provider": "greenhouse",
+   "board": "okta",
+   "careersUrl": "https://www.okta.com/company/careers",
+   "jobs": 100,
+   "softwareJobs": 17,
+   "sample": "https://www.okta.com/company/careers/opportunity/8079108?gh_jid=8079108"
+  },
+  {
+   "name": "OpenAI",
+   "provider": "ashby",
+   "board": "openai",
+   "careersUrl": null,
+   "jobs": 814,
+   "softwareJobs": 436,
+   "sample": "https://jobs.ashbyhq.com/openai/8fb1615c-34bf-47c4-a1d1-b7b2f836bbd3"
+  },
+  {
+   "name": "Oscar Health",
+   "provider": "greenhouse",
+   "board": "oscar",
+   "careersUrl": null,
+   "jobs": 248,
+   "softwareJobs": 24,
+   "sample": "https://job-boards.greenhouse.io/oscar/jobs/8229714"
+  },
+  {
+   "name": "Outreach",
+   "provider": "lever",
+   "board": "outreach",
+   "careersUrl": null,
+   "jobs": 25,
+   "softwareJobs": 8,
+   "sample": "https://jobs.lever.co/outreach/5becd4e1-3474-4f36-b5dd-4b2cd0eb1179"
+  },
+  {
+   "name": "PagerDuty",
+   "provider": "greenhouse",
+   "board": "pagerduty",
+   "careersUrl": null,
+   "jobs": 60,
+   "softwareJobs": 13,
+   "sample": "https://job-boards.greenhouse.io/pagerduty/jobs/6186821004"
+  },
+  {
+   "name": "Palantir",
+   "provider": "lever",
+   "board": "palantir",
+   "careersUrl": null,
+   "jobs": 310,
+   "softwareJobs": 196,
+   "sample": "https://jobs.lever.co/palantir/6ed76ce8-4156-4b60-b120-403538bd66cd"
+  },
+  {
+   "name": "Palo Alto Networks",
+   "provider": "workday",
+   "board": "paloaltonetworks.wd5/panwexternalcareers",
+   "careersUrl": "https://jobs.paloaltonetworks.com",
+   "jobs": 100,
+   "softwareJobs": 45,
+   "sample": "https://paloaltonetworks.wd5.myworkdayjobs.com/panwexternalcareers/job/Office---India---Hyderabad/Principal-Software-Engineer_JR-019164"
+  },
+  {
+   "name": "PayPal",
+   "provider": "workday",
+   "board": "paypal.wd1/jobs",
+   "careersUrl": "https://careers.pypl.com",
+   "jobs": 100,
+   "softwareJobs": 23,
+   "sample": "https://paypal.wd1.myworkdayjobs.com/jobs/job/Bangalore-Karnataka-India/Sr-Software-Engineer---Python_R0138315-1"
+  },
+  {
+   "name": "Paytm",
+   "provider": "lever",
+   "board": "paytm",
+   "careersUrl": "https://paytm.com/careers",
+   "jobs": 100,
+   "softwareJobs": 7,
+   "sample": "https://jobs.lever.co/paytm/9eed4fec-73f7-4114-a5d3-b2f689c92e8c"
+  },
+  {
+   "name": "Pendo",
+   "provider": "greenhouse",
+   "board": "pendo",
+   "careersUrl": null,
+   "jobs": 26,
+   "softwareJobs": 14,
+   "sample": "https://job-boards.greenhouse.io/pendo/jobs/8535640002"
+  },
+  {
+   "name": "Perplexity",
+   "provider": "ashby",
+   "board": "perplexity",
+   "careersUrl": null,
+   "jobs": 134,
+   "softwareJobs": 58,
+   "sample": "https://jobs.ashbyhq.com/perplexity/d5bc2302-202f-4596-9c4d-8720d1e79064"
+  },
+  {
+   "name": "Philips",
+   "provider": "workday",
+   "board": "philips.wd3/jobs-and-careers",
+   "careersUrl": "https://www.careers.philips.com",
+   "jobs": 100,
+   "softwareJobs": 17,
+   "sample": "https://philips.wd3.myworkdayjobs.com/jobs-and-careers/job/Bangalore/Senior-Program-Manager_591690-1"
+  },
+  {
+   "name": "Pinecone",
+   "provider": "ashby",
+   "board": "pinecone",
+   "careersUrl": null,
+   "jobs": 5,
+   "softwareJobs": 4,
+   "sample": "https://jobs.ashbyhq.com/pinecone/4ef4269b-94c4-4c7c-93ee-15a882caa767"
+  },
+  {
+   "name": "Pinterest",
+   "provider": "greenhouse",
+   "board": "pinterest",
+   "careersUrl": null,
+   "jobs": 157,
+   "softwareJobs": 76,
+   "sample": "https://www.pinterestcareers.com/jobs/?gh_jid=7488432"
+  },
+  {
+   "name": "Plaid",
+   "provider": "ashby",
+   "board": "plaid",
+   "careersUrl": null,
+   "jobs": 127,
+   "softwareJobs": 47,
+   "sample": "https://jobs.ashbyhq.com/plaid/5d8abedc-018a-4b42-ae1f-0e70b34f2007"
+  },
+  {
+   "name": "PlanetScale",
+   "provider": "greenhouse",
+   "board": "planetscale",
+   "careersUrl": null,
+   "jobs": 10,
+   "softwareJobs": 6,
+   "sample": "https://job-boards.greenhouse.io/planetscale/jobs/4396843009"
+  },
+  {
+   "name": "Pocket FM",
+   "provider": "lever",
+   "board": "pocketfm",
+   "careersUrl": null,
+   "jobs": 10,
+   "softwareJobs": 2,
+   "sample": "https://jobs.lever.co/pocketfm/27b94a9c-7bb1-40c9-afdd-febf6ce07ba4"
+  },
+  {
+   "name": "PwC",
+   "provider": "workday",
+   "board": "pwc.wd3/Global_Experienced_Careers",
+   "careersUrl": "https://www.pwc.com/gx/en/careers.html",
+   "jobs": 100,
+   "softwareJobs": 23,
+   "sample": "https://pwc.wd3.myworkdayjobs.com/Global_Experienced_Careers/job/Kuala-Lumpur/Manager--Tax_768729WD"
+  },
+  {
+   "name": "Qualtrics",
+   "provider": "greenhouse",
+   "board": "qualtrics",
+   "careersUrl": null,
+   "jobs": 79,
+   "softwareJobs": 6,
+   "sample": "https://www.qualtrics.com/careers/us/en/job/8064430?gh_jid=8064430"
+  },
+  {
+   "name": "Quora",
+   "provider": "ashby",
+   "board": "quora",
+   "careersUrl": null,
+   "jobs": 8,
+   "softwareJobs": 7,
+   "sample": "https://jobs.ashbyhq.com/quora/b2462dc7-08d7-4060-8ceb-9a1fa16615fb"
+  },
+  {
+   "name": "Ramp",
+   "provider": "ashby",
+   "board": "ramp",
+   "careersUrl": null,
+   "jobs": 167,
+   "softwareJobs": 41,
+   "sample": "https://jobs.ashbyhq.com/ramp/34413f8d-26bf-4bbc-8ade-eb309a0e2245"
+  },
+  {
+   "name": "Razorpay",
+   "provider": "greenhouse",
+   "board": "razorpaysoftwareprivatelimited",
+   "careersUrl": "https://razorpay.com/jobs",
+   "jobs": 28,
+   "softwareJobs": 2,
+   "sample": "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited/jobs/4740728005"
+  },
+  {
+   "name": "Red Hat",
+   "provider": "workday",
+   "board": "redhat.wd5/jobs",
+   "careersUrl": "https://www.redhat.com/en/jobs",
+   "jobs": 100,
+   "softwareJobs": 41,
+   "sample": "https://redhat.wd5.myworkdayjobs.com/jobs/job/Brno---Tech-Park-Brno---C/Software-Engineering-Intern---Community-Linux-Engineering--Brno--Czech-Republic-_R-059216"
+  },
+  {
+   "name": "Reddit",
+   "provider": "greenhouse",
+   "board": "reddit",
+   "careersUrl": null,
+   "jobs": 147,
+   "softwareJobs": 93,
+   "sample": "https://job-boards.greenhouse.io/reddit/jobs/8089959"
+  },
+  {
+   "name": "Replit",
+   "provider": "ashby",
+   "board": "replit",
+   "careersUrl": null,
+   "jobs": 65,
+   "softwareJobs": 40,
+   "sample": "https://jobs.ashbyhq.com/replit/2f1de5f1-48c2-4104-a697-a51fe1620508"
+  },
+  {
+   "name": "Riot Games",
+   "provider": "greenhouse",
+   "board": "riotgames",
+   "careersUrl": null,
+   "jobs": 174,
+   "softwareJobs": 81,
+   "sample": "https://www.riotgames.com/en/work-with-us/job/8282210?gh_jid=8282210"
+  },
+  {
+   "name": "Robinhood",
+   "provider": "greenhouse",
+   "board": "robinhood",
+   "careersUrl": null,
+   "jobs": 153,
+   "softwareJobs": 65,
+   "sample": "https://boards.greenhouse.io/robinhood/jobs/6669758?t=gh_src=&gh_jid=6669758"
+  },
+  {
+   "name": "Roblox",
+   "provider": "greenhouse",
+   "board": "roblox",
+   "careersUrl": null,
+   "jobs": 262,
+   "softwareJobs": 196,
+   "sample": "https://careers.roblox.com/jobs/8242621?gh_jid=8242621"
+  },
+  {
+   "name": "Rubrik",
+   "provider": "greenhouse",
+   "board": "rubrik",
+   "careersUrl": null,
+   "jobs": 140,
+   "softwareJobs": 28,
+   "sample": "https://www.rubrik.com/company/careers/departments/job.7820794?gh_jid=7820794"
+  },
+  {
+   "name": "Salesforce",
+   "provider": "workday",
+   "board": "salesforce.wd12/External_Career_Site",
+   "careersUrl": "https://careers.salesforce.com",
+   "jobs": 100,
+   "softwareJobs": 25,
+   "sample": "https://salesforce.wd12.myworkdayjobs.com/External_Career_Site/job/Italy---Milan/Account-Solution-Engineer_JR364015"
+  },
+  {
+   "name": "Samsara",
+   "provider": "greenhouse",
+   "board": "samsara",
+   "careersUrl": null,
+   "jobs": 264,
+   "softwareJobs": 96,
+   "sample": "https://www.samsara.com/company/careers/roles/8207928?gh_jid=8207928"
+  },
+  {
+   "name": "Sanity",
+   "provider": "ashby",
+   "board": "sanity",
+   "careersUrl": null,
+   "jobs": 34,
+   "softwareJobs": 17,
+   "sample": "https://jobs.ashbyhq.com/sanity/2efeec05-9eb0-4864-b505-62e952d685d7"
+  },
+  {
+   "name": "Sarvam AI",
+   "provider": "ashby",
+   "board": "sarvam",
+   "careersUrl": null,
+   "jobs": 42,
+   "softwareJobs": 21,
+   "sample": "https://jobs.ashbyhq.com/sarvam/c0406fe0-c8c0-44aa-aa3e-b879f2bf1049"
+  },
+  {
+   "name": "Scale AI",
+   "provider": "greenhouse",
+   "board": "scaleai",
+   "careersUrl": null,
+   "jobs": 182,
+   "softwareJobs": 94,
+   "sample": "https://job-boards.greenhouse.io/scaleai/jobs/4739727005"
+  },
+  {
+   "name": "Sentry",
+   "provider": "ashby",
+   "board": "sentry",
+   "careersUrl": null,
+   "jobs": 46,
+   "softwareJobs": 37,
+   "sample": "https://jobs.ashbyhq.com/sentry/81f09568-da7d-4ed1-8283-614f846c9b00"
+  },
+  {
+   "name": "ServiceNow",
+   "provider": "smartrecruiters",
+   "board": "ServiceNow",
+   "careersUrl": "https://careers.servicenow.com",
+   "jobs": 100,
+   "softwareJobs": 44,
+   "sample": "https://jobs.smartrecruiters.com/ServiceNow/744000156267489"
+  },
+  {
+   "name": "SingleStore",
+   "provider": "greenhouse",
+   "board": "singlestore",
+   "careersUrl": null,
+   "jobs": 44,
+   "softwareJobs": 27,
+   "sample": "https://job-boards.greenhouse.io/singlestore/jobs/8099166"
+  },
+  {
+   "name": "Snorkel AI",
+   "provider": "greenhouse",
+   "board": "snorkelai",
+   "careersUrl": null,
+   "jobs": 44,
+   "softwareJobs": 13,
+   "sample": "https://job-boards.greenhouse.io/snorkelai/jobs/6135754004"
+  },
+  {
+   "name": "Snowflake",
+   "provider": "ashby",
+   "board": "snowflake",
+   "careersUrl": "https://careers.snowflake.com",
+   "jobs": 100,
+   "softwareJobs": 60,
+   "sample": "https://jobs.ashbyhq.com/snowflake/479e06f1-273d-4a1b-af56-6543761ebd75"
+  },
+  {
+   "name": "Snyk",
+   "provider": "ashby",
+   "board": "snyk",
+   "careersUrl": null,
+   "jobs": 27,
+   "softwareJobs": 4,
+   "sample": "https://jobs.ashbyhq.com/snyk/507a3707-d6bd-48c4-800f-429ecf40769e"
+  },
+  {
+   "name": "SpaceX",
+   "provider": "greenhouse",
+   "board": "spacex",
+   "careersUrl": null,
+   "jobs": 2767,
+   "softwareJobs": 1243,
+   "sample": "https://boards.greenhouse.io/spacex/jobs/8643277002?gh_jid=8643277002"
+  },
+  {
+   "name": "Spotify",
+   "provider": "lever",
+   "board": "spotify",
+   "careersUrl": null,
+   "jobs": 80,
+   "softwareJobs": 35,
+   "sample": "https://jobs.lever.co/spotify/223f9722-3579-4ff2-b123-e4cc7b0c1a64"
+  },
+  {
+   "name": "Sprout Social",
+   "provider": "greenhouse",
+   "board": "sproutsocial",
+   "careersUrl": null,
+   "jobs": 23,
+   "softwareJobs": 6,
+   "sample": "https://sproutsocial.com/careers/open-positions/8148187/?gh_jid=8148187"
+  },
+  {
+   "name": "Squarespace",
+   "provider": "greenhouse",
+   "board": "squarespace",
+   "careersUrl": null,
+   "jobs": 29,
+   "softwareJobs": 12,
+   "sample": "http://www.squarespace.com/about/careers?gh_jid=8205248"
+  },
+  {
+   "name": "Stability AI",
+   "provider": "greenhouse",
+   "board": "stabilityai",
+   "careersUrl": null,
+   "jobs": 6,
+   "softwareJobs": 5,
+   "sample": "http://stability.ai/careers?gh_jid=4966000101"
+  },
+  {
+   "name": "Starburst",
+   "provider": "greenhouse",
+   "board": "starburst",
+   "careersUrl": null,
+   "jobs": 31,
+   "softwareJobs": 14,
+   "sample": "https://job-boards.greenhouse.io/starburst/jobs/5430686008"
+  },
+  {
+   "name": "Stripe",
+   "provider": "greenhouse",
+   "board": "stripe",
+   "careersUrl": null,
+   "jobs": 725,
+   "softwareJobs": 187,
+   "sample": "https://stripe.com/jobs/search?gh_jid=8172510"
+  },
+  {
+   "name": "Sumo Logic",
+   "provider": "greenhouse",
+   "board": "sumologic",
+   "careersUrl": null,
+   "jobs": 11,
+   "softwareJobs": 5,
+   "sample": "https://job-boards.greenhouse.io/sumologic/jobs/8287160"
+  },
+  {
+   "name": "Supabase",
+   "provider": "ashby",
+   "board": "supabase",
+   "careersUrl": null,
+   "jobs": 54,
+   "softwareJobs": 40,
+   "sample": "https://jobs.ashbyhq.com/supabase/3b5d54ca-741b-45ac-bd3f-31605a0d3541"
+  },
+  {
+   "name": "Swiggy",
+   "provider": "smartrecruiters",
+   "board": "Swiggy",
+   "careersUrl": "https://careers.swiggy.com/",
+   "jobs": 100,
+   "softwareJobs": 0,
+   "sample": "https://jobs.smartrecruiters.com/Swiggy/6000000001501550"
+  },
+  {
+   "name": "Sysdig",
+   "provider": "lever",
+   "board": "sysdig",
+   "careersUrl": null,
+   "jobs": 31,
+   "softwareJobs": 17,
+   "sample": "https://jobs.lever.co/sysdig/f9aed1a1-01d3-418f-bc00-0f30b4b423eb"
+  },
+  {
+   "name": "Tailscale",
+   "provider": "greenhouse",
+   "board": "tailscale",
+   "careersUrl": null,
+   "jobs": 62,
+   "softwareJobs": 28,
+   "sample": "https://job-boards.greenhouse.io/tailscale/jobs/4721252005"
+  },
+  {
+   "name": "Target",
+   "provider": "workday",
+   "board": "target.wd5/targetcareers",
+   "careersUrl": "https://corporate.target.com/careers",
+   "jobs": 100,
+   "softwareJobs": 3,
+   "sample": "https://target.wd5.myworkdayjobs.com/targetcareers/job/7845-N-Macarthur-Blvd-IrvingTX-75063-7516/Starbucks-Barista--T1032-_R0000478051"
+  },
+  {
+   "name": "Temporal",
+   "provider": "ashby",
+   "board": "temporal",
+   "careersUrl": null,
+   "jobs": 70,
+   "softwareJobs": 33,
+   "sample": "https://jobs.ashbyhq.com/temporal/30600762-62fe-4ffb-9b6e-98f145329ea3"
+  },
+  {
+   "name": "Thoughtworks",
+   "provider": "greenhouse",
+   "board": "thoughtworks",
+   "careersUrl": "https://www.thoughtworks.com/careers",
+   "jobs": 43,
+   "softwareJobs": 20,
+   "sample": "https://www.thoughtworks.com/careers/jobs/8263432?gh_jid=8263432"
+  },
+  {
+   "name": "Thumbtack",
+   "provider": "ashby",
+   "board": "thumbtack",
+   "careersUrl": null,
+   "jobs": 53,
+   "softwareJobs": 22,
+   "sample": "https://jobs.ashbyhq.com/thumbtack/1defbc0d-71f7-4c08-919c-4eb49992727d"
+  },
+  {
+   "name": "Toast",
+   "provider": "greenhouse",
+   "board": "toast",
+   "careersUrl": null,
+   "jobs": 316,
+   "softwareJobs": 59,
+   "sample": "https://careers.toasttab.com/jobs?gh_jid=8054004"
+  },
+  {
+   "name": "Toptal",
+   "provider": "lever",
+   "board": "toptal",
+   "careersUrl": null,
+   "jobs": 32,
+   "softwareJobs": 2,
+   "sample": "https://jobs.lever.co/toptal/a9653cf8-e956-4cfc-8c27-3f27cb7307da"
+  },
+  {
+   "name": "Trade Republic",
+   "provider": "greenhouse",
+   "board": "traderepublicbank",
+   "careersUrl": null,
+   "jobs": 41,
+   "softwareJobs": 13,
+   "sample": "https://traderepublic.com/en-de/about?jobId=7900870003&gh_jid=7900870003"
+  },
+  {
+   "name": "Tripadvisor",
+   "provider": "greenhouse",
+   "board": "tripadvisor",
+   "careersUrl": null,
+   "jobs": 95,
+   "softwareJobs": 43,
+   "sample": "https://job-boards.greenhouse.io/tripadvisor/jobs/8278367"
+  },
+  {
+   "name": "Turing",
+   "provider": "greenhouse",
+   "board": "turing",
+   "careersUrl": null,
+   "jobs": 30,
+   "softwareJobs": 19,
+   "sample": "https://job-boards.greenhouse.io/turing/jobs/6128357004"
+  },
+  {
+   "name": "Twilio",
+   "provider": "greenhouse",
+   "board": "twilio",
+   "careersUrl": null,
+   "jobs": 132,
+   "softwareJobs": 52,
+   "sample": "https://job-boards.greenhouse.io/twilio/jobs/8177722"
+  },
+  {
+   "name": "Twitch",
+   "provider": "greenhouse",
+   "board": "twitch",
+   "careersUrl": null,
+   "jobs": 46,
+   "softwareJobs": 18,
+   "sample": "https://job-boards.greenhouse.io/twitch/jobs/8872835002"
+  },
+  {
+   "name": "Typeform",
+   "provider": "greenhouse",
+   "board": "typeform",
+   "careersUrl": null,
+   "jobs": 13,
+   "softwareJobs": 6,
+   "sample": "https://job-boards.greenhouse.io/typeform/jobs/8184931"
+  },
+  {
+   "name": "Udemy",
+   "provider": "greenhouse",
+   "board": "udemy",
+   "careersUrl": null,
+   "jobs": 5,
+   "softwareJobs": 1,
+   "sample": "https://app.careerpuck.com/job-board/udemy/job/6225523004?gh_jid=6225523004"
+  },
+  {
+   "name": "Unacademy",
+   "provider": "smartrecruiters",
+   "board": "Unacademy",
+   "careersUrl": null,
+   "jobs": 3,
+   "softwareJobs": 1,
+   "sample": "https://jobs.smartrecruiters.com/Unacademy/743999710953763"
+  },
+  {
+   "name": "Vanta",
+   "provider": "ashby",
+   "board": "vanta",
+   "careersUrl": null,
+   "jobs": 85,
+   "softwareJobs": 34,
+   "sample": "https://jobs.ashbyhq.com/vanta/7e8b02ec-cf23-41de-87c7-3910459f34a2"
+  },
+  {
+   "name": "Vercel",
+   "provider": "greenhouse",
+   "board": "vercel",
+   "careersUrl": null,
+   "jobs": 93,
+   "softwareJobs": 38,
+   "sample": "https://job-boards.greenhouse.io/vercel/jobs/6136160004"
+  },
+  {
+   "name": "Visa",
+   "provider": "workday",
+   "board": "visa.wd5/Visa",
+   "careersUrl": "https://corporate.visa.com/en/jobs",
+   "jobs": 100,
+   "softwareJobs": 22,
+   "sample": "https://visa.wd5.myworkdayjobs.com/Visa/job/JO---Amman-Jordan/Manager_REF089436W"
+  },
+  {
+   "name": "Wayfair",
+   "provider": "smartrecruiters",
+   "board": "Wayfair",
+   "careersUrl": "https://www.aboutwayfair.com/careers",
+   "jobs": 1,
+   "softwareJobs": 0,
+   "sample": "https://jobs.smartrecruiters.com/Wayfair/106566412"
+  },
+  {
+   "name": "Waymo",
+   "provider": "greenhouse",
+   "board": "waymo",
+   "careersUrl": null,
+   "jobs": 362,
+   "softwareJobs": 216,
+   "sample": "https://careers.withwaymo.com/jobs?gh_jid=8234553"
+  },
+  {
+   "name": "Webflow",
+   "provider": "ashby",
+   "board": "webflow",
+   "careersUrl": null,
+   "jobs": 20,
+   "softwareJobs": 9,
+   "sample": "https://jobs.ashbyhq.com/webflow/7726de54-2176-4a52-a56f-05f1ebefa9e1"
+  },
+  {
+   "name": "Wells Fargo",
+   "provider": "workday",
+   "board": "wf.wd1/WellsFargoJobs",
+   "careersUrl": "https://www.wellsfargojobs.com",
+   "jobs": 100,
+   "softwareJobs": 5,
+   "sample": "https://wf.wd1.myworkdayjobs.com/WellsFargoJobs/job/Bengaluru-India/Lead-Software-Engineer---Endur_R-533394"
+  },
+  {
+   "name": "Western Digital",
+   "provider": "smartrecruiters",
+   "board": "WesternDigital",
+   "careersUrl": "https://www.westerndigital.com/careers",
+   "jobs": 100,
+   "softwareJobs": 28,
+   "sample": "https://jobs.smartrecruiters.com/WesternDigital/744000156267009"
+  },
+  {
+   "name": "Whatfix",
+   "provider": "smartrecruiters",
+   "board": "Whatfix",
+   "careersUrl": null,
+   "jobs": 1,
+   "softwareJobs": 0,
+   "sample": "https://jobs.smartrecruiters.com/Whatfix/743999738934973"
+  },
+  {
+   "name": "Wise",
+   "provider": "smartrecruiters",
+   "board": "Wise",
+   "careersUrl": "https://wise.jobs/",
+   "jobs": 100,
+   "softwareJobs": 30,
+   "sample": "https://jobs.smartrecruiters.com/Wise/744000156289728"
+  },
+  {
+   "name": "Wiz",
+   "provider": "greenhouse",
+   "board": "wizinc",
+   "careersUrl": null,
+   "jobs": 117,
+   "softwareJobs": 36,
+   "sample": "https://www.wiz.io/careers/job/4681239006/:title?gh_jid=4681239006"
+  },
+  {
+   "name": "Workday",
+   "provider": "workday",
+   "board": "workday.wd5/Workday",
+   "careersUrl": "https://www.workday.com/en-us/company/careers.html",
+   "jobs": 100,
+   "softwareJobs": 41,
+   "sample": "https://workday.wd5.myworkdayjobs.com/Workday/job/Ireland-Dublin/Identity---Access-Management--IAM--Engineer_JR-0108256-1"
+  },
+  {
+   "name": "Xendit",
+   "provider": "greenhouse",
+   "board": "xendit",
+   "careersUrl": null,
+   "jobs": 25,
+   "softwareJobs": 5,
+   "sample": "https://job-boards.greenhouse.io/xendit/jobs/7806576003"
+  },
+  {
+   "name": "Zeta",
+   "provider": "lever",
+   "board": "zeta",
+   "careersUrl": null,
+   "jobs": 24,
+   "softwareJobs": 9,
+   "sample": "https://jobs.lever.co/zeta/42c3b097-4b5c-48b6-83f6-04f09f1cab56"
+  },
+  {
+   "name": "Zilliz",
+   "provider": "lever",
+   "board": "zilliz",
+   "careersUrl": null,
+   "jobs": 11,
+   "softwareJobs": 4,
+   "sample": "https://jobs.lever.co/zilliz/8144e236-2836-4980-92cf-b6501ce0f81c"
+  },
+  {
+   "name": "Zocdoc",
+   "provider": "greenhouse",
+   "board": "zocdoc",
+   "careersUrl": null,
+   "jobs": 59,
+   "softwareJobs": 18,
+   "sample": "https://job-boards.greenhouse.io/zocdoc/jobs/8144626"
+  },
+  {
+   "name": "Zoox",
+   "provider": "lever",
+   "board": "zoox",
+   "careersUrl": null,
+   "jobs": 240,
+   "softwareJobs": 145,
+   "sample": "https://jobs.lever.co/zoox/e8a190f0-7a89-4c11-a6a0-452ff6234749"
+  },
+  {
+   "name": "Zscaler",
+   "provider": "greenhouse",
+   "board": "zscaler",
+   "careersUrl": "https://www.zscaler.com/careers",
+   "jobs": 100,
+   "softwareJobs": 25,
+   "sample": "https://job-boards.greenhouse.io/zscaler/jobs/5198260007"
+  }
+ ],
+ "unsupported": [
+  {
+   "name": "Deloitte",
+   "ats": "Avature",
+   "careersUrl": "https://apply.deloitte.com",
+   "note": "US/global apply.deloitte.com"
+  },
+  {
+   "name": "EY",
+   "ats": "SuccessFactors",
+   "careersUrl": "https://careers.ey.com"
+  },
+  {
+   "name": "Wipro",
+   "ats": "SuccessFactors",
+   "careersUrl": "https://careers.wipro.com"
+  },
+  {
+   "name": "HCLTech",
+   "ats": "SuccessFactors",
+   "careersUrl": "https://careers.hcltech.com"
+  },
+  {
+   "name": "Globant",
+   "ats": "SuccessFactors",
+   "careersUrl": "https://career.globant.com",
+   "note": "SmartRecruiters 'Globant' returns 0"
+  },
+  {
+   "name": "BCG",
+   "ats": "Phenom",
+   "careersUrl": "https://careers.bcg.com"
+  },
+  {
+   "name": "Texas Instruments",
+   "ats": "Oracle Cloud HCM",
+   "careersUrl": "https://careers.ti.com"
+  },
+  {
+   "name": "Dell",
+   "ats": "Oracle Cloud HCM",
+   "careersUrl": "https://jobs.dell.com",
+   "note": "redirects to enterpriseplatform.dell.com/hcmUI"
+  },
+  {
+   "name": "Seagate",
+   "ats": "SuccessFactors",
+   "careersUrl": "https://seagatecareers.com",
+   "note": "SuccessFactors RMK job URLs"
+  },
+  {
+   "name": "Qualcomm",
+   "ats": "Eightfold",
+   "careersUrl": "https://careers.qualcomm.com"
+  },
+  {
+   "name": "Lam Research",
+   "ats": "Eightfold",
+   "careersUrl": "https://careers.lamresearch.com"
+  },
+  {
+   "name": "AMD",
+   "ats": "iCIMS",
+   "careersUrl": "https://careers.amd.com"
+  },
+  {
+   "name": "Synopsys",
+   "ats": "Avature",
+   "careersUrl": "https://careers.synopsys.com"
+  },
+  {
+   "name": "Capgemini",
+   "ats": "own",
+   "careersUrl": "https://www.capgemini.com/careers/join-capgemini/job-search/"
+  },
+  {
+   "name": "Cognizant",
+   "ats": "own",
+   "careersUrl": "https://careers.cognizant.com"
+  },
+  {
+   "name": "Tech Mahindra",
+   "ats": "own",
+   "careersUrl": "https://careers.techmahindra.com"
+  },
+  {
+   "name": "LTIMindtree",
+   "ats": "RippleHire",
+   "careersUrl": "https://www.ltm.com/careers",
+   "note": "rebranded LTM; jobs on ltm.ripplehire.com"
+  },
+  {
+   "name": "NetApp",
+   "ats": "Eightfold",
+   "careersUrl": "https://careers.netapp.com"
+  },
+  {
+   "name": "Ericsson",
+   "ats": "Eightfold",
+   "careersUrl": "https://jobs.ericsson.com"
+  },
+  {
+   "name": "Nokia",
+   "ats": "Oracle Cloud HCM",
+   "careersUrl": "https://jobs.nokia.com"
+  },
+  {
+   "name": "HSBC",
+   "ats": "Avature",
+   "careersUrl": "https://mycareer.hsbc.com"
+  },
+  {
+   "name": "Intuit",
+   "ats": "Avature",
+   "careersUrl": "https://jobs.intuit.com",
+   "note": "Radancy front-end, Avature apply"
+  },
+  {
+   "name": "Fortinet",
+   "ats": "Oracle Cloud HCM",
+   "careersUrl": "https://www.fortinet.com/corporate/careers"
+  },
+  {
+   "name": "Honeywell",
+   "ats": "Oracle Cloud HCM",
+   "careersUrl": "https://careers.honeywell.com"
+  },
+  {
+   "name": "American Express",
+   "ats": "Oracle Cloud HCM / Eightfold",
+   "careersUrl": "https://www.americanexpress.com/en-us/careers/"
+  },
+  {
+   "name": "Atlassian",
+   "ats": "iCIMS",
+   "careersUrl": "https://www.atlassian.com/company/careers/all-jobs",
+   "note": "Lever 'atlassian' not found"
+  },
+  {
+   "name": "PhonePe",
+   "ats": "own",
+   "careersUrl": "https://www.phonepe.com/careers/job-openings/",
+   "note": "Greenhouse 'phonepe' board returns 404"
+  },
+  {
+   "name": "Walmart Global Tech",
+   "ats": "own",
+   "careersUrl": "https://careers.walmart.com",
+   "note": "own front-end; Workday tenant walmart.wd5 exists but public site id not found (WalmartExternal 422)"
+  },
+  {
+   "name": "SanDisk",
+   "ats": "Avature",
+   "careersUrl": "https://www.sandisk.com/careers/jobs-at-sandisk",
+   "note": "avature.sandisk.com; SmartRecruiters 'Sandisk' returns 0"
+  },
+  {
+   "name": "Arm",
+   "ats": "iCIMS",
+   "careersUrl": "https://careers.arm.com",
+   "note": "Radancy front-end; apply at experienced-arm.icims.com"
+  },
+  {
+   "name": "MediaTek",
+   "ats": "own",
+   "careersUrl": "https://careers.mediatek.com"
+  },
+  {
+   "name": "Infineon",
+   "ats": "Eightfold",
+   "careersUrl": "https://jobs.infineon.com/careers",
+   "note": "SmartRecruiters 'Infineon' returns 0"
+  },
+  {
+   "name": "KPMG",
+   "ats": "own",
+   "careersUrl": "https://www.kpmguscareers.com",
+   "note": "KPMG US: own site; KPMG India (kpmg.com/in careers) uses Oracle Cloud HCM"
+  },
+  {
+   "name": "IBM",
+   "ats": "Avature",
+   "careersUrl": "https://www.ibm.com/careers/search",
+   "note": "careers.ibm.com /en_US/careers is Avature; returned 202 bot check"
+  },
+  {
+   "name": "Infosys",
+   "ats": "own",
+   "careersUrl": "https://career.infosys.com",
+   "note": "careers page 403 to curl"
+  },
+  {
+   "name": "TCS",
+   "ats": "own",
+   "careersUrl": "https://ibegin.tcs.com",
+   "note": "TCS iBegin; tcs.com 403 to curl"
+  },
+  {
+   "name": "EPAM",
+   "ats": "own",
+   "careersUrl": "https://www.epam.com/careers",
+   "note": "403 to curl"
+  },
+  {
+   "name": "McKinsey",
+   "ats": "own",
+   "careersUrl": "https://www.mckinsey.com/careers/search-jobs",
+   "note": "site blocked curl"
+  },
+  {
+   "name": "Bain",
+   "ats": "own",
+   "careersUrl": "https://www.bain.com/careers/find-a-role/",
+   "note": "JS-driven own job search"
+  },
+  {
+   "name": "Microsoft",
+   "ats": "Eightfold",
+   "careersUrl": "https://apply.careers.microsoft.com"
+  },
+  {
+   "name": "Google",
+   "ats": "own",
+   "careersUrl": "https://www.google.com/about/careers/applications/jobs/results",
+   "note": "well-known own system; not probed"
+  },
+  {
+   "name": "Amazon",
+   "ats": "own",
+   "careersUrl": "https://www.amazon.jobs",
+   "note": "well-known own system; not probed"
+  },
+  {
+   "name": "Apple",
+   "ats": "own",
+   "careersUrl": "https://jobs.apple.com",
+   "note": "well-known own system; not probed"
+  },
+  {
+   "name": "Meta",
+   "ats": "own",
+   "careersUrl": "https://www.metacareers.com",
+   "note": "well-known own system; not probed"
+  },
+  {
+   "name": "Oracle",
+   "ats": "Oracle Cloud HCM",
+   "careersUrl": "https://careers.oracle.com",
+   "note": "not probed; Oracle's own product"
+  },
+  {
+   "name": "SAP",
+   "ats": "SuccessFactors",
+   "careersUrl": "https://jobs.sap.com",
+   "note": "not probed; SAP's own product"
+  },
+  {
+   "name": "Uber",
+   "ats": "own",
+   "careersUrl": "https://www.uber.com/careers",
+   "note": "406 to curl"
+  },
+  {
+   "name": "Flipkart",
+   "ats": "TurboHire",
+   "careersUrl": "https://www.flipkartcareers.com",
+   "note": "flipkart.turbohire.co"
+  },
+  {
+   "name": "Zomato",
+   "ats": "own",
+   "careersUrl": "https://www.eternal.com/careers/",
+   "note": "zomato.com/careers redirects to Eternal careers"
+  },
+  {
+   "name": "Zoho",
+   "ats": "Zoho Recruit",
+   "careersUrl": "https://careers.zohocorp.com"
+  },
+  {
+   "name": "Goldman Sachs",
+   "ats": "own",
+   "careersUrl": "https://higher.gs.com"
+  },
+  {
+   "name": "JPMorgan Chase",
+   "ats": "Oracle Cloud HCM",
+   "careersUrl": "https://careers.jpmorgan.com",
+   "note": "site CX_1001"
+  },
+  {
+   "name": "Morgan Stanley",
+   "ats": "Eightfold",
+   "careersUrl": "https://www.morganstanley.com/careers/career-opportunities-search"
+  },
+  {
+   "name": "Deutsche Bank",
+   "ats": "own",
+   "careersUrl": "https://careers.db.com"
+  },
+  {
+   "name": "UBS",
+   "ats": "own",
+   "careersUrl": "https://jobs.ubs.com",
+   "note": "403 to curl"
+  },
+  {
+   "name": "Siemens",
+   "ats": "Avature",
+   "careersUrl": "https://jobs.siemens.com"
+  }
+ ],
+ "notFound": [
+  "Airtable",
+  "Grammarly",
+  "Confluent",
+  "HashiCorp",
+  "Postman",
+  "Miro",
+  "HubSpot",
+  "Etsy",
+  "Zapier",
+  "Rippling",
+  "Deel",
+  "Retool",
+  "Sourcegraph",
+  "Neon",
+  "Unity",
+  "Niantic",
+  "Revolut",
+  "Klarna",
+  "Checkout.com",
+  "Zalando",
+  "Personio",
+  "DocuSign",
+  "Yelp",
+  "Aurora",
+  "Anduril",
+  "Rivian",
+  "Mistral AI",
+  "Hugging Face",
+  "Runway",
+  "Weights & Biases",
+  "Watershed",
+  "Calm",
+  "Headspace",
+  "Khan Academy",
+  "Quizlet",
+  "Loom",
+  "Agora",
+  "Skyscanner",
+  "Carousell",
+  "Ninja Van",
+  "Gong",
+  "dbt Labs",
+  "Redpanda",
+  "Weaviate",
+  "Arctic Wolf",
+  "Nutanix",
+  "Cohesity",
+  "Lacework",
+  "Twilio Segment",
+  "Front",
+  "Highspot",
+  "Seismic",
+  "Remote",
+  "Oyster",
+  "Doist",
+  "Automattic",
+  "GitHub",
+  "Atlassian",
+  "Shopify",
+  "Expensify",
+  "Mercado Libre",
+  "Rappi",
+  "Groww",
+  "Zepto",
+  "Dream11",
+  "Sprinklr",
+  "PhonePe",
+  "Chargebee",
+  "Hasura",
+  "BrowserStack",
+  "Zomato",
+  "Ola",
+  "Rapido",
+  "Urban Company",
+  "ShareChat",
+  "Slice",
+  "Jupiter",
+  "Khatabook",
+  "Zerodha",
+  "upGrad",
+  "PhysicsWallah",
+  "Licious",
+  "Nykaa",
+  "Lenskart",
+  "Myntra",
+  "Flipkart",
+  "Delhivery",
+  "Shiprocket",
+  "Darwinbox",
+  "Innovaccer",
+  "LambdaTest",
+  "Juspay",
+  "M2P Fintech",
+  "Setu",
+  "Ather Energy",
+  "Ultrahuman",
+  "CleverTap",
+  "MoEngage",
+  "WebEngage",
+  "Icertis",
+  "Capillary Technologies",
+  "Uniphore",
+  "Yellow.ai",
+  "Gupshup",
+  "Exotel",
+  "Increff",
+  "Fyle",
+  "Rocketlane",
+  "Spinny",
+  "CarDekho",
+  "PolicyBazaar",
+  "Acko",
+  "Digit Insurance",
+  "Smallcase",
+  "INDmoney",
+  "Jar",
+  "Kuku FM",
+  "Classplus",
+  "Scaler",
+  "Simplilearn",
+  "Eruditus",
+  "Testbook",
+  "Vedantu",
+  "OYO",
+  "MakeMyTrip",
+  "BigBasket",
+  "Udaan",
+  "Zetwerk",
+  "Ofbusiness",
+  "Infra.Market",
+  "Park+",
+  "Pine Labs",
+  "BharatPe",
+  "MobiKwik",
+  "Cashfree",
+  "PayU",
+  "Lentra",
+  "Perfios",
+  "Signzy",
+  "HyperVerge",
+  "Krutrim"
+ ]
+}

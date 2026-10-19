@@ -1,0 +1,38 @@
+{
+ "jobPostingInfo": {
+  "id": "e8aea0101be710305a6035a9fc3b0000",
+  "title": "NPI Engineering Build Manager",
+  "jobDescription": "<p>We are seeking an NPI Engineering Build Manager who is passionate about working on products that enable deep learning. Our team manages the NPI networking supply chain for engineering activities. Activities start from very early engagement with design engineering team and follow through all quick turn NPI builds at the shortest possible cycle time. Our team supports all these engineering quick turn activities by engaging with the engineering team, material suppliers, Operations team, and the PCB manufacturing team. All the parties need to be kept aligned while engineering keeps changing either the material sets or the process.</p><br /><p>We are looking for someone can work in a dynamic and fast-changing environment. You are someone who enjoys working on groundbreaking technology and enjoy working with people to take on problems. As a Build Project Manager, you are able to see both the high-level view and be proficient in tracking and following up on detail whether it is an existing product that requires new qualifications or a ground up new product. We will expect you to understand technical detail and be able to translate that into program impact.</p><br /><p><b>What you&#39;l",
+  "location": "Israel, Yokneam",
+  "postedOn": "Posted Today",
+  "startDate": "2026-10-19",
+  "timeType": "Full time",
+  "jobReqId": "JR2026102",
+  "jobPostingId": "NPI-Engineering-Build-Manager_JR2026102-1",
+  "jobPostingSiteId": "NVIDIAExternalCareerSite",
+  "country": {
+   "descriptor": "Israel",
+   "id": "084562884af243748dad7c84c304d89a"
+  },
+  "canApply": true,
+  "posted": true,
+  "includeResumeParsing": true,
+  "jobRequisitionLocation": {
+   "descriptor": "Israel, Yokneam",
+   "country": {
+    "descriptor": "Israel",
+    "id": "084562884af243748dad7c84c304d89a",
+    "alpha2Code": "IL"
+   }
+  },
+  "externalUrl": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel-Yokneam/NPI-Engineering-Build-Manager_JR2026102-1",
+  "questionnaireId": "2f2764b3a82910064296831695150000",
+  "endDate": "2026-10-20"
+ },
+ "hiringOrganization": {
+  "name": "IL00 Mellanox Technologies, Ltd.",
+  "url": ""
+ },
+ "similarJobs": [],
+ "userAuthenticated": false
+}

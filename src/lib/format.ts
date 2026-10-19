@@ -10,3 +10,6 @@ const dateTime = new Intl.DateTimeFormat("en-GB", {
 
 export const formatDate = (iso: string) => date.format(new Date(iso));
 export const formatDateTime = (iso: string) => dateTime.format(new Date(iso));
+
+const count = new Intl.NumberFormat("en-GB");
+export const formatCount = (n: number | null | undefined) => count.format(n ?? 0);

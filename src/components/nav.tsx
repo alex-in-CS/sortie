@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 
 const LIVE = [
   { href: "/", label: "Overview" },
+  { href: "/jobs", label: "Jobs" },
+  { href: "/applications", label: "Applications" },
+  { href: "/companies", label: "Companies" },
   { href: "/profile", label: "Profile" },
   { href: "/searches", label: "Searches" },
   { href: "/answers", label: "Answers" },
@@ -12,7 +15,7 @@ const LIVE = [
 ];
 
 // Later phases, shown so the shape of the tool is visible from day one.
-const UPCOMING = ["Jobs", "Applications", "Inbox", "Telegram"];
+const UPCOMING = ["Inbox", "Telegram"];
 
 export function Nav() {
   const pathname = usePathname();

@@ -129,6 +129,9 @@ export type ParsedResume = z.infer<typeof ParsedResume>;
 export const SENIORITY = ["intern", "entry", "mid", "senior", "lead"] as const;
 export const WORK_MODES = ["remote", "hybrid", "onsite"] as const;
 export const EMPLOYMENT_TYPES = ["full-time", "internship", "contract", "part-time"] as const;
+export type Seniority = (typeof SENIORITY)[number];
+export type WorkMode = (typeof WORK_MODES)[number];
+export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 
 export const Money = z.object({
   amount: z.number(),
@@ -239,3 +242,31 @@ export const defaultAnswers = (): Answers => ({
   disability: DECLINE,
   custom: [],
 });
+
+// What Claude returns when it tailors a resume: wording, order and emphasis
+// only. Names, employers, titles, dates and education are rendered straight
+// from the profile, so tailoring can't change them. Bullets point back at a
+// profile entry by id, which is what the truth check compares them against.
+export const TailoredResume = z.object({
+  headline: z.string(),
+  summary: z.string(),
+  skills: z.array(z.string()),
+  experience: z.array(z.object({ id: z.string(), bullets: z.array(z.string()) })),
+  projects: z.array(z.object({ id: z.string(), bullets: z.array(z.string()) })),
+  coverLetter: z.string(),
+});
+export type TailoredResume = z.infer<typeof TailoredResume>;
+
+export type TruthIssue = {
+  where: string; // "summary", "experience Acme", "skills", "cover letter"
+  text: string;
+  reason: string;
+  action: "removed" | "reverted";
+};
+export type TruthReport = { checkedAt: string; claudeChecked: boolean; issues: TruthIssue[] };
+
+// queued: chosen, waiting to be tailored; tailoring: in progress; ready:
+// documents done, waiting to apply (phase 4); needs_you: something only the
+// owner can fix; skipped: the owner said no. Phase 4 adds the apply stages.
+export const APPLICATION_STATUSES = ["queued", "tailoring", "ready", "needs_you", "skipped"] as const;
+export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];

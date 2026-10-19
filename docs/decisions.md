@@ -38,10 +38,29 @@ Index
 | [D-028](#d-028-the-repository-stays-local-for-now) | The repository stays local for now | Accepted |
 | [D-029](#d-029-how-rea-and-jobcopilot-are-used) | How REA and JobCopilot are used | Accepted |
 | [D-030](#d-030-jobcopilot-features-taken-and-skipped) | JobCopilot features taken and skipped | Accepted |
-| [D-031](#d-031-check-feeds-every-2-hours) | Check feeds every 2 hours | Proposed |
-| [D-032](#d-032-deterministic-prefilter-before-any-llm-scoring) | Deterministic prefilter before LLM scoring | Proposed |
-| [D-033](#d-033-a-separate-worker-process-with-a-sqlite-backed-queue) | Separate worker process, SQLite-backed queue | Proposed |
+| [D-031](#d-031-check-feeds-every-2-hours) | Check feeds every 2 hours | Accepted |
+| [D-032](#d-032-deterministic-prefilter-before-any-llm-scoring) | Deterministic prefilter before LLM scoring | Accepted (LLM half built: D-050) |
+| [D-033](#d-033-a-separate-worker-process-with-a-sqlite-backed-queue) | Separate worker process, SQLite-backed queue | Accepted |
 | [D-034](#d-034-tailwind-and-design-tokens-no-component-library) | Tailwind + tokens, no component library | Accepted |
+| [D-035](#d-035-sonnet-55-for-bulk-work-opus-55-for-quality-critical-work) | Sonnet 5.5 for bulk, Opus 5.5 for quality-critical work | Accepted |
+| [D-036](#d-036-rea-installed-for-claude-code-only) | REA installed for Claude Code only | Accepted |
+| [D-037](#d-037-the-end-to-end-test-stops-at-review) | The end-to-end test stops at review | Accepted |
+| [D-038](#d-038-the-registry-holds-only-live-verified-boards) | The registry holds only live-verified boards | Accepted |
+| [D-039](#d-039-one-adapter-per-ats-descriptions-fetched-only-for-plausible-jobs) | One adapter per ATS; descriptions only for plausible jobs | Accepted |
+| [D-040](#d-040-deterministic-match-rules-and-score-weights) | Deterministic match rules and score weights | Accepted |
+| [D-041](#d-041-matching-re-runs-on-demand-skipped-by-input-hash) | Matching re-runs on demand, skipped by input hash | Accepted |
+| [D-042](#d-042-worker-runs-under-tsx-with-the-react-server-condition) | Worker runs under tsx with the react-server condition | Accepted |
+| [D-043](#d-043-close-jobs-only-after-a-complete-fetch) | Close jobs only after a complete fetch | Accepted |
+| [D-044](#d-044-big-company-coverage-workday-yes-custom-portals-no) | Big-company coverage: Workday yes, custom portals no | Accepted |
+| [D-045](#d-045-locations-resolve-through-intl-region-names-state-lists-and-state-codes) | Locations via Intl region names, state lists and codes | Accepted |
+| [D-046](#d-046-software-role-classifier-and-a-rules-version-in-the-match-hash) | Software-role classifier; rules version in the match hash | Accepted |
+| [D-047](#d-047-rows-passed-to-client-components-are-copied-to-plain-objects) | Rows passed to client components are plain objects | Accepted |
+| [D-048](#d-048-rate-limits-host-hold-wider-gap-then-a-12-hour-rest) | Rate limits: host hold, wider gap, then a 12-hour rest | Accepted |
+| [D-049](#d-049-detail-budget-of-100-per-board-per-cycle) | Detail budget of 100 per board per cycle | Accepted |
+| [D-050](#d-050-claude-reviews-the-best-candidates-selection-respects-the-caps) | Claude reviews the best candidates; selection respects the caps | Accepted |
+| [D-051](#d-051-the-truth-check-runs-in-two-passes-rules-then-claude-and-only-removes) | Truth check: rules then Claude, and it only removes | Accepted |
+| [D-052](#d-052-pdfs-come-from-html-through-the-installed-chrome-playwright-core) | PDFs from HTML through the installed Chrome | Accepted |
+| [D-053](#d-053-tasks-left-running-by-a-dead-process-are-abandoned-after-3-hours) | Stale running tasks abandoned after 3 hours | Accepted |
 
 ---
 
@@ -357,14 +376,14 @@ Index
   check on tailoring, per-company caps, local and private, bring-your-own-key.
 
 ### D-031: Check feeds every 2 hours
-- **Date:** 2026-10-19 · **Status:** Proposed (phase 2)
+- **Date:** 2026-10-19 · **Status:** Accepted (built in phase 2; `SORTIE_FETCH_HOURS`, ±10% jitter)
 - **Decision:** Fetch company feeds every ~2 h (JobCopilot's cadence) instead of daily, with jitter and
   per-host politeness. Applying early matters, and the feeds are cheap public JSON.
 - **Tradeoffs:** More requests. Mitigated by conditional requests where supported and by skipping
   unchanged boards.
 
 ### D-032: Deterministic prefilter before any LLM scoring
-- **Date:** 2026-10-19 · **Status:** Proposed (phase 2)
+- **Date:** 2026-10-19 · **Status:** Accepted (deterministic half: D-040; LLM half: D-050)
 - **Decision:** Every job first passes hard filters (location/mode/authorization, exclusions,
   seniority, employment type, salary floor) and a cheap deterministic score (skill overlap weighted by
   level, title match). Only the top candidates per search get an LLM score with reasons.
@@ -373,7 +392,7 @@ Index
   recall high and log what it rejected.
 
 ### D-033: A separate worker process with a SQLite-backed queue
-- **Date:** 2026-10-19 · **Status:** Proposed (phase 2–4)
+- **Date:** 2026-10-19 · **Status:** Accepted (built in phase 2, see D-042)
 - **Decision:** `npm run worker` starts a Node process (run with `tsx`) that owns the schedule and a
   `tasks` table (type, payload, status, attempts, run_after, last_error). Steps are idempotent; a
   unique constraint on (job, search) prevents double applications. The UI only reads state and
@@ -389,3 +408,278 @@ Index
   `src/components/ui.tsx`.
 - **Tradeoffs:** No dependency weight and full control of the look. We write our own inputs and
   toggles, which is a small amount of code.
+
+### D-035: Sonnet 5.5 for bulk work, Opus 5.5 for quality-critical work
+- **Date:** 2026-10-19 · **Status:** Accepted (owner's answer to Q-1)
+- **Decision:** High-volume calls (LLM job scoring after the prefilter, email classification) use
+  `claude-sonnet-5-5` (`SORTIE_BULK_MODEL`). Resume parsing, tailoring and the truth check stay on
+  `claude-opus-5-5` (`SORTIE_MODEL`).
+- **Alternatives:** Haiku 5.5 for bulk (≈20x cheaper than Sonnet); Opus for everything.
+- **Tradeoffs:** Sonnet costs half of Opus with strong judgment for ranking and classifying. Haiku
+  would be cheaper still, and can be swapped in through the env var if the bills say so.
+- **Consequences:** Sonnet 5.5 specifics: thinking can't be set to `disabled` (use low effort, or
+  `between_tools`); forced `tool_choice` is rejected, so use structured outputs. The refusal fallback
+  uses `fallbacks: "default"` on the Claude API.
+
+### D-036: REA installed for Claude Code only
+- **Date:** 2026-10-19 · **Status:** Accepted (owner's answer to Q-5)
+- **Decision:** `npx rea-agents@6.7.0 setup --client claude_code --yes`. This registers REA's MCP server
+  in `~/.claude.json` (backup at `~/.claude.json.rea.backup`) and installs its skill under
+  `~/.claude/skills/reverse-engineer-anything`. The "all detected agents" plan would also have changed
+  Claude Desktop, Codex, Cursor, Gemini CLI, Antigravity, Copilot CLI, VS Code and DeepSeek Harness;
+  those were deliberately left alone. Native back-ends (Ghidra, IDA, Hopper) weren't installed; only
+  website inspection is needed.
+- **Consequences:** The MCP tools appear after Claude Code restarts. Until then REA's CLI
+  (`npx rea-agents@6.7.0 <command>`) is used against a Chrome started with a remote-debugging port and
+  a throwaway profile. REA stays a dev tool, not a dependency of Sortie (D-029). **To undo:** restore
+  the backup and delete the skill folder.
+
+### D-037: The end-to-end test stops at review
+- **Date:** 2026-10-19 · **Status:** Accepted (owner's answer to Q-4)
+- **Decision:** The Day 2 end-to-end check fills a real application completely and holds it at review.
+  Nothing is submitted to a real employer as a test.
+- **Consequences:** The submit step is verified against a local fixture form instead. The first real
+  submission happens when the owner approves one they actually want.
+
+### D-038: The registry holds only live-verified boards
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** `src/lib/registry/companies.json` is generated, never hand-edited. `npm run
+  registry:verify` probes every candidate live:
+  - Guessed slugs (`scripts/candidates.txt`) are tried on Greenhouse, then Ashby, then Lever. They're
+    kept only if the board returns open jobs that include at least one software role.
+  - Hand-found enterprise feeds (`scripts/enterprise.json`) are kept if they return any jobs.
+  - Companies that can't be read are listed as *unsupported* (with their ATS) or *not found*. Both
+    lists show on the Companies page.
+- **Alternatives:** A hand-written list of ~250 board IDs; a paid company-to-ATS database.
+- **Tradeoffs:** Coverage is honest: every listed company really is fetched. The cost is that a
+  guessed slug can belong to a different company with the same name. That happened twice in the first
+  run: "Navi" on Ashby is a US aviation startup, and "Neon" is a game-payments company, not the
+  database. Short or generic names are now pinned to explicit slugs, and the first jobs of each new
+  board are eyeballed (R-16).
+- **Consequences:** 217 boards verified on 2026-10-19: Greenhouse 107, Ashby 43, Workday 34, Lever 18,
+  SmartRecruiters 15. 56 big names are unsupported. 141 candidates weren't found on the three ATSs we
+  can guess.
+
+### D-039: One adapter per ATS; descriptions fetched only for plausible jobs
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** Each `src/lib/sources/<provider>.ts` turns a provider's public JSON into one `SourceJob`
+  shape. Fields a provider doesn't state are `null`, never guessed.
+  - Greenhouse, Lever and Ashby return full descriptions in one call.
+  - Workday and SmartRecruiters lists don't include descriptions. So they're searched server-side
+    (each search's titles, or "software" when skills decide) and capped at 200 per query. `detail()`
+    is called only for jobs whose title looks relevant, at most 100 per board per cycle (D-049).
+  - All requests go through `http.ts`: an honest User-Agent, a 400 ms gap per host, a 30 s timeout,
+    and retries with backoff on 429/5xx (honouring `Retry-After`).
+- **Alternatives:** Fetch every description (thousands of extra calls per cycle on big Workday
+  tenants); a headless browser (slower, more fragile, closer to scraping).
+- **Tradeoffs:**
+  - Workday's JSON is undocumented (R-05), so contract tests run on recorded fixtures.
+  - Workday's dates are relative ("Posted 30+ Days Ago"), so the first value seen is kept.
+  - A job with an odd title at a Workday company may never get its description fetched. We accept
+    that, to keep request volume down.
+
+### D-040: Deterministic match rules and score weights
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** Hard filters run in this order, and each rejection gives a plain-English reason:
+  1. Excluded company.
+  2. Title: matches one of the search's titles, or looks like a software role when the search has
+     none.
+  3. Excluded keywords in the title or description.
+  4. Seniority, inferred from the title (and the provider's level label).
+  5. Employment type.
+  6. Work mode.
+  7. Country. Job countries come from provider codes plus `geo.ts` text resolution. An unknown
+     country passes, with a note.
+  8. City, unless the job is remote or you're willing to relocate.
+  9. Sponsorship: rejected only when the posting says it won't sponsor; otherwise a note.
+  10. Salary floor, compared only in the same currency.
+  11. Years asked for: rejected when more than your years + 2.
+
+  **Score** = 60% skill fit + 15% title fit + 15% years fit + 10% freshness.
+  **Skill fit** = the sum of matched skills weighted by level (learning 0.4 … expert 1), divided by
+  (matched skills + 0.5 × known skills the posting names that the profile lacks).
+- **Alternatives:** Embedding similarity; LLM for everything.
+- **Tradeoffs:**
+  - It's transparent and testable, fast over thousands of jobs, and every rejection is explainable.
+  - It's weak on synonyms and can't tell must-haves from nice-to-haves. That's why missing skills
+    count half, and why the LLM re-scores the survivors in phase 3.
+  - Short or ambiguous skill names ("Go", "R", "C", "Excel", "Spark") only count in their usual
+    capitalisation. Extra guards stop "R&D", "Series C" and "go to market" from counting as skills.
+
+### D-041: Matching re-runs on demand, skipped by input hash
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** `matchAll()` stores an input hash per (job, search) covering the job, the search, the
+  profile's skills and roles, the preferences, today's date and the rules version (D-046). It runs after every fetch and whenever
+  the Jobs page loads, and re-scores only rows whose hash changed.
+- **Tradeoffs:** An edit to a search or a skill shows up immediately, with no "rescore" button or
+  queued task. The first page load after a big change takes a moment. Because the date is in the hash,
+  everything is re-scored once a day, so freshness stays right.
+
+### D-042: Worker runs under tsx with the react-server condition
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** `npm run worker` runs `tsx --conditions=react-server src/worker/index.ts`;
+  `npm run fetch` adds `--once`.
+  - The condition makes `import "server-only"` resolve to its empty module outside Next.
+  - The worker loads `.env.local` with `process.loadEnvFile` before importing `src/lib`.
+  - Tasks: one queued or running task per type, claimed atomically (`UPDATE … RETURNING`), retried up
+    to 3 times with 5^n-minute backoff. Stale `running` tasks are requeued on start.
+  - The task row's `result` is the run log the Companies page shows.
+- **Alternatives:** Compile the worker with a bundler; drop `server-only` from `src/lib`.
+- **Tradeoffs:** One more dev dependency: tsx, which uses esbuild's prebuilt binary and needs no
+  install script. In return, the Next app keeps its guard against server code leaking into client
+  bundles.
+
+### D-043: Close jobs only after a complete fetch
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** A job missing from a fetch is closed only if that fetch was complete. A capped Workday
+  or SmartRecruiters query (200 results) proves nothing about absent jobs, so nothing is closed then.
+  A closed job that reappears is reopened. When a later list omits them, upserts keep the fetched
+  description, the known countries and the first posted date.
+- **Tradeoffs:** A capped board can keep a few dead jobs open until it's fetched uncapped. Applying
+  (phase 4) re-checks that the posting still exists before submitting.
+
+### D-044: Big-company coverage: Workday yes, custom portals no
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** Enterprises on Workday and SmartRecruiters are fetched like any other board. There are
+  34 on Workday, for example Accenture, PwC, Intel, Cisco, Salesforce, Adobe, Visa, Mastercard, Citi,
+  Micron and Broadcom. 56 companies use their own portals or Avature, SuccessFactors, Eightfold, Oracle
+  Cloud HCM, iCIMS or Phenom: Deloitte, EY, KPMG, SanDisk, Google, Microsoft, Amazon, Infosys, TCS,
+  Goldman Sachs and others. They're listed as *not covered automatically*, with a careers link.
+- **Alternatives:** Browser automation of each portal's search page; a paid jobs API that aggregates
+  them (FR-13, discovery).
+- **Tradeoffs:** Several names the owner asked for (Deloitte, EY, KPMG, SanDisk) aren't fetched. They
+  have no public feed, and scraping their portals would mean fighting bot protection (D-013). The
+  planned discovery API (FR-13) is the route to cover them later.
+
+### D-045: Locations resolve through Intl region names, state lists and state codes
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** `geo.ts` turns a free-text location into ISO country codes:
+  - every region name `Intl.DisplayNames` knows, plus a hand list of aliases (USA, UK, UAE, Korea…);
+  - major cities and all US states, Canadian provinces and Indian states;
+  - `", XX"` state codes ("Hawthorne, CA", "Toronto, ON");
+  - region words (Europe, EMEA, APAC, LATAM…) and `*` for anywhere/worldwide.
+  Names that are also places elsewhere (Georgia, Jersey, Jordan, Chad) aren't matched as countries,
+  and "IN"/"DE" aren't read as state codes.
+- **Why:** The first live fetch left thousands of US jobs ("City, ST") without a country, so country
+  filters let them through with an "unknown country" note.
+- **Tradeoffs:** It's a list, not a geocoder: a small town with no country or state named still
+  resolves to nothing and passes with a note. A geocoding API would add a dependency and a network
+  call per job.
+
+### D-046: Software-role classifier and a rules version in the match hash
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** `isSoftwareRole(title)` = not a non-builder role (sales, support, recruiter…) **and**
+  either a strong software signal (software/backend/frontend/full stack/SRE/data/ML/platform engineer,
+  developer, member of technical staff…) or a generic engineering word with no other discipline
+  (electrical, mechanical, manufacturing, controls…). Titles have `_` turned into spaces first
+  ("EMT3_VM_Gen_AI_ML_Senior_Developer" is senior). Skills the posting names that are the company's own
+  product ("ClickHouse" at ClickHouse) aren't counted as missing. `MATCH_RULES_VERSION` is part of
+  every match hash, so changing the rules re-scores everything once.
+- **Why:** On real data, "engineer" alone matched electrical, operations and support roles at SpaceX
+  and others; an underscore title hid "Senior"; and stored hashes kept stale scores after rule fixes.
+- **Tradeoffs:** Hand-tuned patterns need a test per real title that fooled them (`match.test.ts`
+  keeps them). The LLM pass in phase 3 catches what the patterns miss.
+
+### D-047: Rows passed to client components are copied to plain objects
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** `node:sqlite` returns rows with a `null` prototype. React refuses those as props to
+  Client Components ("Only plain objects can be passed…"). Every query whose rows can reach the client
+  goes through `plain()` in `jobs.ts`, and a test asserts the prototype.
+- **Tradeoffs:** One shallow copy per row, which costs nothing at our sizes.
+
+### D-048: Rate limits: host hold, wider gap, then a 12-hour rest
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** On HTTP 429, `http.ts` waits for `Retry-After` or 5 s, 15 s, 45 s. It also holds every
+  other request to that host for the same time, and quadruples that host's gap (up to 8 s) for the
+  rest of the process. If a board still fails with 429, the cycle records it and skips that board for
+  12 hours (`coolingDown()` in `pipeline.ts`). The Companies page shows it as "Rate-limited, resting"
+  and its stored jobs stay open.
+- **Why:** Salesforce's Workday tenant (behind Cloudflare) returned 429 after two or three requests,
+  even with a 6-second gap, and kept doing so for minutes after a burst. Hitting it again every two
+  hours would only extend the block.
+- **Alternatives:** Rotate User-Agents or IPs. That's evasion, ruled out by D-013.
+- **Tradeoffs:** A strict board updates at most twice a day. Its jobs can be up to 12 hours stale.
+
+### D-049: Detail budget of 100 per board per cycle
+- **Date:** 2026-10-19 · **Status:** Accepted (replaces "40" in D-039)
+- **Decision:** Workday and SmartRecruiters `detail()` calls are capped at 100 per board per cycle,
+  newest plausible titles first. Descriptions are kept once fetched (D-043), so the backlog shrinks
+  every cycle.
+- **Why:** At 40, the first live fetch left 4,941 jobs without a description. 100 clears a typical
+  board's relevant backlog in one or two cycles. At a 400 ms gap that's about 40 s per board, and
+  boards run four at a time.
+- **Tradeoffs:** The first cycle on a fresh database is slower (about 8 minutes for 217 boards).
+
+### D-050: Claude reviews the best candidates; selection respects the caps
+- **Date:** 2026-10-19 · **Status:** Accepted (completes D-032)
+- **Decision:**
+  - **Review.** After matching, every enabled search's open jobs that passed the rules, scored within
+    10 points of its bar (`REVIEW_MARGIN`) and have a description get a Claude review: Sonnet 5.5 at
+    low effort, with structured output `{score, verdict, reasons, gaps, dealbreaker}`. The best go
+    first, at most `SORTIE_REVIEWS_PER_CYCLE` (default 40) per cycle.
+  - Reviews live in their own `reviews` table, keyed by (job, search). Each carries a hash of the prompt
+    version, the model, the profile text, the constraints, the search's titles and seniority, and the
+    job's content hash. The date is **not** in the hash, so the daily rule re-score (D-041) never pays
+    for a review twice.
+  - **Select.** The final score is Claude's when there is one, otherwise the rule score. A job is picked
+    when that score clears the search's bar, it has no dealbreaker, and the verdict isn't `poor`.
+    Picking goes best first, each job once across searches. Two caps apply: `maxPerCompany` (counted
+    over 30 days) and `dailyLimit` (since local midnight). With an API key, a job must be reviewed
+    before it's picked. Without one, the rule score decides, so picking still works.
+  - Jobs you pick by hand (Apply on the Jobs page) skip the bar and the caps, but count toward them.
+- **Alternatives:** Review every rule-qualified job (cost); review only above the bar (Claude could
+  never rescue a job the rules under-scored); put the review in `matches` (the daily re-score would
+  overwrite or orphan it).
+- **Tradeoffs:**
+  - Cost is bounded by the per-cycle limit: about 4k input and 500 output tokens per review, roughly
+    1–1.5 US cents on Sonnet 5.5. The candidate profile sits in a cached system block.
+  - A big backlog drains over several cycles, best first.
+
+### D-051: The truth check runs in two passes, rules then Claude, and only removes
+- **Date:** 2026-10-19 · **Status:** Accepted (FR-19, NFR-1)
+- **Decision:** Tailoring (Opus 5.5) returns only wording: headline, summary, skills (names), bullets
+  per profile entry id, project picks, and a cover letter. Names, contact details, employers, titles,
+  dates, education and certifications are rendered from the profile, so tailoring can't change them.
+  Then the check runs in two passes:
+  1. **Rules** (`truth.ts`, deterministic):
+     - skills must be profile skills, re-spelled the profile's way;
+     - entry ids must exist;
+     - each bullet may only contain numbers and known technologies that appear in **its own entry**,
+       so a skill you have can't be claimed for a job where you didn't use it;
+     - the headline, summary and cover letter are checked against the whole profile plus your stated
+       years. The cover letter may also name the employer and the role.
+  2. **Claude** (Opus, a separate call): every remaining statement goes in with a key, and Claude
+     flags whatever the profile doesn't support. It's told that rewording and summarising are fine.
+
+  Anything flagged is **removed**. If that would empty an entry, or it's the headline or summary, the
+  profile's own text is **reverted** in. Nothing is ever rewritten by the checker. Every change is
+  recorded in the application's truth report, which the Applications page shows.
+- **Alternatives:** Ask the tailoring prompt to be honest and trust it; let the checker rewrite flagged
+  text (that's a second unchecked generation).
+- **Tradeoffs:**
+  - The rules are strict and sometimes drop a fair paraphrase that adds a number (for example "two
+    services"). That's accepted: a weaker bullet beats an untrue one.
+  - Two Opus calls per application, roughly 10–20 US cents.
+
+### D-052: PDFs come from HTML through the installed Chrome (playwright-core)
+- **Date:** 2026-10-19 · **Status:** Accepted (FR-20)
+- **Decision:** `resume-html.ts` renders a one-column, text-only, standard-heading HTML resume and cover
+  letter. `pdf.ts` prints them to A4 with `playwright-core` driving the machine's Chrome
+  (`channel: "chrome"`, or `SORTIE_CHROME_PATH`). One browser per worker task is closed when the task
+  ends. Files go to `data/resumes/<application id>/<Name>-Resume.pdf` and `…-Cover-Letter.pdf`.
+- **Alternatives:** `@react-pdf/renderer` or pdfkit (a layout engine of its own; text extraction by
+  ATSs is less predictable); full `playwright` (downloads browsers and needs an install script, see
+  D-004); a DOCX template.
+- **Tradeoffs:** It needs Chrome installed, and the error says so. Phase 4 uses the same
+  `playwright-core` for form filling, so it's one dependency for both.
+
+### D-053: Tasks left "running" by a dead process are abandoned after 3 hours
+- **Date:** 2026-10-19 · **Status:** Accepted
+- **Decision:** `enqueue()` marks a task of the same type that has been `running` for more than 3 hours
+  as `failed` ("Abandoned: the process running it stopped") before queueing a new one. `lastTask()` no
+  longer shows such a task as live. Worker start still requeues anything running (D-042), and
+  applications left mid-tailoring go back to `queued`.
+- **Why:** A killed `npm run fetch` left its task `running` forever. That blocked new fetches and kept
+  the Fetch button on "Fetching…".
+- **Tradeoffs:** A real cycle longer than 3 hours would be wrongly abandoned. A full cycle takes about
+  8 minutes plus tailoring.

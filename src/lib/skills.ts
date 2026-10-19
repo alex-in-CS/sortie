@@ -3,9 +3,14 @@ import type { Skill } from "./schema";
 // Best-guess category for skills typed in by hand. Anything unknown lands in
 // "other" and the user can recategorise it.
 const KNOWN: Record<string, Skill["category"]> = {};
+// Display names in dictionary order, used to spot skills a job asks for that the profile lacks.
+export const KNOWN_SKILLS: { name: string; category: Skill["category"] }[] = [];
 
 const add = (category: Skill["category"], names: string) => {
-  for (const n of names.split(",")) KNOWN[norm(n)] = category;
+  for (const n of names.split(",")) {
+    KNOWN[norm(n)] = category;
+    KNOWN_SKILLS.push({ name: n, category });
+  }
 };
 
 export const norm = (name: string) => name.toLowerCase().replace(/[^a-z0-9+#]/g, "");

@@ -52,21 +52,21 @@ Status: ✅ done · 🟡 partial · ⬜ not started. Phase numbers match [plan.m
 
 | ID | Requirement | Status |
 | --- | --- | --- |
-| FR-11 | A registry of ~250 target companies, each mapped to its careers-site provider and board ID. | ⬜ |
-| FR-12 | Fetch open jobs from each company's public job feed (Greenhouse, Lever, Ashby, SmartRecruiters, Workday) every ~2 h. | ⬜ |
+| FR-11 | A registry of ~250 target companies, each mapped to its careers-site provider and board ID. | ✅ 217 live-verified boards + 56 unsupported listed (D-038, D-044) |
+| FR-12 | Fetch open jobs from each company's public job feed (Greenhouse, Lever, Ashby, SmartRecruiters, Workday) every ~2 h. | ✅ (D-031, D-039, D-042) |
 | FR-13 | Discovery: find new companies or jobs through a jobs API (optional, needs a key). | ⬜ (stretch) |
-| FR-14 | Normalise and dedupe jobs; keep a description snapshot; mark jobs closed when they disappear from the feed. | ⬜ |
-| FR-15 | Hard filters: location/work mode/authorization, excluded companies and keywords, seniority, employment type, salary floor (when pay is listed). | ⬜ |
-| FR-16 | A match score (0–100) per job × search, with reasons; only jobs ≥ the search's min match qualify. | ⬜ |
-| FR-17 | A Jobs page: browse, filter and inspect matches and their reasons. | ⬜ |
+| FR-14 | Normalise and dedupe jobs; keep a description snapshot; mark jobs closed when they disappear from the feed. | ✅ (D-043) |
+| FR-15 | Hard filters: location/work mode/authorization, excluded companies and keywords, seniority, employment type, salary floor (when pay is listed). | ✅ (D-040) |
+| FR-16 | A match score (0–100) per job × search, with reasons; only jobs ≥ the search's min match qualify. | ✅ deterministic (D-040) + Claude review of the best candidates (D-050) |
+| FR-17 | A Jobs page: browse, filter and inspect matches and their reasons. | ✅ |
 
 ### Tailoring (phase 3)
 
 | ID | Requirement | Status |
 | --- | --- | --- |
-| FR-18 | Per job: a tailored resume (reordered and reworded from the profile, emphasising relevant skills) and a cover letter. | ⬜ |
-| FR-19 | Truth check: every claim in the tailored output must trace to the profile; anything that doesn't is rejected. | ⬜ |
-| FR-20 | Export to PDF from a clean, ATS-friendly template. | ⬜ |
+| FR-18 | Per job: a tailored resume (reordered and reworded from the profile, emphasising relevant skills) and a cover letter. | ✅ (D-050, D-051) |
+| FR-19 | Truth check: every claim in the tailored output must trace to the profile; anything that doesn't is rejected. | ✅ rules + Claude, removes or reverts (D-051) |
+| FR-20 | Export to PDF from a clean, ATS-friendly template. | ✅ (D-052) |
 
 ### Applying and tracking (phase 4)
 
@@ -75,7 +75,7 @@ Status: ✅ done · 🟡 partial · ⬜ not started. Phase numbers match [plan.m
 | FR-21 | Fill application forms from profile + answers + tailored documents via browser automation. | ⬜ |
 | FR-22 | Review mode: prepare and hold for approval. Auto mode: submit when the form is fully and confidently filled. Portals with accounts or CAPTCHAs always hand off to the user. | ⬜ |
 | FR-23 | Never submit a form with an unanswered required field or an answer not grounded in stored data; escalate instead. | ⬜ |
-| FR-24 | Enforce max applications per company and per day across searches. | ⬜ |
+| FR-24 | Enforce max applications per company and per day across searches. | ✅ at selection (D-050); re-checked at submit in phase 4 |
 | FR-25 | Learn from edits: an answer corrected during review is saved to the answer bank (`source: learned`). | ⬜ |
 | FR-26 | An application tracker (kanban): Saved → Ready for review → Applied → In process → Interview → Offer / Rejected / Withdrawn, with the job snapshot and a history of every automated step. | ⬜ |
 | FR-27 | Browser extension to autofill any application page from the local profile. | ⬜ (stretch) |

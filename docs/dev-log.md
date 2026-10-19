@@ -4,6 +4,48 @@ Newest first. What was built, what broke, how it was fixed, and how it was check
 
 ## 2026-10-19 (Mon)
 
+### Phase 4: filling application forms, held for you to submit
+- **Form model (D-054):** Greenhouse questions come from its public API (with the phone country, the
+  city search and education added). Lever questions are read from the page. Other boards hand off by
+  link.
+- **Answers (D-055):** consent → rules → answer bank → Claude (Sonnet, must quote your data; code checks
+  the quote, the options and every number) → you. Your answers go into the bank as `learned`.
+- **Fill and check (D-056):** headless Chrome fills every field and reads it back, without attaching
+  files, and saves a screenshot. Then the application is held, sent to Needs you, or (auto mode +
+  `SORTIE_AUTO_SUBMIT=on` + nothing from Claude + all read back + no CAPTCHA) submitted. **Open in
+  Chrome** fills everything in a visible window, files included, and waits for the confirmation page.
+- **DB v5:** `apply_url`, `plan`, `fill`, `screenshot`, `submitted_at`, `submitted_by`. New statuses:
+  applying, held, submitting, submitted.
+- **UI:** the Applications page has Needs you (with the open questions as a form), Ready to submit,
+  Being prepared, Submitted and Skipped; a plan table showing each value and its source, with Claude's
+  answers highlighted; the screenshot; and Open in Chrome, Fill again, I submitted it and Skip.
+- **Worker:** a `handoff` task (one window at a time); `applying` and `submitting` are reset on start;
+  the form step runs at the end of every cycle (no API key needed).
+- **Live checks (read-only, nothing submitted, D-037):** `npm run try-apply` and the full form step
+  ran against Stripe's Greenhouse form and Hevo's Lever form with the demo profile. Both went
+  questions → answered → filled → **held**, with a screenshot. **Open in Chrome** was run once on
+  Stripe's form with a 20-second timeout: everything filled, both PDFs attached, and it went back to
+  held when no confirmation came.
+- **Bugs the live forms found, all fixed:**
+  - The phone country "India" picked "British Indian Ocean Territory". Dropdowns now take only an
+    exact option, or one that starts with the wanted words.
+  - Clicking an open dropdown closed it, so the second value tried never matched. Each try now starts
+    closed and types key by key.
+  - The city search found nothing for "Bengaluru, India"; it now falls back to "Bengaluru". "B.Tech"
+    now maps to "Bachelor's Degree", and an unlisted school to "Other".
+  - Greenhouse removes the file input once a file is attached, so the read-back waited 30 s and
+    failed. It now checks that the file name is showing.
+  - Stripe asked for "years of experience **as a data analyst**", and the general years rule answered
+    it with total years: a false claim. That rule now answers only the general question.
+  - A WhatsApp opt-in was treated as a missing answer; opt-ins and marketing questions now count as
+    consent. "Ever employed by Stripe" is answered from your roles, and "most recent degree" is
+    recognised.
+- Checked: tsc, lint, 85 tests (Lever forms filled in real Chrome from saved copies; Stripe's API
+  response planned; grounding, the gate, dropdown matching and the full status flow on a temp DB), a
+  prod build, API smoke tests (screenshot 200 and 404; answers 400 and 200; open, refill 409 while
+  open, submitted, skip 409 after), and screenshots at 1280 px and 390 px.
+- **Not yet checked:** Claude's grounded answers live (no API key); a real submission (by design).
+
 ### Phase 3: Claude reviews, selection, tailoring, truth check, PDFs
 - **Review (D-050):** Sonnet 5.5 reviews the best rule candidates (within 10 points of a search's bar,
   with a description, at most 40 per cycle). Its output is structured: score, verdict, reasons, gaps

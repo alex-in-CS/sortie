@@ -5,13 +5,14 @@ import { enqueue } from "@/lib/jobs";
 
 const Body = z.object({ action: z.enum(APPLICATION_ACTIONS) });
 
-// Skip, restore or re-tailor one application.
+// The owner's controls on one application (see actOnApplication).
 export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/applications/[id]">) {
   const id = Number((await ctx.params).id);
   const body = Body.safeParse(await req.json().catch(() => null));
   if (!Number.isInteger(id) || !body.success) return Response.json({ error: "Invalid request." }, { status: 400 });
   const result = actOnApplication(id, body.data.action);
   if ("error" in result) return Response.json({ error: result.error }, { status: result.code });
-  if (result.status === "queued") enqueue("prepare");
+  if (result.status === "queued" || result.status === "ready") enqueue("prepare");
+  if (result.status === "submitting") enqueue("handoff");
   return Response.json({ id, ...result });
 }

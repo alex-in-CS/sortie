@@ -266,7 +266,20 @@ export type TruthIssue = {
 export type TruthReport = { checkedAt: string; claudeChecked: boolean; issues: TruthIssue[] };
 
 // queued: chosen, waiting to be tailored; tailoring: in progress; ready:
-// documents done, waiting to apply (phase 4); needs_you: something only the
-// owner can fix; skipped: the owner said no. Phase 4 adds the apply stages.
-export const APPLICATION_STATUSES = ["queued", "tailoring", "ready", "needs_you", "skipped"] as const;
+// documents done, waiting for the form step; applying: Sortie is reading and
+// filling the form; held: filled and checked, waiting for you to submit;
+// submitting: open in Chrome for you to submit; submitted: sent; needs_you:
+// something only the owner can fix (a question, a failure); skipped: the owner
+// said no. See D-056 for the whole flow.
+export const APPLICATION_STATUSES = [
+  "queued",
+  "tailoring",
+  "ready",
+  "applying",
+  "held",
+  "submitting",
+  "submitted",
+  "needs_you",
+  "skipped",
+] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];

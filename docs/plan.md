@@ -45,16 +45,23 @@ shows filtered, scored matches with reasons. See the dev log for the live run.
 (`autopilot.test.ts`), real PDFs render from the template, and the pages work on demo data. **Not yet
 checked:** live Claude calls. They need `ANTHROPIC_API_KEY` (see below).
 
-## Phase 4: applying and tracking
+## Phase 4: applying and tracking ✅
 
-| | Item |
-| --- | --- |
-| must | Playwright form filling for Greenhouse and Lever: field mapping from profile, answers and documents; resume upload; a grounding check per field |
-| must | Review mode end to end: held with filled values and screenshots; Approve submits. The live check stops at review (D-037) |
-| must | Applications page (kanban) with step history |
-| should | Ashby; Workday prefill + handoff (opens a visible browser at the filled page) |
-| should | Learn from edits: answers corrected in review → answer bank (`learned`) |
-| stretch | Autofill browser extension |
+| | Item | Status |
+| --- | --- | --- |
+| must | Form filling for Greenhouse and Lever with `playwright-core` and the installed Chrome: one form model (D-054), answers from rules → answer bank → quote-checked Claude, consent left to you (D-055), every value read back (D-056) | ✅ |
+| must | Review mode end to end: held with the plan and a screenshot; **Open in Chrome** fills everything, files included, and watches for the confirmation. The live check stops before submit (D-037) | ✅ |
+| must | Auto-submit only through the gate (auto mode, `SORTIE_AUTO_SUBMIT=on`, nothing from Claude, all read back, no CAPTCHA); an unconfirmed submit is never retried | ✅ |
+| must | Applications page with statuses through Submitted, and the step history | ✅ (stages after Submitted come with the inbox) |
+| should | Learn from your answers: the answer bank (`learned`) | ✅ |
+| should | Ashby, SmartRecruiters, Workday: link + PDFs + "I submitted it" | ✅ handoff by link; filling them ⬜ |
+| stretch | Autofill browser extension | ⬜ |
+
+**Accepted when:** the planner and filler pass on saved real forms (Lever in Chrome, Greenhouse from its
+API); the status flow passes on a temp database; and the form step runs end to end against live
+Greenhouse (Stripe) and Lever (Hevo) forms on demo data, ending held with a screenshot, without
+submitting. See the dev log. **Not yet checked:** Claude's grounded answers live (no key), and a real
+submission (by design).
 
 ## Phase 5: inbox and notifications
 
@@ -70,7 +77,9 @@ checked:** live Claude calls. They need `ANTHROPIC_API_KEY` (see below).
 
 | Before | What | Why |
 | --- | --- | --- |
-| **Now** (phase 3 is built and waiting on it) | `ANTHROPIC_API_KEY` in `.env.local`, then upload your real resume | Resume parsing, reviews and tailoring all need it. Nothing has gone to Claude yet. |
+| **Now** (phases 3 and 4 are built and waiting on it) | `ANTHROPIC_API_KEY` in `.env.local`, then upload your real resume | Resume parsing, reviews, tailoring and grounded form answers need it. Nothing has gone to Claude yet. |
+| Now | Fill in **Answers** (salary, notice period via Preferences, how you heard) | Fewer form questions come back to you. |
+| When you're ready | Decide on `SORTIE_AUTO_SUBMIT` (Q-3) | Off by default: you press Submit on every form. |
 | Now | Fill in Preferences (countries, cities, work authorization, years) and check the default search | Matching is only as good as these. |
 | Any time | Prune the company list on the Companies page (Q-2) | Your target list, your call. |
 | **Phase 5** | A Google Cloud project with the Gmail API enabled and an OAuth client of type *Desktop app*, with you added as a test user (steps in [operations.md](operations.md#gmail-setup-day-3)) | Gmail access. Only you can create it. |

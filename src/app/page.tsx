@@ -11,7 +11,6 @@ import { answersStore, getProfile, latestDocument, preferencesStore, searchesSto
 type Step = { done: boolean; title: string; detail: string; href?: string; cta?: string };
 
 const ROADMAP = [
-  ["Applying", "Auto-submit where forms allow, a browser extension that fills Workday-style portals for your click, a kanban tracker, and answers learned from your edits."],
   ["Inbox", "Read Gmail (read-only), match replies to applications and move them on the board: rejection, next round, interview."],
   ["Telegram", "Pings only when something needs you, a daily recap, and approve-from-phone."],
   ["Interview prep", "When an invite lands: a prep pack for that company and role, plus a mock interview."],
@@ -33,7 +32,7 @@ export default function Overview() {
           {ROADMAP.map(([title, text], i) => (
             <li key={title} className="rounded-lg border border-dashed border-line px-4 py-3">
               <p className="text-sm font-medium">
-                <span className="mr-2 font-mono text-xs text-faint">0{i + 4}</span>
+                <span className="mr-2 font-mono text-xs text-faint">0{i + 5}</span>
                 {title}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">{text}</p>
@@ -57,8 +56,9 @@ async function Setup() {
   const jobs = jobCounts();
   const boards = listCompanies().filter((c) => c.enabled).length;
   const apps = applicationCounts();
-  const ready = apps.ready ?? 0;
-  const preparing = (apps.queued ?? 0) + (apps.tailoring ?? 0);
+  const ready = (apps.held ?? 0) + (apps.submitting ?? 0);
+  const preparing = (apps.queued ?? 0) + (apps.tailoring ?? 0) + (apps.ready ?? 0) + (apps.applying ?? 0);
+  const submitted = apps.submitted ?? 0;
 
   const steps: Step[] = [
     {
@@ -129,12 +129,12 @@ async function Setup() {
       cta: fetched ? "See jobs" : "Companies",
     },
     {
-      done: ready > 0,
-      title: "Tailored applications",
+      done: ready + submitted > 0,
+      title: "Applications",
       detail:
-        ready || preparing || apps.needs_you
-          ? `${ready} ready${preparing ? `, ${preparing} being prepared` : ""}${apps.needs_you ? `, ${apps.needs_you} need you` : ""}.`
-          : "After a cycle, jobs that clear your bar get a tailored, fact-checked resume and cover letter.",
+        ready || preparing || submitted || apps.needs_you
+          ? `${ready} ready to submit${preparing ? `, ${preparing} being prepared` : ""}${apps.needs_you ? `, ${apps.needs_you} need you` : ""}${submitted ? `, ${submitted} submitted` : ""}.`
+          : "After a cycle, jobs that clear your bar get a tailored, fact-checked resume and cover letter, and their application form filled from your answers.",
       href: "/applications",
       cta: "Open",
     },

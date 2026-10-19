@@ -24,10 +24,13 @@ npm run dev                    # http://127.0.0.1:3000
 | `SORTIE_MODEL` | no | `claude-opus-5-5` | Resume reading, tailoring and the truth check (D-035). |
 | `SORTIE_DATA_DIR` | no | `./data` | Database and uploads. Absolute or relative to the project. |
 | `SORTIE_FETCH_HOURS` | no | `2` | Hours between fetch cycles in the worker (±10% jitter). |
-| `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` | Job reviews, and later email sorting (D-035). |
+| `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` | Job reviews and answers to form questions; later email sorting (D-035, D-055). |
 | `SORTIE_REVIEWS_PER_CYCLE` | no | `40` | Most Claude job reviews per cycle (D-050). |
 | `SORTIE_TAILOR_PER_CYCLE` | no | `10` | Most applications tailored per cycle. |
-| `SORTIE_CHROME_PATH` | no | Chrome | A Chromium-based browser for PDFs, if Google Chrome isn't installed (D-052). |
+| `SORTIE_APPLY_PER_CYCLE` | no | `10` | Most forms read, filled and checked per cycle (D-056). |
+| `SORTIE_AUTO_SUBMIT` | no | off | `on` lets searches in auto mode send forms that pass every check (D-056). Off, you submit everything. |
+| `SORTIE_HANDOFF_MINUTES` | no | `20` | How long **Open in Chrome** waits for you to submit before the form goes back to held. |
+| `SORTIE_CHROME_PATH` | no | Chrome | A Chromium-based browser for PDFs and forms, if Google Chrome isn't installed (D-052). |
 | *(Day 3)* `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | for Gmail | | From the Desktop OAuth client. |
 | *(Day 3)* `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | for alerts | | Chat ID is captured on the first `/start`. |
 | *(optional)* `JOBS_API_KEY` | for discovery | | JSearch/SerpAPI. |
@@ -45,7 +48,8 @@ Restart the dev server after changing `.env.local`.
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm run lint` | ESLint (flat config). |
 | `npm run worker` | Background worker: fetches every ~2 h and runs queued tasks ("Fetch now"). Leave it running in a second terminal. |
-| `npm run fetch` | One full cycle now (fetch, match, review, select, tailor), printed line by line, then exit. Doesn't need the worker. |
+| `npm run fetch` | One full cycle now (fetch, match, review, select, tailor, fill forms), printed line by line, then exit. Doesn't need the worker. |
+| `npm run try-apply -- greenhouse <board> <jobId>` or `-- lever <applyUrl>` | Dry run of the form filler on a live form with your stored data: prints the plan and what read back, saves `try-apply-<provider>.png`. Never submits and never attaches files. Add `--headed` to watch. |
 | `npm run registry:verify` | Re-probe every candidate and enterprise feed live and rewrite `src/lib/registry/companies.json` (takes a few minutes). |
 
 Before every commit: `npm run typecheck && npm run lint && npm test && npm run build`.
@@ -62,6 +66,18 @@ Before every commit: `npm run typecheck && npm run lint && npm test && npm run b
    picks jobs within your limits, and tailors a resume and cover letter for each (D-050 to D-052).
    **Applications** shows them with their PDFs and what the truth check changed. Press **Apply** on
    any job to pick it by hand; the worker tailors it within ~30 s.
+6. Then the form step reads each application's form and fills it from your stored data (D-054 to
+   D-056). On **Applications**:
+   - **Needs you** lists the questions nothing stored answers. Answer them once; they go into your
+     answer bank and the form is filled again.
+   - **Ready to submit** has filled, checked forms. Press **Open in Chrome to submit**: within ~30 s
+     the worker opens a Chrome window with everything filled in, files included. Look it over, solve a
+     CAPTCHA if one shows, and press Submit there. Sortie sees the confirmation page and marks it
+     submitted.
+   - Ashby, SmartRecruiters and Workday forms aren't filled: open the link, apply with the PDFs, then
+     press **I submitted it**.
+   - Sortie submits on its own only for a search in auto mode with `SORTIE_AUTO_SUBMIT=on`, and only
+     when nothing about the form needs a person.
 5. **Companies** lists every board with its last result. Switch off companies you don't want, or use
    **Fetch now**, which queues a run for the worker.
 
@@ -89,6 +105,7 @@ Before every commit: `npm run typecheck && npm run lint && npm test && npm run b
 | Layer | How |
 | --- | --- |
 | Pure logic | Vitest, `src/**/*.test.ts`. `server-only` is stubbed by `vitest.config.mts`. |
+| Forms | `apply/apply.test.ts` reads and fills saved copies of real Lever forms in Chrome (skipped if Chrome can't start) and plans a real Greenhouse API response; `apply/flow.test.ts` covers grounding, the gate and the status flow. Live: `npm run try-apply` (never submits). |
 | Database | `db.test.ts` opens a temp `SORTIE_DATA_DIR`, resets modules, closes the cached connection after each test. |
 | API | Start a prod build on a spare port with a scratch `SORTIE_DATA_DIR` and curl the routes (see the dev log for the exact checks run). |
 | UI | Headless Chrome screenshots at 1366 px and 390 px (phone widths through an iframe, since desktop Chrome won't go narrower than ~500 px). |
@@ -125,7 +142,10 @@ weekly unless the app is moved to production (see [risks.md](risks.md)).
 | A company shows "Failed: HTTP 404" | The board moved or was renamed | Re-run `npm run registry:verify`; fix its entry in the candidates or enterprise file. |
 | A company shows "Rate-limited, resting 12 h" | The board answered HTTP 429 even after backoff (D-048) | Nothing to do: it's retried after 12 hours. Its stored jobs stay open. |
 | "Couldn't start Chrome to make the PDF" | Google Chrome isn't installed where Playwright looks | Install Chrome, or set `SORTIE_CHROME_PATH` to `msedge.exe` / `chrome.exe` (D-052). |
-| An application sits in **Needs you** | Tailoring failed three times (the error is shown) | Fix the cause (key, rate limit, Chrome), then **Try again**. |
+| An application sits in **Needs you** | Tailoring failed three times, the form has questions nothing stored answers, the board isn't fillable, or a field didn't fill (the card says which) | Fix the cause, then **Try again** (tailoring) or **Fill again** (form); answer the questions; or **Open in Chrome** and finish it there. |
+| **Open in Chrome** does nothing | The worker isn't running; it opens the window | Start `npm run worker`. The card says "Opening in Chrome" until it does. |
+| "Clicked submit but saw no confirmation" | Auto mode pressed submit and no confirmation page appeared | It may have gone through. Check your email and the company's site before applying again; Sortie never retries it (D-056). |
+| A dropdown field "didn't fill" | No option matched the stored value exactly or by its first words (D-056) | Open in Chrome and pick it there; or store an answer in the answer bank worded like the option. |
 | Applications page says tailoring is paused | No API key, or the profile lacks a name, email, a role/project or skills | Add what it names; the next cycle continues. |
 | "Fetching…" never ends after a killed `npm run fetch` | The task row was left `running` | Fixed by D-053: after 3 h it's abandoned automatically; starting the worker requeues it at once. |
 | Page error: "Only plain objects can be passed to Client Components" | A `node:sqlite` row (null prototype) reached a client prop | Return it through `plain()` in `jobs.ts` (D-047). |

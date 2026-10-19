@@ -8,7 +8,11 @@ import { Button } from "./ui";
 const LABEL: Record<ApplicationStatus, string> = {
   queued: "being prepared",
   tailoring: "being tailored",
-  ready: "ready",
+  ready: "being prepared",
+  applying: "filling the form",
+  held: "ready to submit",
+  submitting: "open in Chrome",
+  submitted: "submitted",
   needs_you: "needs you",
   skipped: "skipped",
 };

@@ -61,6 +61,9 @@ Index
 | [D-051](#d-051-the-truth-check-runs-in-two-passes-rules-then-claude-and-only-removes) | Truth check: rules then Claude, and it only removes | Accepted |
 | [D-052](#d-052-pdfs-come-from-html-through-the-installed-chrome-playwright-core) | PDFs from HTML through the installed Chrome | Accepted |
 | [D-053](#d-053-tasks-left-running-by-a-dead-process-are-abandoned-after-3-hours) | Stale running tasks abandoned after 3 hours | Accepted |
+| [D-054](#d-054-one-form-model-greenhouse-from-its-api-lever-from-the-page) | One form model: Greenhouse from its API, Lever from the page | Accepted |
+| [D-055](#d-055-answers-come-from-rules-then-the-answer-bank-then-grounded-claude-consent-is-yours) | Answers: rules, then the bank, then grounded Claude; consent is yours | Accepted |
+| [D-056](#d-056-fill-and-check-without-files-hold-for-you-auto-submit-only-through-a-strict-gate) | Fill and check without files, hold for you, auto-submit through a strict gate | Accepted |
 
 ---
 
@@ -207,7 +210,7 @@ Index
   provider each company uses (see [research.md](research.md)).
 
 ### D-013: Hybrid apply
-- **Date:** 2026-10-19 · **Status:** Accepted (owner's choice; built in phase 4)
+- **Date:** 2026-10-19 · **Status:** Accepted (owner's choice; built in phase 4, see D-054 to D-056)
 - **Decision:** Auto-submit only when the form is a known, simple provider form (e.g. Greenhouse,
   Lever, Ashby) **and** every required field is answered from stored data **and** the search is in
   auto mode. Portals that need per-company accounts or show CAPTCHAs (Workday, SuccessFactors, Taleo,
@@ -268,7 +271,7 @@ Index
   search, which is simpler and better targeted.
 
 ### D-020: Screening answers and an answer bank that learns
-- **Date:** 2026-10-19 · **Status:** Accepted (learning built in phase 4)
+- **Date:** 2026-10-19 · **Status:** Accepted (learning built in phase 4, D-055)
 - **Context:** Taken from JobCopilot: answer standard screening questions once, and when the user edits
   an AI-written answer, remember it.
 - **Decision:** An `answers` document holds salary answers, a free-text salary fallback ("Negotiable"),
@@ -683,3 +686,109 @@ Index
   the Fetch button on "Fetching…".
 - **Tradeoffs:** A real cycle longer than 3 hours would be wrongly abandoned. A full cycle takes about
   8 minutes plus tailoring.
+
+### D-054: One form model: Greenhouse from its API, Lever from the page
+- **Date:** 2026-10-19 · **Status:** Accepted (FR-21)
+- **Decision:** Every provider's application form becomes the same list of `FormField`s
+  (`apply/types.ts`): `{key, label, kind, required, options, optionKeys?}`. The kind is text, textarea,
+  file, select, radio, checkbox, or search (a dropdown whose options load as you type).
+  - **Greenhouse.** The public Job Board API (`/v1/boards/{board}/jobs/{id}?questions=true`) lists
+    every question, its type and its options. Sortie adds what the page has but the API doesn't
+    describe: the phone's country picker, the city search when location questions are required, and
+    school, degree and discipline when education is asked. The form opens at
+    `job-boards.greenhouse.io/embed/job_app?for={board}&token={id}`, which also works for boards that
+    host their careers page elsewhere.
+  - **Lever.** The form is plain HTML, so `readLeverDom()` runs in the page and reads each question
+    block: its label (a ✱ means required) and the inputs that share a name.
+  - **Other providers** (Ashby, SmartRecruiters, Workday and the rest) aren't filled. Their
+    applications go to "Needs you" with the link and the tailored PDFs, and you mark them submitted
+    (D-013).
+- **Alternatives:** Read every form from the page (Greenhouse's React form hides its option lists until
+  each one is opened); write a reader per company.
+- **Tradeoffs:**
+  - Greenhouse fields the API doesn't describe are added by hand.
+  - If Greenhouse changes its page ids (`#first_name`, `#question_<id>`, `school--0`), filling fails
+    loudly: the read-back catches it and the application goes to Needs you.
+  - The test fixtures are saved copies of real Lever forms and a Greenhouse API response.
+
+### D-055: Answers come from rules, then the answer bank, then grounded Claude; consent is yours
+- **Date:** 2026-10-19 · **Status:** Accepted (FR-23, FR-25, NFR-1)
+- **Decision:** `planForm()` gives each field a value, a state (ok, skip, missing or decide) and a source
+  in plain words. The first of these that applies decides:
+  1. **Consent.** Questions about recording, privacy notices, attestations, opt-ins and marketing
+     messages are "decide": only you answer them. The answer bank may hold your earlier answer to the
+     same question.
+  2. **Rules**, in a fixed order, from the profile, preferences and screening answers. They cover name,
+     email, phone, links, current employer and title, years of experience, notice period, salary,
+     school and degree, how you heard, and self-ID (D-021).
+     - Work authorization and sponsorship are worked out for the countries the question names, or else
+       the job's countries.
+     - Options are chosen by meaning: yes/no, ranges like "15 - 30 days" or "20 - 25 LPA", country
+       names, and "decline".
+     - When the matching rule has no data, no looser rule may guess.
+  3. **The answer bank**, when a stored question uses nearly the same words (a token overlap of at
+     least 0.8, after removing stop words). A paraphrase with a different meaning doesn't match.
+  4. **Claude** (Sonnet 5.5, `apply/ground.ts`), only for required questions that are still missing.
+     It gets your stored data and must quote the line it relied on. Code accepts an answer only if:
+     - the quote really is in that data;
+     - a choice is one of the form's options;
+     - every number in a text answer appears in your data.
+
+     Claude's answers are marked on the page, and they keep the application from auto-submitting.
+  5. **You.** Anything left is "missing" and comes to you. Your answer is saved to the bank as
+     `learned`, so the same question on any later form gets the same answer.
+  - **Total years answer only the general question.** "Years of experience as a data analyst" or
+    "years with Python" is a different claim, so it's left to you. A live Stripe form showed why: the
+    general rule would have claimed years as a data analyst.
+- **Alternatives:**
+  - Let Claude answer every question. It's fast, but the answers can't be checked, and it invents
+    plausible facts.
+  - Fuzzy or semantic matching in the bank. It's too likely to reuse an answer for a different
+    question.
+- **Tradeoffs:** More questions come to you at first. Each one is asked only once.
+
+### D-056: Fill and check without files, hold for you, auto-submit only through a strict gate
+- **Date:** 2026-10-19 · **Status:** Accepted (FR-21, FR-22, D-013)
+- **Decision:** After tailoring, each `ready` application goes through the form step
+  (`apply/index.ts`). At most `SORTIE_APPLY_PER_CYCLE` run per cycle, and no API key is needed.
+  1. **Read and plan.** Sortie opens the form in headless Chrome, reads the fields and plans the
+     answers (D-055). If a required question is unanswered, the application goes to `needs_you` with
+     the questions.
+  2. **Fill and check.** It fills every field and **reads each value back** from the page.
+     - Dropdowns take only the exact option, or one that starts with the wanted words: "India" gives
+       "India +91", never "British Indian Ocean Territory".
+     - Search dropdowns try fallbacks: "Bengaluru, India", then "Bengaluru"; "B.Tech", then
+       "Bachelor's Degree", then "Other".
+     - Files are **not attached** in this pass, because boards upload a file the moment it's attached.
+     - It saves a full-page screenshot.
+  3. **Decide.** A required field that didn't fill sends the application to `needs_you`. Otherwise it's
+     `held`, with the reason, unless every auto-submit condition holds:
+     - the search is in auto mode, and the job wasn't picked by hand;
+     - `SORTIE_AUTO_SUBMIT=on`;
+     - no field is missing or awaiting your decision, and no answer came from Claude;
+     - every field read back correctly;
+     - no CAPTCHA puzzle is showing.
+
+     Only then are the files attached and submit pressed.
+     - "Submitted" is recorded only when the confirmation page shows.
+     - A CAPTCHA puts it back to `held`.
+     - If no confirmation shows, it goes to `needs_you` and is never retried on its own, since it may
+       have gone through.
+  - **Open in Chrome** (`handoff`): the worker fills the form, files included, in a visible Chrome
+    window. It waits up to `SORTIE_HANDOFF_MINUTES` (default 20) for the confirmation page.
+    - If the confirmation shows, it's `submitted`.
+    - If the window closes or the time runs out, it's `held` again.
+    - You can also mark any application "I submitted it".
+  - **Restarts:** `applying` goes back to `ready`. `submitting` (a window that was open) goes back to
+    `held`.
+- **Alternatives:**
+  - Submit whenever filling worked. No person would see Claude's answers.
+  - Always hand off. That's no autopilot at all.
+  - Solve or route around CAPTCHAs. Ruled out by D-013.
+- **Tradeoffs:**
+  - Greenhouse and Lever show CAPTCHAs (reCAPTCHA, hCaptcha), so in practice most applications end at
+    "Open in Chrome". That's deliberate: one click and a look, against a wrong application sent in
+    your name.
+  - The worker handles one handoff at a time and waits on it. A fetch cycle can be delayed by up to
+    20 minutes while a window is open.
+  - The screenshot shows the form without files, since those are attached when it's sent.

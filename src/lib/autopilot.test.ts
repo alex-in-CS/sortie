@@ -7,7 +7,8 @@ import type { StructuredRequest } from "./llm";
 import type { SourceJob } from "./sources/types";
 
 // The whole phase 3 path on a temp database, with Claude and Chrome replaced by
-// fakes: review → select under caps → tailor → truth check → files on disk.
+// fakes: review → select under caps → tailor → truth check → files on disk →
+// handed to the form step.
 
 const fake = vi.hoisted(() => ({
   structured: vi.fn(),
@@ -19,6 +20,14 @@ vi.mock("./llm", async (importOriginal) => ({
   structured: fake.structured,
 }));
 vi.mock("./pdf", () => ({ htmlToPdf: async (html: string) => Buffer.from(`%PDF ${html.length}`), closePdf: async () => {} }));
+// The form step has its own tests (apply/flow.test.ts); here it just holds.
+vi.mock("./apply", () => ({
+  applyOne: async (app: { id: number }) => {
+    const { saveFormOutcome } = await import("./applications");
+    saveFormOutcome(app.id, { status: "held", detail: "This search is in review mode: you submit." });
+    return "held";
+  },
+}));
 
 let dir: string;
 
@@ -132,20 +141,22 @@ describe("prepare", () => {
     expect(r.reviews).toMatchObject({ reviewed: 3, failed: 0 });
     // Acme's cap is 1; Beta has a dealbreaker.
     expect(r).toMatchObject({ selected: 1, capped: { company: 1, daily: 0 }, tailored: 1, tailorFailed: 0, blocked: null });
+    expect(r.forms).toEqual({ held: 1, submitted: 0, needsYou: 0 });
 
     const [app] = apps.listApplications();
-    expect(app).toMatchObject({ status: "ready", company: "Acme", origin: "auto", review: { score: 82, gaps: ["Kafka"] } });
+    expect(app).toMatchObject({ status: "held", company: "Acme", origin: "auto", review: { score: 82, gaps: ["Kafka"] } });
     expect(app.resume!.headline).toBe("Backend engineer"); // reverted by the Claude check
     expect(app.resume!.experience[0].bullets).toEqual(["Built payment APIs in Node.js"]); // "9 regions" removed by the rules
     expect(app.truth!.issues.map((i) => i.reason)).toEqual(["States 9, which isn't in your profile", "Not senior"]);
     expect(app.resume_file).toBe(`resumes/${app.id}/Sam-Rivera-Resume.pdf`);
     expect(fs.existsSync(path.join(dir, app.resume_file!))).toBe(true);
     expect(fs.existsSync(path.join(dir, `resumes/${app.id}/Sam-Rivera-Cover-Letter.pdf`))).toBe(true);
-    expect(apps.applicationEvents(app.id).map((e) => e.kind)).toEqual(["selected", "tailoring", "ready"]);
+    expect(apps.applicationEvents(app.id).map((e) => e.kind)).toEqual(["selected", "tailoring", "ready", "applying", "held"]);
+    expect(app.last_detail).toMatch(/review mode/);
 
     // Nothing changed: no new reviews, and Acme is at its cap.
     fake.structured.mockClear();
-    expect(await prepare()).toMatchObject({ reviews: { reviewed: 0 }, selected: 0, tailored: 0 });
+    expect(await prepare()).toMatchObject({ reviews: { reviewed: 0 }, selected: 0, tailored: 0, forms: { held: 0 } });
     expect(fake.structured).not.toHaveBeenCalled();
   });
 

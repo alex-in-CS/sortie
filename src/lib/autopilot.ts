@@ -5,7 +5,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import {
   type Application,
   capUsage,
+  claimForApplying,
   claimForTailoring,
+  coverLetterFile,
   createApplication,
   failTailoring,
   pruneReviews,
@@ -13,6 +15,7 @@ import {
   selectionCandidates,
   setStatus,
 } from "./applications";
+import { applyOne } from "./apply";
 import { DATA_DIR } from "./db";
 import { getJob } from "./jobs";
 import { describeError, hasApiKey } from "./llm";
@@ -24,11 +27,13 @@ import { selectJobs } from "./select";
 import { preferencesStore, profileStore, searchesStore } from "./store";
 import { tailorAndCheck } from "./tailor";
 
-// Phase 3 of every cycle, after fetching and matching: Claude reviews the best
-// candidates, Sortie picks jobs within the caps, and each pick gets a tailored
-// resume and cover letter that passed the truth check (D-050, D-051, D-052).
+// Phases 3 and 4 of every cycle, after fetching and matching: Claude reviews
+// the best candidates, Sortie picks jobs within the caps, each pick gets a
+// tailored resume and cover letter that passed the truth check (D-050, D-051,
+// D-052), and then the form step fills and checks its application (D-056).
 
 const TAILOR_PER_CYCLE = Number(process.env.SORTIE_TAILOR_PER_CYCLE) || 10;
+const APPLY_PER_CYCLE = Number(process.env.SORTIE_APPLY_PER_CYCLE) || 10;
 
 export const RESUME_DIR = path.join(DATA_DIR, "resumes");
 
@@ -48,8 +53,6 @@ const fileSlug = (s: string) =>
     .replace(/[^\w\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-") || "Candidate";
-
-export const coverLetterFile = (resumeFile: string) => resumeFile.replace(/Resume\.pdf$/, "Cover-Letter.pdf");
 
 export async function tailorOne(app: Application, log: (line: string) => void = () => {}) {
   const job = getJob(app.job_id);
@@ -90,6 +93,7 @@ export type PrepareResult = {
   capped: { company: number; daily: number };
   tailored: number;
   tailorFailed: number;
+  forms: { held: number; submitted: number; needsYou: number };
   blocked: string | null;
 };
 
@@ -148,5 +152,25 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
       }
     }
   } else log(`Tailoring paused: ${blocked}`);
-  return { reviews, selected, waitingForReview: waiting, capped, tailored, tailorFailed, blocked };
+
+  // The form step needs no API key (Claude only answers questions nothing
+  // stored covers), so it runs even while tailoring is paused.
+  const forms = { held: 0, submitted: 0, needsYou: 0 };
+  for (let i = 0; i < APPLY_PER_CYCLE; i++) {
+    const app = claimForApplying();
+    if (!app) break;
+    try {
+      const status = await applyOne(app, log);
+      if (status === "held") forms.held++;
+      else if (status === "submitted") forms.submitted++;
+      else if (status === "needs_you") forms.needsYou++;
+    } catch (err) {
+      forms.needsYou++;
+      blocked = describeError(err);
+      break;
+    }
+  }
+  if (forms.held + forms.submitted + forms.needsYou)
+    log(`Forms: ${forms.held} ready for you to submit, ${forms.submitted} submitted, ${forms.needsYou} need you.`);
+  return { reviews, selected, waitingForReview: waiting, capped, tailored, tailorFailed, forms, blocked };
 }

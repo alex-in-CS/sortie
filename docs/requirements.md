@@ -72,12 +72,12 @@ Status: ✅ done · 🟡 partial · ⬜ not started. Phase numbers match [plan.m
 
 | ID | Requirement | Status |
 | --- | --- | --- |
-| FR-21 | Fill application forms from profile + answers + tailored documents via browser automation. | ⬜ |
-| FR-22 | Review mode: prepare and hold for approval. Auto mode: submit when the form is fully and confidently filled. Portals with accounts or CAPTCHAs always hand off to the user. | ⬜ |
-| FR-23 | Never submit a form with an unanswered required field or an answer not grounded in stored data; escalate instead. | ⬜ |
-| FR-24 | Enforce max applications per company and per day across searches. | ✅ at selection (D-050); re-checked at submit in phase 4 |
-| FR-25 | Learn from edits: an answer corrected during review is saved to the answer bank (`source: learned`). | ⬜ |
-| FR-26 | An application tracker (kanban): Saved → Ready for review → Applied → In process → Interview → Offer / Rejected / Withdrawn, with the job snapshot and a history of every automated step. | ⬜ |
+| FR-21 | Fill application forms from profile + answers + tailored documents via browser automation. | ✅ Greenhouse and Lever; others hand off with the link (D-054, D-056) |
+| FR-22 | Review mode: prepare and hold for approval. Auto mode: submit when the form is fully and confidently filled. Portals with accounts or CAPTCHAs always hand off to the user. | ✅ held, or auto-submit through the gate; Open in Chrome hands off (D-056) |
+| FR-23 | Never submit a form with an unanswered required field or an answer not grounded in stored data; escalate instead. | ✅ rules, bank, quote-checked Claude; the rest go to you (D-055) |
+| FR-24 | Enforce max applications per company and per day across searches. | ✅ at selection (D-050). An application holds its slot from the moment it's picked, so submitting needs no second check. |
+| FR-25 | Learn from edits: an answer corrected during review is saved to the answer bank (`source: learned`). | ✅ answers given on the Applications page (D-055) |
+| FR-26 | An application tracker (kanban): Saved → Ready for review → Applied → In process → Interview → Offer / Rejected / Withdrawn, with the job snapshot and a history of every automated step. | 🟡 up to Submitted, with the step history; the stages after that come with the inbox (phase 5) |
 | FR-27 | Browser extension to autofill any application page from the local profile. | ⬜ (stretch) |
 
 ### Inbox (phase 5)
@@ -117,7 +117,7 @@ Status: ✅ done · 🟡 partial · ⬜ not started. Phase numbers match [plan.m
 | NFR-2 | **Privacy.** Personal data stays on the machine except calls to Anthropic, Google, Telegram and the target employer. | `data/` is gitignored; server binds 127.0.0.1; secrets live in `.env.local`. See [D-017](decisions.md). |
 | NFR-3 | **Respect for sites.** No scraping of sites that forbid it, no CAPTCHA solving, no bot-protection bypass, polite rates. | Use public job feeds only; hand off when blocked. See [D-012](decisions.md), [risks](risks.md). |
 | NFR-4 | **Quality over volume.** Defaults of 3 per company and 25 per day; review mode by default. | [D-014](decisions.md), [D-015](decisions.md). |
-| NFR-5 | **Idempotence.** No job is applied to twice; restarts are safe. | Unique (job, search) application rows; state machine (phase 4). |
+| NFR-5 | **Idempotence.** No job is applied to twice; restarts are safe. | One application per job (`job_id` unique); a submit without a confirmation is never retried; restarts reset `applying` and `submitting` (D-056). |
 | NFR-6 | **Observability.** Every automated action leaves a record you can read. | Application step history (FR-26), logs. |
 | NFR-7 | **Cost.** LLM spend kept to a few dollars a day at most. | Deterministic prefilter before any LLM call; batching; caching. See [risks](risks.md) R-08. |
 | NFR-8 | **Runs on the owner's Windows machine** with Node 24, no Python, no Docker. | [D-002](decisions.md), [D-004](decisions.md). |

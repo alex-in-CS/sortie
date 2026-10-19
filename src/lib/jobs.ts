@@ -235,9 +235,12 @@ export const openJobs = () =>
 
 export function getJob(id: number) {
   const r = getDb()
-    .prepare("SELECT jobs.*, companies.name AS company FROM jobs JOIN companies ON companies.id = jobs.company_id WHERE jobs.id = ?")
-    .get(id) as (JobRow & { company: string }) | undefined;
-  return r ? { ...toJob(r), company: r.company } : undefined;
+    .prepare(
+      `SELECT jobs.*, companies.name AS company, companies.provider, companies.board
+       FROM jobs JOIN companies ON companies.id = jobs.company_id WHERE jobs.id = ?`,
+    )
+    .get(id) as (JobRow & { company: string; provider: Provider; board: string }) | undefined;
+  return r ? { ...toJob(r), company: r.company, provider: r.provider, board: r.board } : undefined;
 }
 
 export function jobCounts() {

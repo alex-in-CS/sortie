@@ -186,6 +186,17 @@ const MIGRATIONS: Migration[] = [
   );
   CREATE INDEX application_events_app ON application_events (application_id, id);
   `,
+  // v5: phase 4. The form step keeps what it planned for each question, what
+  // it read back after filling, a screenshot, and when (and by whom) the
+  // application went out.
+  `
+  ALTER TABLE applications ADD COLUMN apply_url TEXT;
+  ALTER TABLE applications ADD COLUMN plan TEXT;
+  ALTER TABLE applications ADD COLUMN fill TEXT;
+  ALTER TABLE applications ADD COLUMN screenshot TEXT;
+  ALTER TABLE applications ADD COLUMN submitted_at TEXT;
+  ALTER TABLE applications ADD COLUMN submitted_by TEXT;
+  `,
 ];
 
 const userVersion = (db: DatabaseSync) =>

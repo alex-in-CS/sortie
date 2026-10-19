@@ -7,10 +7,14 @@ import { chromium, type Browser } from "playwright-core";
 
 let browser: Promise<Browser> | null = null;
 
-const launch = () =>
-  chromium.launch(
-    process.env.SORTIE_CHROME_PATH ? { executablePath: process.env.SORTIE_CHROME_PATH } : { channel: "chrome" },
-  );
+// The same Chrome, for the form step too (headless to check, visible for you to submit).
+export const launchChrome = (headless = true) =>
+  chromium.launch({
+    ...(process.env.SORTIE_CHROME_PATH ? { executablePath: process.env.SORTIE_CHROME_PATH } : { channel: "chrome" }),
+    headless,
+  });
+
+const launch = () => launchChrome();
 
 export async function htmlToPdf(html: string): Promise<Buffer> {
   browser ??= launch().catch((err) => {

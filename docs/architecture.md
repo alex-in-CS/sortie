@@ -1,6 +1,6 @@
 # Architecture
 
-## 1. Today (phases 1–3)
+## 1. Today (phases 1–4)
 
 ```
  Browser (127.0.0.1:3000)
@@ -9,7 +9,8 @@
  Next.js 16 server  ─────────────────────────────────────────────────────────────────────
    app/*/page.tsx         server components: static shell + <Suspense> data child (D-024)
    app/jobs               runs matchAll() (cheap, hash-skipped) then lists matches, reviews, Apply (D-041)
-   app/applications       picked jobs by status: review, PDFs, truth report, skip/restore/re-tailor
+   app/applications       picked jobs by status: review, PDFs, truth report, form plan, screenshot,
+                          open questions, Open in Chrome / I submitted it / fill again / skip
    app/companies          syncs the registry, lists boards, on/off switches, Fetch now
    app/api/resume         POST multipart → parseResume (Claude) → mergeResume → save
    app/api/profile        GET / PUT (zod-validated, blank bullet lines stripped)
@@ -17,14 +18,15 @@
    app/api/companies/[id] PATCH {enabled}
    app/api/fetch          POST → enqueue("fetch") · GET → last fetch task
    app/api/applications   POST {jobId, searchId} → manual pick + enqueue("prepare")
-   app/api/applications/[id]              PATCH {action: skip | restore | retailor}
-   app/api/applications/[id]/files/[kind] GET resume | cover-letter PDF
+   app/api/applications/[id]              PATCH {action: skip | restore | retailor | refill | open | submitted}
+   app/api/applications/[id]/answers      POST your answers → answer bank (learned) → fill again
+   app/api/applications/[id]/files/[kind] GET resume | cover-letter PDF | form screenshot
         │
         ▼
  src/lib  (framework-free; the worker imports it too, D-003)
    schema.ts     zod: Profile, ParsedResume, Preferences, Search(es), Answers   (D-006)
    store.ts      setting(key, schema, fallback) → get/save; documents table
-   db.ts         getDb(): lazy open, WAL, busy timeout, migrations v1–v4        (D-023)
+   db.ts         getDb(): lazy open, WAL, busy timeout, migrations v1–v5        (D-023)
    llm.ts        Anthropic client; structured() call; parseResume              (D-007, D-035)
    merge.ts      mergeResume: fill gaps, append new, never overwrite             (D-009)
    sources/      one adapter per ATS → SourceJob; polite fetch (http.ts)         (D-039)
@@ -33,13 +35,22 @@
    geo.ts        location text → ISO countries; city aliases
    match.ts      hard filters + deterministic score with reasons                (D-032, D-040)
    pipeline.ts   runCycle(): registry → fetch boards → details → matchAll() → prepare()
-   autopilot.ts  prepare(): reviewAll → selectJobs → tailorOne × N               (D-050)
+   autopilot.ts  prepare(): reviewAll → selectJobs → tailorOne × N → applyOne × N (D-050, D-056)
    review.ts     Claude (Sonnet) review per (job, search), hash-cached           (D-050)
    select.ts     pure: bar, dealbreakers, per-company and daily caps            (D-050)
    tailor.ts     Claude (Opus) tailoring + Claude truth check                   (D-051)
    truth.ts      pure: rule truth check, claims, apply rejections               (D-051)
    resume-html.ts  pure: ATS-friendly resume + cover letter HTML                (D-052)
-   pdf.ts        HTML → PDF via playwright-core + installed Chrome              (D-052)
+   pdf.ts        HTML → PDF via playwright-core + installed Chrome; launchChrome (D-052)
+   apply/
+     types.ts    FormField, PlannedField, FillResult                            (D-054)
+     forms.ts    Greenhouse questions from its API; Lever questions from the page (D-054)
+     plan.ts     pure: consent → rules → answer bank → missing, per field        (D-055)
+     ground.ts   Claude (Sonnet) answers missing questions, quote-checked        (D-055)
+     fill.ts     fill + read back, dropdown matching, CAPTCHA check, submit      (D-056)
+     gate.ts     pure: the auto-submit conditions                                (D-056)
+     answers.ts  your answers → the answer bank (learned)                        (D-055)
+     index.ts    applyOne (read → plan → ground → fill → hold | submit), handoff (D-056)
    applications.ts  reviews, applications, events, caps usage
    profile-text.ts  the profile and constraints as prompt text
         │
@@ -48,12 +59,15 @@
    sortie.db   settings, documents, companies, jobs, matches, tasks, reviews, applications, events
    uploads/    original resumes
    resumes/    <application id>/<Name>-Resume.pdf, <Name>-Cover-Letter.pdf
+   applications/  <application id>/form.png (the filled form)
 
  Worker (npm run worker | npm run fetch, D-033, D-042)
-   src/worker/index.ts  schedule a cycle every ~2 h ± 10%, claim tasks (fetch, prepare, match), run,
-                        record result, close Chrome after each task
+   src/worker/index.ts  schedule a cycle every ~2 h ± 10%, claim tasks (fetch, prepare, match,
+                        handoff), run, record result, close Chrome after each task. handoff opens
+                        filled forms in a visible Chrome, one at a time, and waits for you to submit
 
- External: api.anthropic.com (parsing, reviews, tailoring, truth check); local Chrome (PDF);
+ External: api.anthropic.com (parsing, reviews, tailoring, truth check, form answers); local Chrome
+           (PDF, forms); job-boards.greenhouse.io and jobs.lever.co (application forms);
            boards-api.greenhouse.io, api.lever.co,
            api.ashbyhq.com, api.smartrecruiters.com, *.myworkdayjobs.com (job feeds)
 ```
@@ -92,13 +106,13 @@
    deterministic score. Candidates above a recall threshold get an LLM score (0–100) with reasons.
    Results go in `matches`.
 3. **select.** Pick the best qualifying matches while respecting the per-company and daily caps, and
-   create `applications` (status `saved`).
+   create `applications` (status `queued`).
 4. **tailor.app.** Generate the resume and cover letter, run the truth check, render the PDF. Status
    becomes `ready`.
-5. **apply.app.** Open the application page in Playwright and map fields to profile/answers/documents.
-   Then: if the provider is known-simple, every required field is grounded, and the search mode is
-   auto, submit (`applied`). Otherwise hold (`review`) or hand off (`handoff`, for account or CAPTCHA
-   portals). Unknown required questions become a Telegram question.
+5. **apply.app** (built, D-054 to D-056). Read the form, plan every answer from stored data, fill it
+   and read it back. Submit only through the auto-submit gate; otherwise hold it for you to open in
+   Chrome and submit, or ask you the questions nothing stored answers. Phase 5 will send those
+   questions to Telegram too.
 6. **inbox.poll.** Fetch new Gmail messages, classify them, match them to an application (by
    company/domain/role), and move its stage. Alert on interviews and needs-input.
 7. **notify.** Send alerts as events happen, and a daily recap.
@@ -130,10 +144,12 @@ Every step writes to `application_events`, so the history of any application can
 | `src/components/money-input.tsx` | Amount + currency + period input. |
 | `src/components/nav.tsx` | Sidebar / top nav, with live and upcoming sections. |
 | `src/app/jobs/page.tsx` | Jobs: per-search tabs; Qualifying / Below your bar / Filtered out; score, matched and missing skills, notes, rejection reason. |
-| `src/app/applications/page.tsx` | Applications grouped by status (needs you, ready, being prepared, skipped): Claude's review, PDF links, the truth report, actions. |
-| `src/app/api/applications/**` | Manual pick (POST), skip/restore/re-tailor (PATCH), PDF download (GET, confined to `data/`). |
+| `src/app/applications/page.tsx` | Applications grouped by status (needs you, ready to submit, being prepared, submitted, skipped): Claude's review, PDF links, the truth report, the form plan with each value's source, the screenshot, open questions, actions. |
+| `src/app/api/applications/**` | Manual pick (POST), actions (PATCH), answers to a form's questions (POST `answers`), PDF and screenshot download (GET, confined to `data/`). |
 | `src/components/apply-button.tsx` | Apply on a job row; shows the application's status once it exists. |
-| `src/components/application-actions.tsx` | Skip / Restore / Re-tailor / Try again buttons per status. |
+| `src/components/application-actions.tsx` | Per status: Open in Chrome, Fill again, I submitted it, Re-tailor, Try again, Skip, Restore. |
+| `src/components/application-questions.tsx` | The form's open questions as inputs; saves them to the answer bank and fills again. |
+| `src/lib/apply/*` | The form step: readers, planner, grounded answers, filler, auto-submit gate, orchestration (D-054 to D-056). `fixtures/` holds saved real forms. |
 | `src/app/companies/page.tsx` | Companies: registry table with switches, last fetch result, unsupported and not-found lists. |
 | `src/app/api/companies/[id]/route.ts` | Switch a company on or off. |
 | `src/app/api/fetch/route.ts` | Queue a fetch for the worker; read the last fetch task. |
@@ -143,6 +159,7 @@ Every step writes to `application_events`, so the history of any application can
 | `src/lib/registry/companies.json` | Generated by `npm run registry:verify`. Do not edit by hand; edit `scripts/candidates.txt` / `scripts/enterprise.json` and re-run. |
 | `src/worker/index.ts` | The worker process. |
 | `scripts/verify-registry.ts` | Probes candidates and enterprise feeds live, writes the registry. |
+| `scripts/try-apply.ts` | Dry run of the filler on a live Greenhouse or Lever form: plan, fill, read back, screenshot. Never submits or attaches files. |
 | `scripts/candidates.txt`, `scripts/enterprise.json` | Registry inputs: guessed slugs for product companies; hand-found feeds (and unsupported ATS notes) for enterprises. |
 | `src/lib/*` | See §1. Must not import `next/*`. |
 | `src/lib/*.test.ts`, `src/lib/sources/sources.test.ts` | Vitest: merge rules, migrations, adapters on fixtures, geo, filters and scoring, job store, queue, matchAll, truth rules, selection caps, resume HTML, and the whole prepare path with Claude and Chrome faked (`autopilot.test.ts`). |

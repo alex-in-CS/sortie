@@ -40,7 +40,8 @@ _Screenshots use a made-up demo profile._
   mode: *review first* or *auto-apply*.
 - **Screening answers.** Expected and current salary, a free-text fallback, "how did you hear",
   US self-identification (defaults to decline), and an answer bank for anything else forms ask, with
-  common questions one click away. Answers you correct during review will be learned (phase 4).
+  common questions one click away. Questions you answer on the Applications page are added to it, so
+  each one is asked only once.
 - **Preferences.** Work mode, countries and cities, work authorization and sponsorship, notice period,
   a salary floor, companies to exclude, and the autopilot limits: a cap per company and a daily cap.
 - **Jobs from 217 companies.** Sortie reads the public job boards of companies on Greenhouse, Lever,
@@ -68,9 +69,21 @@ _Screenshots use a made-up demo profile._
   and dates always come straight from your profile. The result is a clean one-column PDF that
   applicant tracking systems can read, and the **Applications** page shows exactly what the check
   changed.
+- **Filled application forms.** For Greenhouse and Lever jobs, Sortie reads the application form, works
+  out every answer from what you've stored, fills it in Chrome and reads each value back. Consent
+  questions (interview recording, privacy, opt-ins) are always yours to answer. When a question has no
+  stored answer, Claude may answer it only by quoting your data, and code checks the quote. Anything
+  else comes to you once and is remembered. Each application shows exactly what will be entered,
+  where each value came from, and a screenshot.
+- **You press Submit.** **Open in Chrome to submit** opens the filled form, files included, in a
+  Chrome window. You look it over and submit it, and Sortie sees the confirmation page and marks it
+  submitted. Sortie only submits on its own for searches in auto mode, with `SORTIE_AUTO_SUBMIT=on`,
+  when no answer came from Claude, every value read back, and no CAPTCHA is showing. CAPTCHAs are never
+  solved or bypassed. For other boards, it gives you the link and the PDFs and you mark the job
+  applied.
 - **Background worker.** `npm run worker` runs a cycle every ~2 hours: fetch, match, review, pick,
-  tailor. **Companies** shows every board with its last result and an on/off switch. A board that
-  rate-limits Sortie is rested for 12 hours instead of being hammered.
+  tailor, fill forms. **Companies** shows every board with its last result and an on/off switch. A
+  board that rate-limits Sortie is rested for 12 hours instead of being hammered.
 - **Setup checklist** on the overview page.
 
 ## Design rules
@@ -84,9 +97,10 @@ These shape every phase, not just the current one:
    feeds) and a jobs API for discovering new companies.
 3. **Quality over volume.** There's a cap per company (3 by default), because recruiters see every
    application you send them. There's also a daily cap.
-4. **Hybrid autopilot.** Simple forms are submitted automatically above your match threshold. Portals
-   like Workday, which need a separate account and throw CAPTCHAs, are prefilled and wait for your
-   one click.
+4. **Hybrid autopilot.** Sortie does the work and you make the call. Forms are filled and checked
+   for you; you press Submit unless you've switched auto-submit on, and even then only forms with
+   nothing for a person to decide go out on their own. Portals that need accounts, and any CAPTCHA,
+   are always yours.
 5. **Local and private.** Everything lives in `data/` (SQLite plus your uploads), which is gitignored.
    The server only listens on `127.0.0.1`.
 
@@ -94,17 +108,18 @@ These shape every phase, not just the current one:
 
 ```
  browser ──▶ Next.js app (127.0.0.1)
-              pages: Overview · Jobs · Companies · Profile · Searches · Answers · Preferences
+              pages: Overview · Jobs · Applications · Companies · Profile · Searches · Answers · Preferences
               API:   /api/resume /api/profile /api/searches /api/answers /api/preferences
-                     /api/companies/[id] /api/fetch
+                     /api/companies/[id] /api/fetch /api/applications/**
                        │
                        ▼
               src/lib  (shared, framework-free)
                 llm.ts ──▶ Claude            store.ts / jobs.ts ──▶ node:sqlite  data/sortie.db
                 sources/* ──▶ Greenhouse · Lever · Ashby · SmartRecruiters · Workday (public JSON)
                 match.ts + geo.ts   filters and scores          pipeline.ts  fetch → store → match
+                autopilot.ts  review → pick → tailor → truth check → PDF → apply/ (fill, check, hold)
                        ▲
-              worker (npm run worker): every ~2 h, and on "Fetch now"
+              worker (npm run worker): every ~2 h, on "Fetch now", and "Open in Chrome" ──▶ Chrome
 ```
 
 | Path | What it does |
@@ -125,14 +140,15 @@ These shape every phase, not just the current one:
 | `src/lib/review.ts`, `src/lib/select.ts` | Claude's job review (cached by input hash); the pure selection rules. |
 | `src/lib/tailor.ts`, `src/lib/truth.ts` | Tailoring and the two-pass truth check. |
 | `src/lib/resume-html.ts`, `src/lib/pdf.ts` | The ATS-friendly resume and cover letter, printed to PDF by your installed Chrome. |
+| `src/lib/apply/*` | The form step: read Greenhouse/Lever forms, plan answers (rules → answer bank → quote-checked Claude), fill and read back, the auto-submit gate, Open in Chrome. |
 | `src/lib/applications.ts` | Reviews, applications and their step history. |
 | `src/worker/index.ts` | The background worker. |
-| `src/app/api/*` | Route handlers for resume upload, settings, company switches, Fetch now, Apply, application actions and PDF downloads. |
+| `src/app/api/*` | Route handlers for resume upload, settings, company switches, Fetch now, Apply, application actions, answers to form questions, and PDF and screenshot downloads. |
 | `src/components/*` | The editors (profile, skills, entry lists, preferences) and small UI primitives. |
 
 ## Setup
 
-Requirements: **Node.js 24+** (for built-in `node:sqlite`), **Google Chrome** (for PDFs), and an
+Requirements: **Node.js 24+** (for built-in `node:sqlite`), **Google Chrome** (for PDFs and forms), and an
 [Anthropic API key](https://console.anthropic.com/).
 
 ```bash
@@ -178,7 +194,7 @@ Open **Jobs** to see matches, and **Applications** for the jobs Sortie picked an
 ## Tech stack
 
 Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind CSS 4 · Node 24
-`node:sqlite` · Zod 4 · Anthropic TypeScript SDK (structured outputs) · mammoth (DOCX) · playwright-core with the installed Chrome (PDFs; form filling next) · tsx (worker) · Vitest.
+`node:sqlite` · Zod 4 · Anthropic TypeScript SDK (structured outputs) · mammoth (DOCX) · playwright-core with the installed Chrome (PDFs and form filling) · tsx (worker) · Vitest.
 
 ## Roadmap
 
@@ -187,8 +203,8 @@ Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind 
 | 1 | Profile, resume reading, skills, searches, screening answers, preferences | **Done** |
 | 2 | Jobs: 217 verified company boards, checks every 2 hours, deduplication, filters with reasons, and a match score against your skills | **Done** (discovery API pending a key) |
 | 3 | Tailoring: Claude reviews the best matches; picks within your caps; a resume and cover letter per job, with a two-pass truth check, exported to PDF | **Done** |
-| 4 | Applying: Playwright submits simple forms, Workday-style portals are prefilled and handed off, answers learned from your edits, and a kanban tracker with step history | Next |
-| 5 | Inbox: read-only Gmail that matches replies to applications and moves them on the board | Planned |
+| 4 | Applying: Greenhouse and Lever forms filled and checked from your data, held for you to submit in Chrome (or auto-submitted through a strict gate), answers learned, other boards handed off with a link | **Done** (stages after Submitted come with phase 5) |
+| 5 | Inbox: read-only Gmail that matches replies to applications and moves them on the board | Next |
 | 6 | Telegram: alerts only when something needs you, a daily recap, and approving from your phone | Planned |
 | 7 | Interview prep: a prep pack and mock interview when an invite arrives | Stretch |
 

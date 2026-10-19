@@ -83,7 +83,7 @@ and provenance are added in `mergeResume`.
 | `salaryFallback` | Text for free-text salary fields when no figure fits. Default "Negotiable" (D-020). |
 | `hearAbout` | Default "Company careers page". |
 | `gender`, `ethnicity`, `veteran`, `disability` | US self-ID. Default "Decline to self-identify" (D-021). Never used for matching. |
-| `custom[]` | `{id, question, answer, source: manual\|learned}`, the answer bank. `learned` entries come from review edits (phase 4). |
+| `custom[]` | `{id, question, answer, source: manual\|learned}`, the answer bank. `learned` entries are answers you give on the Applications page (D-055). |
 
 ## 5. Preferences (global)
 
@@ -143,11 +143,11 @@ pruned on every match run.
 
 ### `tasks`
 
-The worker queue and run log (D-033, D-042): `type` (`fetch`, `match`), `payload` (JSON), `status`
+The worker queue and run log (D-033, D-042): `type` (`fetch`, `match`, `prepare`, `handoff`), `payload` (JSON), `status`
 (`queued` · `running` · `done` · `failed`), `attempts`, `run_after`, `started_at`, `finished_at`,
 `result` (JSON stats of the run), `last_error`, `created_at`.
 
-## 7. Reviews and applications (v4, phase 3)
+## 7. Reviews and applications (v4, phase 3; v5, phase 4)
 
 ### `reviews`
 Claude's review of one (job, search): `score` 0–100, `verdict` (strong, good, stretch, poor), `reasons`
@@ -161,19 +161,43 @@ One row per job Sortie (or you) chose, **unique on `job_id`**: `search_id`, `ori
 `resume` (JSON `TailoredResume`), `truth` (JSON `TruthReport`), `resume_file` (path under `data/`),
 `error`, `attempts`, `created_at`, `updated_at`.
 
-Statuses so far: `queued` (picked, waiting) → `tailoring` → `ready`, or back to `queued` on failure
-until the third attempt, then `needs_you`. `skipped` is the owner's no. Phase 4 adds the apply stages.
+Statuses (`APPLICATION_STATUSES` in `schema.ts`):
+
+```text
+queued → tailoring → ready → applying → held → submitting → submitted
+                       ↑         │          │        │
+                       │         └──────────┴────────┴──→ needs_you
+                       └── refill (after you answer questions)
+```
+
+- `queued` → `tailoring` → `ready`, or back to `queued` on failure until the third attempt, then
+  `needs_you` (phase 3).
+- `applying`: the form step is reading and filling the form (D-056).
+- `held`: filled and checked, waiting for you. `submitting`: open in Chrome for you to submit.
+- `submitted`: sent, by Sortie (auto mode, confirmation seen) or by you.
+- `needs_you`: a question only you can answer, an unsupported board, or a failure. `skipped` is the
+  owner's no.
+
 Caps count every status except `skipped` (D-050).
 
-### `application_events`
-The step history (NFR-6): `application_id`, `at`, `kind` (selected, tailoring, ready, retry, needs_you,
-skipped, queued…), `detail`.
+Phase 4 columns (v5):
+- `apply_url`: the form.
+- `plan`: JSON `PlannedField[]`, each field's value, state and source (D-055).
+- `fill`: JSON `FillResult[]`, what read back from the page.
+- `screenshot`: path under `data/` of the filled form.
+- `submitted_at` and `submitted_by` (`sortie` or `you`).
 
-Files: `data/resumes/<application id>/<Name>-Resume.pdf` and `<Name>-Cover-Letter.pdf`.
+### `application_events`
+The step history (NFR-6): `application_id`, `at`, `kind` (selected, tailoring, ready, retry, applying,
+held, submitting, opened, submitted, needs_you, skipped, queued…), `detail`. The latest `detail` is shown
+on the card: why it's held, or what failed.
+
+Files: `data/resumes/<application id>/<Name>-Resume.pdf` and `<Name>-Cover-Letter.pdf`; the filled
+form's screenshot is `data/applications/<application id>/form.png`.
 
 ## 8. Planned tables (phases 4–6)
 
 | Table | Key columns | Purpose |
 | --- | --- | --- |
-| `applications` (more columns) | `answers(json), submitted_at, stage` | Status gains held, handoff, submitted, failed; stage ∈ applied, in_process, interview, offer, rejected, withdrawn. |
+| `applications` (more columns) | `stage` | After submitted: stage ∈ applied, in_process, interview, offer, rejected, withdrawn, set from the inbox (phase 5). |
 | `emails` | `id (gmail id), thread_id, from, subject, received_at, category, application_id, snippet` | Classified inbox items (no bodies stored beyond what's needed). |

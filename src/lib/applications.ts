@@ -1,7 +1,9 @@
 import "server-only";
 import { getDb } from "./db";
 import { plain, tx } from "./jobs";
+import type { FillResult, PlannedField } from "./apply/types";
 import type { ApplicationStatus, TailoredResume, TruthReport } from "./schema";
+import type { Provider } from "./sources/types";
 
 // Storage for phase 3: Claude's reviews of (job, search) pairs, the jobs Sortie
 // chose to apply to, and each application's step history.
@@ -169,15 +171,32 @@ export type Application = {
   attempts: number;
   created_at: string;
   updated_at: string;
+  // Phase 4: the form step (D-056).
+  apply_url: string | null;
+  plan: PlannedField[] | null;
+  fill: FillResult[] | null;
+  screenshot: string | null;
+  submitted_at: string | null;
+  submitted_by: "sortie" | "you" | null;
 };
 
-type ApplicationRow = Omit<Application, "resume" | "truth"> & { resume: string | null; truth: string | null };
+type ApplicationRow = Omit<Application, "resume" | "truth" | "plan" | "fill"> & {
+  resume: string | null;
+  truth: string | null;
+  plan: string | null;
+  fill: string | null;
+};
 
 const toApplication = (r: ApplicationRow): Application => ({
   ...plain<ApplicationRow>(r),
   resume: r.resume ? JSON.parse(r.resume) : null,
   truth: r.truth ? JSON.parse(r.truth) : null,
+  plan: r.plan ? JSON.parse(r.plan) : null,
+  fill: r.fill ? JSON.parse(r.fill) : null,
 });
+
+// The cover letter sits next to the resume: …/Name-Resume.pdf → …/Name-Cover-Letter.pdf.
+export const coverLetterFile = (resumeFile: string) => resumeFile.replace(/Resume\.pdf$/, "Cover-Letter.pdf");
 
 export function logEvent(applicationId: number, kind: string, detail: string | null = null) {
   getDb()
@@ -257,6 +276,77 @@ export function failTailoring(app: Application, error: string, maxAttempts = 3) 
 export const requeueTailoring = () =>
   getDb().prepare("UPDATE applications SET status = 'queued' WHERE status = 'tailoring'").run();
 
+// ---------- the form step ----------
+
+// Atomically takes the next application whose documents are done.
+export function claimForApplying(): Application | undefined {
+  const row = getDb()
+    .prepare(
+      `UPDATE applications SET status = 'applying', updated_at = ?
+       WHERE id = (SELECT id FROM applications WHERE status = 'ready' ORDER BY origin = 'manual' DESC, score DESC, id LIMIT 1)
+       RETURNING *`,
+    )
+    .get(new Date().toISOString()) as ApplicationRow | undefined;
+  if (!row) return undefined;
+  logEvent(row.id, "applying");
+  return toApplication(row);
+}
+
+// The next application you asked to open in Chrome.
+export function nextHandoff(): Application | undefined {
+  const row = getDb()
+    .prepare("SELECT * FROM applications WHERE status = 'submitting' ORDER BY updated_at, id LIMIT 1")
+    .get() as ApplicationRow | undefined;
+  return row ? toApplication(row) : undefined;
+}
+
+export const hasHandoffs = () =>
+  Boolean(getDb().prepare("SELECT 1 FROM applications WHERE status = 'submitting' LIMIT 1").get());
+
+export type FormOutcome = {
+  status: Extract<ApplicationStatus, "held" | "needs_you" | "submitted" | "skipped">;
+  detail: string;
+  applyUrl?: string | null;
+  plan?: PlannedField[] | null;
+  fill?: FillResult[] | null;
+  screenshot?: string | null;
+  error?: string | null;
+};
+
+// Records what the form step found. Fields not given keep their value.
+export function saveFormOutcome(id: number, o: FormOutcome) {
+  const now = new Date().toISOString();
+  const keep = (v: unknown) => (v === undefined ? undefined : v === null ? null : typeof v === "string" ? v : JSON.stringify(v));
+  const sets: string[] = ["status = ?", "updated_at = ?", "error = ?"];
+  const args: (string | null)[] = [o.status, now, o.error ?? null];
+  for (const [col, v] of [
+    ["apply_url", o.applyUrl],
+    ["plan", o.plan],
+    ["fill", o.fill],
+    ["screenshot", o.screenshot],
+  ] as const) {
+    const k = keep(v);
+    if (k === undefined) continue;
+    sets.push(`${col} = ?`);
+    args.push(k);
+  }
+  if (o.status === "submitted") {
+    sets.push("submitted_at = ?", "submitted_by = 'sortie'");
+    args.push(now);
+  }
+  getDb().prepare(`UPDATE applications SET ${sets.join(", ")} WHERE id = ?`).run(...args, id);
+  logEvent(id, o.status, o.detail);
+}
+
+// The form step interrupted by a crash or restart: filling starts over, and a
+// Chrome window that was open goes back to waiting for you.
+export function requeueApplying() {
+  const db = getDb();
+  const filling = Number(db.prepare("UPDATE applications SET status = 'ready' WHERE status = 'applying'").run().changes);
+  const open = Number(db.prepare("UPDATE applications SET status = 'held' WHERE status = 'submitting'").run().changes);
+  return filling + open;
+}
+
 export function getApplication(id: number) {
   const row = getDb().prepare("SELECT * FROM applications WHERE id = ?").get(id) as ApplicationRow | undefined;
   return row ? toApplication(row) : undefined;
@@ -269,13 +359,16 @@ export type ApplicationView = Application & {
   url: string;
   search_name?: string;
   review: StoredReview | null;
+  last_detail: string | null; // the latest step note: why it is held, what failed
+  provider: Provider;
 };
 
 export function listApplications(statuses?: ApplicationStatus[]) {
   const where = statuses?.length ? `WHERE a.status IN (${statuses.map(() => "?").join(",")})` : "";
   const rows = getDb()
     .prepare(
-      `SELECT a.*, j.title, c.name AS company, j.location, j.url,
+      `SELECT a.*, j.title, c.name AS company, c.provider, j.location, j.url,
+         (SELECT e.detail FROM application_events e WHERE e.application_id = a.id ORDER BY e.id DESC LIMIT 1) AS last_detail,
          r.score AS r_score, r.verdict AS r_verdict, r.reasons AS r_reasons, r.gaps AS r_gaps,
          r.dealbreaker AS r_dealbreaker, r.reviewed_at AS r_reviewed_at
        FROM applications a JOIN jobs j ON j.id = a.job_id JOIN companies c ON c.id = j.company_id
@@ -287,6 +380,8 @@ export function listApplications(statuses?: ApplicationStatus[]) {
     company: string;
     location: string;
     url: string;
+    provider: Provider;
+    last_detail: string | null;
     r_score: number | null;
     r_verdict: Verdict | null;
     r_reasons: string | null;
@@ -302,6 +397,8 @@ export function listApplications(statuses?: ApplicationStatus[]) {
       company: rest.company,
       location: rest.location,
       url: rest.url,
+      last_detail: rest.last_detail,
+      provider: rest.provider,
       review:
         r_score === null
           ? null
@@ -333,15 +430,39 @@ export function applicationCounts() {
   return Object.fromEntries(rows.map((r) => [r.status, r.n])) as Partial<Record<ApplicationStatus, number>>;
 }
 
-export const APPLICATION_ACTIONS = ["skip", "restore", "retailor"] as const;
+export const APPLICATION_ACTIONS = ["skip", "restore", "retailor", "refill", "open", "submitted"] as const;
 export type ApplicationAction = (typeof APPLICATION_ACTIONS)[number];
 
 // The owner's controls on the Applications page. Returns the new status, or an
 // error when the action doesn't fit the current one.
+//   skip / restore   take it out of the run, or put it back
+//   retailor         write the resume and cover letter again
+//   refill           read and fill the form again (after you answered questions)
+//   open             open the filled form in Chrome for you to submit
+//   submitted        you sent it yourself
 export function actOnApplication(id: number, action: ApplicationAction): { status: ApplicationStatus } | { error: string; code: number } {
   const app = getApplication(id);
   if (!app) return { error: "No such application.", code: 404 };
-  if (app.status === "tailoring") return { error: "It's being tailored right now. Try again in a minute.", code: 409 };
+  if (app.status === "tailoring" || app.status === "applying")
+    return { error: "Sortie is working on it right now. Try again in a minute.", code: 409 };
+  if (app.status === "submitted") return { error: "It has already been submitted.", code: 409 };
+  if (action === "submitted") {
+    const now = new Date().toISOString();
+    getDb()
+      .prepare("UPDATE applications SET status = 'submitted', submitted_at = ?, submitted_by = 'you', updated_at = ? WHERE id = ?")
+      .run(now, now, id);
+    logEvent(id, "submitted", "Marked as submitted by you");
+    return { status: "submitted" };
+  }
+  if (app.status === "submitting" && action !== "skip")
+    return { error: "It's open in Chrome. Submit it there, or close the window first.", code: 409 };
+  if (action === "refill" || action === "open") {
+    if (!app.resume) return { error: "The resume isn't ready yet.", code: 409 };
+    if (action === "open" && !app.plan) return { error: "Sortie hasn't read this form yet.", code: 409 };
+    const status: ApplicationStatus = action === "open" ? "submitting" : "ready";
+    setStatus(id, status, action === "open" ? "Opening in Chrome for you" : "Filling the form again, as you asked");
+    return { status };
+  }
   if (action === "skip") {
     if (app.status === "skipped") return { status: "skipped" };
     setStatus(id, "skipped", "Skipped by you");

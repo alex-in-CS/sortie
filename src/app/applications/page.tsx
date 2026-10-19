@@ -2,7 +2,11 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { ApplicationActions } from "@/components/application-actions";
+import { ApplicationQuestions } from "@/components/application-questions";
 import { Empty, Loading, PageHeader, Section } from "@/components/ui";
+import { autoSubmitEnabled } from "@/lib/apply/gate";
+import { unresolved } from "@/lib/apply/plan";
+import { APPLY_PROVIDERS } from "@/lib/apply/types";
 import { applicationCounts, listApplications, type ApplicationView } from "@/lib/applications";
 import { profileGaps } from "@/lib/autopilot";
 import { formatDateTime } from "@/lib/format";
@@ -12,13 +16,22 @@ import type { ApplicationStatus } from "@/lib/schema";
 import { preferencesStore, profileStore, searchesStore } from "@/lib/store";
 
 const GROUPS: { status: ApplicationStatus[]; title: string; hint: string }[] = [
-  { status: ["needs_you"], title: "Needs you", hint: "Tailoring failed three times. The error is shown; try again or skip." },
   {
-    status: ["ready"],
-    title: "Ready to apply",
-    hint: "Tailored and fact-checked. Applying arrives in the next phase; until then, open the PDFs and apply by hand if you like.",
+    status: ["needs_you"],
+    title: "Needs you",
+    hint: "A question only you can answer, a form Sortie can't fill, or something that failed. Each says what it needs.",
   },
-  { status: ["queued", "tailoring"], title: "Being prepared", hint: "Picked and waiting for the worker to tailor them." },
+  {
+    status: ["held", "submitting"],
+    title: "Ready to submit",
+    hint: "Filled and checked: every value was read back from the form. Open one in Chrome, look it over, and press Submit there. Sortie notices the confirmation page.",
+  },
+  {
+    status: ["queued", "tailoring", "ready", "applying"],
+    title: "Being prepared",
+    hint: "Picked and waiting for the worker to tailor the documents and fill the form.",
+  },
+  { status: ["submitted"], title: "Submitted", hint: "Sent, by Sortie or by you." },
   { status: ["skipped"], title: "Skipped", hint: "You said no to these. They don't count toward your limits." },
 ];
 
@@ -27,7 +40,8 @@ export default function ApplicationsPage() {
     <>
       <PageHeader title="Applications">
         Jobs Sortie picked for you, or that you picked yourself. Each gets a resume and cover letter tailored from your
-        profile, then a truth check that removes anything your profile doesn&apos;t back up.
+        profile and a truth check that removes anything your profile doesn&apos;t back up. Then Sortie fills the
+        application form from your stored answers and holds it for you to submit.
       </PageHeader>
       <Suspense fallback={<Loading />}>
         <ApplicationsData />
@@ -57,7 +71,8 @@ async function ApplicationsData() {
         <Link href="/preferences" className="underline">
           change
         </Link>
-        ){last?.finished_at ? ` · last cycle ${formatDateTime(last.finished_at)}` : ""}
+        ){last?.finished_at ? ` · last cycle ${formatDateTime(last.finished_at)}` : ""} · auto-submit{" "}
+        {autoSubmitEnabled() ? "on for searches in auto mode" : "off (you submit everything)"}
       </p>
       {blocked && <p className="mb-5 rounded-md border border-warn bg-warn-soft px-4 py-3 text-sm">{blocked}</p>}
       {!apps.length ? (
@@ -112,7 +127,14 @@ function ApplicationCard({ app: a, searchName }: { app: ApplicationView; searchN
               {a.review.gaps.length > 0 && <p className="mt-0.5 text-faint">Gaps: {a.review.gaps.join(" · ")}</p>}
             </div>
           )}
-          {a.error && a.status === "needs_you" && <p className="mt-1.5 text-xs text-danger">{a.error}</p>}
+          {a.status === "needs_you" && (a.error || lastWord(a)) && <p className="mt-1.5 text-xs text-danger">{a.error ?? lastWord(a)}</p>}
+          {a.status === "held" && <p className="mt-1.5 text-xs text-muted">{lastWord(a)}</p>}
+          {a.status === "submitting" && <p className="mt-1.5 text-xs text-accent">Opening in Chrome on this computer. Submit it there; the worker must be running.</p>}
+          {a.status === "submitted" && a.submitted_at && (
+            <p className="mt-1.5 text-xs text-muted">
+              Submitted {formatDateTime(a.submitted_at)} by {a.submitted_by === "sortie" ? "Sortie" : "you"}
+            </p>
+          )}
           {a.resume_file && (
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
               <a href={`/api/applications/${a.id}/files/resume`} target="_blank" rel="noreferrer" className="font-medium text-accent underline-offset-2 hover:underline">
@@ -130,6 +152,24 @@ function ApplicationCard({ app: a, searchName }: { app: ApplicationView; searchN
               </span>
             </div>
           )}
+          {(a.apply_url || a.screenshot) && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs">
+              {a.apply_url && (
+                <a href={a.apply_url} target="_blank" rel="noreferrer" className="text-accent underline-offset-2 hover:underline">
+                  Application form
+                </a>
+              )}
+              {a.screenshot && (
+                <a href={`/api/applications/${a.id}/files/form`} target="_blank" rel="noreferrer" className="text-accent underline-offset-2 hover:underline">
+                  Screenshot of the filled form
+                </a>
+              )}
+            </div>
+          )}
+          {a.status === "needs_you" && a.plan && unresolved(a.plan).length > 0 && (
+            <ApplicationQuestions id={a.id} questions={unresolved(a.plan)} />
+          )}
+          {a.plan && <PlanDetails app={a} />}
           {issues.length > 0 && (
             <details className="mt-1.5 text-xs">
               <summary className="cursor-pointer text-muted">What the truth check changed</summary>
@@ -145,7 +185,58 @@ function ApplicationCard({ app: a, searchName }: { app: ApplicationView; searchN
           )}
         </div>
       </div>
-      <ApplicationActions id={a.id} status={a.status} />
+      <ApplicationActions id={a.id} status={a.status} hasResume={!!a.resume_file} hasPlan={!!a.plan} canFill={(APPLY_PROVIDERS as readonly string[]).includes(a.provider)} />
     </li>
+  );
+}
+
+// The latest step note, e.g. why it's held rather than sent.
+function lastWord(a: ApplicationView) {
+  return a.last_detail ?? null;
+}
+
+const BY = { rule: "", bank: "answer bank", claude: "Claude" } as const;
+
+function PlanDetails({ app: a }: { app: ApplicationView }) {
+  const fill = new Map((a.fill ?? []).map((f) => [f.key, f]));
+  const filled = (a.plan ?? []).filter((p) => p.state === "ok");
+  const claude = filled.filter((p) => p.by === "claude").length;
+  return (
+    <details className="mt-1.5 text-xs" open={claude > 0 && a.status === "held"}>
+      <summary className="cursor-pointer text-muted">
+        What Sortie enters ({filled.length} field{filled.length === 1 ? "" : "s"}
+        {claude ? `, ${claude} answered by Claude: check them` : ""})
+      </summary>
+      <ul className="mt-1.5 space-y-1">
+        {(a.plan ?? [])
+          .filter((p) => p.state !== "skip")
+          .map((p) => {
+            const f = fill.get(p.key);
+            return (
+              <li key={p.key} className="grid gap-x-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+                <span className="truncate text-muted" title={p.label}>
+                  {p.label}
+                  {p.required ? " *" : ""}
+                </span>
+                <span className="min-w-0">
+                  {p.state === "ok" ? (
+                    <span className={p.by === "claude" ? "font-medium text-warn" : "text-ink"}>
+                      {p.kind === "file" ? (p.value[0] === "cover" ? "Cover letter PDF" : "Resume PDF") : p.value.join(", ")}
+                    </span>
+                  ) : (
+                    <span className="text-danger">{p.state === "decide" ? "Your decision" : "No answer"}</span>
+                  )}
+                  <span className="text-faint">
+                    {" "}
+                    · {p.by && BY[p.by] ? `${BY[p.by]}: ` : ""}
+                    {p.source}
+                    {f && !f.ok ? ` · didn't fill${f.note ? ` (${f.note})` : ""}` : f?.note ? ` · ${f.note}` : ""}
+                  </span>
+                </span>
+              </li>
+            );
+          })}
+      </ul>
+    </details>
   );
 }

@@ -11,7 +11,8 @@
     "test": "vitest run",
     "worker": "tsx --conditions=react-server src/worker/index.ts",
     "fetch": "tsx --conditions=react-server src/worker/index.ts --once",
-    "registry:verify": "tsx scripts/verify-registry.ts"
+    "registry:verify": "tsx scripts/verify-registry.ts",
+    "try-apply": "tsx --conditions=react-server scripts/try-apply.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

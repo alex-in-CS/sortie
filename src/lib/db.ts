@@ -202,6 +202,21 @@ const MIGRATIONS: Migration[] = [
   `
   ALTER TABLE reviews ADD COLUMN resume_advice TEXT;
   `,
+  // v7: one row per AI call, with its tokens and estimated cost (D-059).
+  `
+  CREATE TABLE llm_usage (
+    id INTEGER PRIMARY KEY,
+    at TEXT NOT NULL,
+    task TEXT NOT NULL,
+    model TEXT NOT NULL,
+    input_tokens INTEGER NOT NULL,
+    output_tokens INTEGER NOT NULL,
+    cache_read_tokens INTEGER NOT NULL,
+    cache_write_tokens INTEGER NOT NULL,
+    cost_usd REAL
+  );
+  CREATE INDEX llm_usage_at ON llm_usage (at);
+  `,
 ];
 
 const userVersion = (db: DatabaseSync) =>

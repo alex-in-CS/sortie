@@ -24,7 +24,19 @@ Newest first. What was built, what broke, how it was fixed, and how it was check
 - Checked: new tests for the as-uploaded path (bytes untouched, renamed, only reviews paid for, the
   review sees the resume text), tailoring guided by the advice, the cover-letter detector and
   storage, and DB v6. 95 tests, tsc and lint pass. **Not yet checked:** a live cycle against real
-  boards with the new review prompt.
+  boards with the new review prompt. Committed as `23284ca`.
+
+### Reviews on Haiku; spend recorded and shown (D-059)
+- `SORTIE_REVIEW_MODEL` (default Haiku 5.5) for reviews. Form answers stay on Sonnet 5.5, and
+  writing stays on Opus 5.5. A live structured call to Haiku 5.5 with the fallback beta returned 200
+  first, so no special case was needed.
+- `structured()` records each call in `llm_usage` (DB v7). The overview shows spend today and over
+  30 days, by task.
+- Hit and fixed: a PowerShell 5.1 rewrite of `review.ts` added a BOM and mangled an en dash.
+  Rewrote it through Node, and the diff is clean.
+- Checked: the price table (including Haiku's long-prompt card), totals by task and date, recording
+  from a Gemini response (thinking counted as output, cached input apart), defaults for both
+  providers, and DB v7. 98 tests, tsc and lint pass.
 
 ## 2026-10-19 (Mon)
 

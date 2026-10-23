@@ -6,7 +6,9 @@ import { ParsedResume, TailoredResume } from "./schema";
 // The Gemini side of structured() (D-057), with Google's client faked: the
 // schema it is sent, and every way an answer can come back unusable.
 
-const fake = vi.hoisted(() => ({ generate: vi.fn() }));
+const fake = vi.hoisted(() => ({ generate: vi.fn(), record: vi.fn() }));
+// Usage goes to the database; here it's only checked, never written.
+vi.mock("./usage", () => ({ recordUsage: fake.record }));
 vi.mock("@google/genai", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@google/genai")>()),
   GoogleGenAI: class {
@@ -34,6 +36,7 @@ function keywords(node: unknown, out = new Set<string>()) {
 beforeEach(() => {
   vi.resetModules();
   fake.generate.mockReset();
+  fake.record.mockReset();
   vi.stubEnv("SORTIE_LLM", "gemini");
   vi.stubEnv("GEMINI_API_KEY", "test-key");
 });
@@ -69,7 +72,14 @@ describe("Gemini schemas", () => {
 describe("structured() on Gemini", () => {
   it("picks Gemini and its models from the environment", async () => {
     const m = await llm();
-    expect([m.PROVIDER, m.AI, m.KEY_NAME, m.MODEL, m.BULK_MODEL]).toEqual(["gemini", "Gemini", "GEMINI_API_KEY", "gemini-4-argon", "gemini-3.8-flash"]);
+    expect([m.PROVIDER, m.AI, m.KEY_NAME, m.MODEL, m.BULK_MODEL, m.REVIEW_MODEL]).toEqual([
+      "gemini",
+      "Gemini",
+      "GEMINI_API_KEY",
+      "gemini-4-argon",
+      "gemini-3.8-flash",
+      "gemini-3.8-flash",
+    ]);
     expect(m.hasApiKey()).toBe(true);
   });
 
@@ -88,6 +98,16 @@ describe("structured() on Gemini", () => {
       thinkingConfig: { thinkingLevel: "LOW" },
     });
     expect(sent.config.responseJsonSchema.properties.verdict).toEqual({ type: "string", enum: ["good", "poor"] });
+  });
+
+  it("records each call's tokens, thinking counted as output and cached input apart", async () => {
+    fake.generate.mockResolvedValue({
+      ...answer('{"score": 82, "verdict": "good", "note": null}'),
+      usageMetadata: { promptTokenCount: 1200, cachedContentTokenCount: 1000, candidatesTokenCount: 40, thoughtsTokenCount: 60 },
+    });
+    const { structured } = await llm();
+    await structured(req());
+    expect(fake.record).toHaveBeenCalledWith("review this job", "gemini-3.8-flash", { input: 200, output: 100, cacheRead: 1000, cacheWrite: 0 });
   });
 
   it("turns every unusable answer into a plain error", async () => {
@@ -134,7 +154,9 @@ describe("choosing a provider", () => {
   it("prefers Claude when its key is set, Gemini when only Gemini's is", async () => {
     vi.stubEnv("SORTIE_LLM", "");
     vi.stubEnv("ANTHROPIC_API_KEY", "a");
-    expect((await llm()).PROVIDER).toBe("claude");
+    const claude = await llm();
+    expect(claude.PROVIDER).toBe("claude");
+    expect([claude.MODEL, claude.BULK_MODEL, claude.REVIEW_MODEL]).toEqual(["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]);
     vi.resetModules();
     vi.stubEnv("ANTHROPIC_API_KEY", "");
     expect((await llm()).PROVIDER).toBe("gemini");

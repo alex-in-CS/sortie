@@ -4,9 +4,10 @@ import { Suspense } from "react";
 import { Loading, PageHeader } from "@/components/ui";
 import { applicationCounts } from "@/lib/applications";
 import { jobCounts, lastTask, listCompanies } from "@/lib/jobs";
-import { AI, BULK_MODEL, KEY_NAME, MODEL, hasApiKey } from "@/lib/llm";
+import { AI, BULK_MODEL, KEY_NAME, MODEL, REVIEW_MODEL, hasApiKey } from "@/lib/llm";
 import { formatCount, formatDateTime } from "@/lib/format";
 import { answersStore, getProfile, latestDocument, preferencesStore, searchesStore } from "@/lib/store";
+import { type Spend, spendSummary } from "@/lib/usage";
 
 type Step = { done: boolean; title: string; detail: string; href?: string; cta?: string };
 
@@ -20,8 +21,8 @@ export default function Overview() {
   return (
     <>
       <PageHeader title="Overview">
-        Sortie finds jobs your skills qualify you for, tailors a resume for each, applies, and watches your inbox
-        for replies. Set it up once, then it runs on its own.
+        Sortie finds jobs your skills qualify you for, applies with your resume (tailored where it would otherwise
+        undersell you), and watches your inbox for replies. Set it up once, then it runs on its own.
       </PageHeader>
       <Suspense fallback={<Loading />}>
         <Setup />
@@ -65,7 +66,7 @@ async function Setup() {
       done: hasApiKey(),
       title: `${AI} API key`,
       detail: hasApiKey()
-        ? `Set. ${MODEL} tailors and checks; ${BULK_MODEL} reviews jobs.`
+        ? `Set. ${REVIEW_MODEL} reviews jobs; ${MODEL} tailors and checks when needed; ${BULK_MODEL} answers form questions.`
         : `Add ${KEY_NAME} to .env.local (or GEMINI_API_KEY / ANTHROPIC_API_KEY for the other) and restart the dev server.`,
     },
     {
@@ -134,14 +135,16 @@ async function Setup() {
       detail:
         ready || preparing || submitted || apps.needs_you
           ? `${ready} ready to submit${preparing ? `, ${preparing} being prepared` : ""}${apps.needs_you ? `, ${apps.needs_you} need you` : ""}${submitted ? `, ${submitted} submitted` : ""}.`
-          : "After a cycle, jobs that clear your bar get a tailored, fact-checked resume and cover letter, and their application form filled from your answers.",
+          : "After a cycle, jobs that clear your bar get your resume (tailored and fact-checked where it undersells you) and their application form filled from your answers.",
       href: "/applications",
       cta: "Open",
     },
   ];
   const doneCount = steps.filter((s) => s.done).length;
+  const { today, month } = spendSummary();
 
   return (
+    <>
     <section className="rounded-xl border border-line bg-panel">
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
           <h2 className="text-sm font-semibold">Setup</h2>
@@ -173,5 +176,22 @@ async function Setup() {
           ))}
         </ol>
       </section>
+      <SpendLine today={today} month={month} />
+    </>
+  );
+}
+
+const usd = (n: number) => (n > 0 && n < 0.01 ? "<$0.01" : `$${n.toFixed(2)}`);
+
+// What the AI calls cost, estimated at list prices from each call's token counts (D-059).
+function SpendLine({ today, month }: { today: Spend; month: Spend }) {
+  if (!month.calls) return null;
+  const top = month.byTask.slice(0, 3).map((t) => `${t.task} ${usd(t.cost)} (${t.calls})`);
+  return (
+    <p className="mt-3 text-xs text-muted">
+      AI spend, estimated at list prices: {usd(today.cost)} today ({today.calls} calls), {usd(month.cost)} in the last 30
+      days ({month.calls} calls). Most of it: {top.join(", ")}.
+      {month.unpriced ? ` ${month.unpriced} calls on a model without a known price aren't counted.` : ""}
+    </p>
   );
 }

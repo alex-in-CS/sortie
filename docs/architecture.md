@@ -36,9 +36,10 @@
    match.ts      hard filters + deterministic score with reasons                (D-032, D-040)
    pipeline.ts   runCycle(): registry → fetch boards → details → matchAll() → prepare()
    autopilot.ts  prepare(): reviewAll → selectJobs → prepareDocuments × N → applyOne × N (D-050, D-056, D-058)
-   review.ts     Claude (Sonnet) review per (job, search), hash-cached           (D-050)
+   review.ts     Claude (Haiku) review per (job, search) + resume advice, cached (D-050, D-058, D-059)
    select.ts     pure: bar, dealbreakers, per-company and daily caps            (D-050)
-   tailor.ts     Claude (Opus) tailoring + Claude truth check                   (D-051)
+   tailor.ts     Claude (Opus) tailoring / cover letter + Claude truth check    (D-051, D-058)
+   usage.ts      every AI call's tokens and estimated cost; spend totals         (D-059)
    truth.ts      pure: rule truth check, claims, apply rejections               (D-051)
    resume-html.ts  pure: ATS-friendly resume + cover letter HTML                (D-052)
    pdf.ts        HTML → PDF via playwright-core + installed Chrome; launchChrome (D-052)
@@ -50,7 +51,7 @@
      fill.ts     fill + read back, dropdown matching, CAPTCHA check, submit      (D-056)
      gate.ts     pure: the auto-submit conditions                                (D-056)
      answers.ts  your answers → the answer bank (learned)                        (D-055)
-     index.ts    applyOne (read → plan → ground → fill → hold | submit), handoff (D-056)
+     index.ts    applyOne (read → cover letter if required → plan → ground → fill → hold | submit), handoff (D-056, D-058)
    applications.ts  reviews, applications, events, caps usage
    profile-text.ts  the profile and constraints as prompt text
         │

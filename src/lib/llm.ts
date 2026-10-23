@@ -5,11 +5,13 @@ import { ApiError, FinishReason, GoogleGenAI, type Part, ThinkingLevel } from "@
 import mammoth from "mammoth";
 import * as z from "zod";
 import { ParsedResume } from "./schema";
+import { recordUsage } from "./usage";
 
 // Two providers behind one structured() call (D-057): Claude (Anthropic) or
 // Gemini (Google). SORTIE_LLM picks one; otherwise whichever key is set, Claude
-// first. Each has a quality model (reading a resume, tailoring, the truth check)
-// and a bulk model (job reviews, form answers) (D-035).
+// first. Each has a quality model (reading a resume, tailoring, the truth check),
+// a bulk model (form answers) (D-035) and a review model, the cheapest, since
+// reviews are most of the calls (D-059). Every call's usage is recorded.
 export type Provider = "claude" | "gemini";
 
 export const PROVIDER: Provider =
@@ -24,12 +26,13 @@ export const AI = PROVIDER === "gemini" ? "Gemini" : "Claude";
 export const KEY_NAME = PROVIDER === "gemini" ? "GEMINI_API_KEY" : "ANTHROPIC_API_KEY";
 
 const DEFAULTS = {
-  claude: { model: "claude-opus-5-5", bulk: "claude-sonnet-5-5" },
-  gemini: { model: "gemini-4-argon", bulk: "gemini-3.8-flash" },
+  claude: { model: "claude-opus-5-5", bulk: "claude-sonnet-5-5", review: "claude-haiku-5-5" },
+  gemini: { model: "gemini-4-argon", bulk: "gemini-3.8-flash", review: "gemini-3.8-flash" },
 } as const;
 
 export const MODEL = process.env.SORTIE_MODEL ?? DEFAULTS[PROVIDER].model;
 export const BULK_MODEL = process.env.SORTIE_BULK_MODEL ?? DEFAULTS[PROVIDER].bulk;
+export const REVIEW_MODEL = process.env.SORTIE_REVIEW_MODEL ?? DEFAULTS[PROVIDER].review;
 
 export const hasApiKey = () => Boolean(process.env[KEY_NAME]);
 
@@ -114,6 +117,14 @@ async function claude<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z
     fallbacks: "default",
     messages: [{ role: "user", content: req.content }],
   });
+  // Output tokens include thinking. A fallback answer is priced at the model that gave it.
+  const u = response.usage;
+  recordUsage(req.task, response.model ?? req.model, {
+    input: u.input_tokens,
+    output: u.output_tokens,
+    cacheRead: u.cache_read_input_tokens ?? 0,
+    cacheWrite: u.cache_creation_input_tokens ?? 0,
+  });
 
   if (response.stop_reason === "refusal") throw new LlmError(`Claude declined to ${req.task}.`);
   if (response.stop_reason === "max_tokens") throw new LlmError(`The answer was too long to ${req.task} in one pass.`);
@@ -177,6 +188,14 @@ async function gemini<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z
     if (err instanceof ApiError && err.status === 400 && /thinking/i.test(err.message)) response = await call(false);
     else throw err;
   }
+  const m = response.usageMetadata;
+  const cached = m?.cachedContentTokenCount ?? 0;
+  recordUsage(req.task, req.model, {
+    input: (m?.promptTokenCount ?? 0) - cached,
+    output: (m?.candidatesTokenCount ?? 0) + (m?.thoughtsTokenCount ?? 0),
+    cacheRead: cached,
+    cacheWrite: 0,
+  });
 
   if (response.promptFeedback?.blockReason) throw new LlmError(`Gemini declined to ${req.task}.`);
   const finish = response.candidates?.[0]?.finishReason;

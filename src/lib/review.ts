@@ -3,14 +3,15 @@ import fs from "node:fs/promises";
 import * as z from "zod";
 import { type Review, reviewCandidates, saveReview } from "./applications";
 import { sha1 } from "./jobs";
-import { BULK_MODEL, describeError, isAuthError, resumeText, structured } from "./llm";
+import { REVIEW_MODEL, describeError, isAuthError, resumeText, structured } from "./llm";
 import { constraintsText, profileText } from "./profile-text";
 import { latestDocument, preferencesStore, profileStore, searchesStore } from "./store";
 
 // Claude's second opinion on the jobs the rules liked (D-032, D-050). The rules
 // are fast and explainable but can't tell a must-have from a nice-to-have or
-// read "3+ years of production Go" in context; Sonnet can. The same call says
-// whether your resume, as written, undersells you for the job (D-058).
+// read "3+ years of production Go" in context; a model can (Haiku 5.5 by
+// default, D-059). The same call says whether your resume, as written,
+// undersells you for the job (D-058).
 
 // Bump when the prompt or schema changes, so stored reviews are redone.
 export const REVIEW_PROMPT_VERSION = 2;
@@ -54,7 +55,7 @@ export async function reviewInputs(): Promise<ReviewInputs> {
 }
 
 export function reviewHash(inputs: ReviewInputs, search: { titles: string[]; seniority: string[] }, jobHash: string) {
-  return sha1(REVIEW_PROMPT_VERSION, BULK_MODEL, inputs, search.titles, search.seniority, jobHash);
+  return sha1(REVIEW_PROMPT_VERSION, REVIEW_MODEL, inputs, search.titles, search.seniority, jobHash);
 }
 
 export async function reviewJob(
@@ -62,7 +63,7 @@ export async function reviewJob(
   job: { title: string; company: string; location: string; work_mode: string | null; description: string },
 ): Promise<Review> {
   const out = await structured({
-    model: BULK_MODEL,
+    model: REVIEW_MODEL,
     system: SYSTEM,
     context:
       `<candidate>\n${inputs.profile}\n</candidate>\n\n<constraints>\n${inputs.constraints}\n</constraints>` +
@@ -114,7 +115,7 @@ export async function reviewAll(log: (line: string) => void = () => {}, limit = 
         const { candidate: c, hash } = work[next++];
         try {
           const review = await reviewJob(inputs, c);
-          saveReview(c.job_id, c.search_id, review, BULK_MODEL, hash);
+          saveReview(c.job_id, c.search_id, review, REVIEW_MODEL, hash);
           result.reviewed++;
         } catch (err) {
           result.failed++;

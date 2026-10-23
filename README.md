@@ -178,7 +178,8 @@ Open **Jobs** to see matches, and **Applications** for the jobs Sortie picked an
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | (required) | Reading resumes, reviewing jobs, tailoring and the truth check. |
 | `SORTIE_MODEL` | `claude-opus-5-5` | Resume reading, tailoring and the truth check. |
-| `SORTIE_BULK_MODEL` | `claude-sonnet-5-5` | Job reviews. |
+| `SORTIE_BULK_MODEL` | `claude-sonnet-5-5` | Answers to form questions. |
+| `SORTIE_REVIEW_MODEL` | `claude-haiku-5-5` | Job reviews, including whether your resume needs tailoring for a job. |
 | `SORTIE_REVIEWS_PER_CYCLE` / `SORTIE_TAILOR_PER_CYCLE` | `40` / `10` | Spending limits per cycle. |
 | `SORTIE_CHROME_PATH` | Chrome | Another Chromium browser for PDFs, if Chrome isn't installed. |
 | `SORTIE_DATA_DIR` | `./data` | Where the database and uploads are stored. |

@@ -66,6 +66,7 @@ Index
 | [D-056](#d-056-fill-and-check-without-files-hold-for-you-auto-submit-only-through-a-strict-gate) | Fill and check without files, hold for you, auto-submit through a strict gate | Accepted |
 | [D-057](#d-057-claude-or-gemini-behind-one-structured-call-paid-tier-only) | Claude or Gemini behind one structured call; paid tier only | Accepted |
 | [D-058](#d-058-your-own-resume-by-default-tailor-only-when-the-review-says-it-undersells-you-cover-letters-only-when-required) | Your own resume by default; tailor only when it undersells you; cover letters only when required | Accepted |
+| [D-059](#d-059-reviews-on-haiku-55-every-ai-calls-usage-recorded-and-shown) | Reviews on Haiku 5.5; every AI call's usage recorded and shown | Accepted |
 
 ---
 
@@ -870,4 +871,31 @@ Index
   - The review now carries the resume text, a few thousand tokens more per review. It sits in the
     cached context block, so repeated reviews mostly pay the cache-read rate.
   - A PDF upload isn't read as text, so its review judges the profile in its place.
+
+### D-059: Reviews on Haiku 5.5; every AI call's usage recorded and shown
+- **Date:** 2026-10-23 · **Status:** Accepted (owner's request; amends D-035)
+- **Context:** After D-058, reviews are most of the calls. Sortie also had no record of what it
+  actually spent: every cost figure in these docs was an estimate.
+- **Decision:**
+  - **A third model role.** `SORTIE_REVIEW_MODEL` (default `claude-haiku-5-5`, `gemini-3.8-flash`
+    on Gemini) runs job reviews. Form answers stay on the bulk model (Sonnet 5.5); resume reading,
+    tailoring, cover letters and the truth check stay on Opus 5.5. Checked live first: Haiku 5.5
+    takes the same structured output and refusal-fallback request Sortie already sends.
+  - **Usage log.** `structured()` records every call in `llm_usage` (DB v7): task, model, input,
+    output (thinking included), cache-read and cache-write tokens, and a cost at list price.
+    A fallback answer is priced at the model that gave it. Models with no known price (Gemini) are
+    counted but not priced. Recording never fails the call.
+  - **Shown on the overview:** today's and the last 30 days' spend, calls, and the top tasks.
+- **Alternatives:**
+  - The Batch API for reviews (half price, but the answers come back minutes to hours later).
+    Rejected for now: on Haiku a review already costs a fraction of a cent.
+  - Reading spend from the Anthropic Console only. Rejected: it can't split spend by task, and it
+    misses Gemini.
+- **Tradeoffs:**
+  - Haiku judges fit and the "does your resume undersell you" question less well than Sonnet would.
+    The decisions that cost the owner money or credibility (tailoring, the truth check, what gets
+    written) stay on Opus, and `SORTIE_REVIEW_MODEL=claude-sonnet-5-5` brings Sonnet back.
+  - Changing the review model re-reviews jobs once, since the review hash includes the model.
+  - The price table is hand-kept from Anthropic's list prices (October 2026). The Console bill is
+    the real figure.
 

@@ -26,7 +26,8 @@ npm run dev                    # http://127.0.0.1:3000
 | `SORTIE_MODEL` | no | `claude-opus-5-5` / `gemini-4-argon` | Resume reading, tailoring and the truth check (D-035, D-057). |
 | `SORTIE_DATA_DIR` | no | `./data` | Database and uploads. Absolute or relative to the project. |
 | `SORTIE_FETCH_HOURS` | no | `2` | Hours between fetch cycles in the worker (±10% jitter). |
-| `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` / `gemini-3.8-flash` | Job reviews and answers to form questions; later email sorting (D-035, D-055, D-057). |
+| `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` / `gemini-3.8-flash` | Answers to form questions; later email sorting (D-035, D-055, D-057). |
+| `SORTIE_REVIEW_MODEL` | no | `claude-haiku-5-5` / `gemini-3.8-flash` | Job reviews, including whether your resume undersells you for a job (D-058, D-059). |
 | `SORTIE_REVIEWS_PER_CYCLE` | no | `40` | Most Claude job reviews per cycle (D-050). |
 | `SORTIE_TAILOR_PER_CYCLE` | no | `10` | Most applications given documents per cycle (most go out with your resume as uploaded; D-058). |
 | `SORTIE_APPLY_PER_CYCLE` | no | `10` | Most forms read, filled and checked per cycle (D-056). |

@@ -83,9 +83,16 @@ _Screenshots use a made-up demo profile._
 - **You press Submit.** **Open in Chrome to submit** opens the filled form, files included, in a
   Chrome window. You look it over and submit it, and Sortie sees the confirmation page and marks it
   submitted. Sortie only submits on its own for searches in auto mode, with `SORTIE_AUTO_SUBMIT=on`,
-  when no answer came from Claude, every value read back, and no CAPTCHA is showing. CAPTCHAs are never
-  solved or bypassed. For other boards, it gives you the link and the PDFs and you mark the job
-  applied.
+  when no answer came from Claude, every value read back, and no CAPTCHA is showing.
+  `SORTIE_AUTO_SUBMIT=all` also sends Claude's grounded answers. CAPTCHAs are never solved or
+  bypassed. For other boards, it gives you the link and the PDFs and you mark the job applied.
+- **A record of everything sent.** Every submitted application gets a folder in `data/applied/` with
+  the answer typed into each field and where it came from, the resume and cover letter attached,
+  before-and-after screenshots and the posting itself. `applications.csv` in the same folder lists
+  them all.
+- **One tailored resume per family of jobs.** When a posting shares at least half its named skills
+  with one that already has a tailored, fact-checked resume, Sortie reuses that resume instead of
+  paying for another.
 - **Background worker.** `npm run worker` runs a cycle every ~2 hours: fetch, match, review, pick,
   tailor, fill forms. **Companies** shows every board with its last result and an on/off switch. A
   board that rate-limits Sortie is rested for 12 hours instead of being hammered.

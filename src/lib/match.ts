@@ -9,7 +9,7 @@ import type { Salary } from "./sources/types";
 // cycle; the LLM only re-scores the survivors (phase 3).
 
 // Bump when filters or scoring change, so stored matches are recomputed (D-041).
-export const MATCH_RULES_VERSION = 3;
+export const MATCH_RULES_VERSION = 4;
 
 export type MatchJob = {
   company: string;
@@ -105,7 +105,8 @@ export function skillOverlap(text: string, skills: Skill[]) {
 
 export function inferSeniority(title: string, level: string | null): Seniority {
   if (/\bintern(ship)?\b|\bco-?op\b|praktik|werkstudent|apprentice/i.test(title)) return "intern";
-  if (/\b(lead|principal|staff|head|director|manager|architect|distinguished|fellow|vp)\b/i.test(title)) return "lead";
+  // Banks title mid-career staff "Assistant Vice President" (AVP) and "Vice President".
+  if (/\b(lead|principal|staff|head|director|manager|architect|distinguished|fellow|vp|avp|vice president)\b/i.test(title)) return "lead";
   if (/\b(senior|sr\.?|iii|iv)(?![a-z])/i.test(title)) return "senior";
   if (/\b(junior|jr\.?|entry|graduate|grad|associate|early[- ]career|trainee)\b/i.test(title) || /\s(I|1)(\s|$|,|-|\))/.test(title))
     return "entry";

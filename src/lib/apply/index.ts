@@ -11,6 +11,7 @@ import {
   saveCoverLetter,
   saveFormOutcome,
 } from "../applications";
+import { archiveApplication } from "../archive";
 import { DATA_DIR } from "../db";
 import { getJob } from "../jobs";
 import { AI, describeError, hasApiKey, isAuthError } from "../llm";
@@ -20,7 +21,7 @@ import { answersStore, preferencesStore, profileStore, searchesStore } from "../
 import { coverLetterAndCheck } from "../tailor";
 import { challengeVisible, type Files, fillForm, submit, waitForConfirmation } from "./fill";
 import { fetchGreenhouseForm, greenhouseApplyUrl, leverFields } from "./forms";
-import { autoSubmitBlocker, autoSubmitEnabled } from "./gate";
+import { aiAnswersAllowed, autoSubmitBlocker, autoSubmitEnabled } from "./gate";
 import { groundAnswers } from "./ground";
 import { type PlanContext, planForm, requiresCoverLetter, unresolved } from "./plan";
 import type { ApplyProvider, FormField, PlannedField } from "./types";
@@ -122,13 +123,25 @@ async function writeCoverLetter(app: Application, job: JobInfo, log: (l: string)
   }
 }
 
-const shotPath = (id: number) => `${SHOT_DIR}/${id}/form.png`;
+// form.png: filled, before sending; sent.png: the page after submit. Both are
+// kept, and copied into the application's record once it's sent (archive.ts).
+const shotPath = (id: number, name: "form" | "sent") => `${SHOT_DIR}/${id}/${name}.png`;
 
-async function screenshot(page: Page, id: number) {
-  const rel = shotPath(id);
+async function screenshot(page: Page, id: number, name: "form" | "sent" = "form") {
+  const rel = shotPath(id, name);
   fs.mkdirSync(path.dirname(path.join(DATA_DIR, rel)), { recursive: true });
   await page.screenshot({ path: path.join(DATA_DIR, rel), fullPage: true });
   return rel;
+}
+
+// Writing the record must never undo a sent application.
+function record(id: number, log: (l: string) => void) {
+  try {
+    const dir = archiveApplication(id);
+    if (dir) logEvent(id, "recorded", `Saved what was sent in ${dir}`);
+  } catch (err) {
+    log(`  couldn't save the record of application ${id}: ${(err as Error).message}`);
+  }
 }
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -194,6 +207,7 @@ export async function applyOne(app: Application, log: (line: string) => void = (
     const blocker = autoSubmitBlocker({
       mode: app.origin === "manual" ? "review" : (search?.mode ?? "review"),
       enabled: autoSubmitEnabled(),
+      allowAI: aiAnswersAllowed(),
       plan,
       fill,
       challenge: await challengeVisible(page),
@@ -210,10 +224,12 @@ export async function applyOne(app: Application, log: (line: string) => void = (
       return done({ status: "held", applyUrl: target.url, plan, fill: all, screenshot: shot, detail: "A file didn't attach: submit it yourself" });
     logEvent(app.id, "submitting", "Sortie is sending it (auto mode)");
     const outcome = await submit(page);
-    const after = await screenshot(page, app.id);
+    const after = await screenshot(page, app.id, "sent");
     if (outcome === "submitted") {
       log(`  ${where}: submitted`);
-      return done({ status: "submitted", applyUrl: target.url, plan, fill: all, screenshot: after, detail: "Submitted by Sortie; the confirmation page showed" });
+      done({ status: "submitted", applyUrl: target.url, plan, fill: all, screenshot: after, detail: "Submitted by Sortie; the confirmation page showed" });
+      record(app.id, log);
+      return "submitted";
     }
     if (outcome === "challenge")
       return done({ status: "held", applyUrl: target.url, plan, fill: all, screenshot: after, detail: "A CAPTCHA appeared when sending: submit it yourself" });
@@ -269,6 +285,8 @@ export async function handoff(app: Application, log: (line: string) => void = ()
     const now = getApplication(app.id);
     if (sent) {
       saveFormOutcome(app.id, { status: "submitted", plan, fill, detail: "Submitted by you in Chrome; the confirmation page showed" });
+      await screenshot(page, app.id, "sent").catch(() => {});
+      record(app.id, log);
       return "submitted";
     }
     if (now?.status !== "submitting") return "held";

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ApplicationActions } from "@/components/application-actions";
 import { ApplicationQuestions } from "@/components/application-questions";
 import { Empty, Loading, PageHeader, Section } from "@/components/ui";
-import { autoSubmitEnabled } from "@/lib/apply/gate";
+import { aiAnswersAllowed, autoSubmitEnabled } from "@/lib/apply/gate";
 import { unresolved } from "@/lib/apply/plan";
 import { APPLY_PROVIDERS } from "@/lib/apply/types";
 import { applicationCounts, hasCoverLetter, listApplications, type ApplicationView } from "@/lib/applications";
@@ -74,7 +74,11 @@ async function ApplicationsData() {
           change
         </Link>
         ){last?.finished_at ? ` · last cycle ${formatDateTime(last.finished_at)}` : ""} · auto-submit{" "}
-        {autoSubmitEnabled() ? "on for searches in auto mode" : "off (you submit everything)"}
+        {!autoSubmitEnabled()
+          ? "off (you submit everything)"
+          : aiAnswersAllowed()
+            ? "on for searches in auto mode, Claude's answers included · every sent application is saved in data/applied"
+            : "on for searches in auto mode"}
       </p>
       {blocked && <p className="mb-5 rounded-md border border-warn bg-warn-soft px-4 py-3 text-sm">{blocked}</p>}
       {!apps.length ? (

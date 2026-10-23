@@ -101,6 +101,8 @@ describe("auto-submit gate", () => {
     expect(autoSubmitBlocker({ ...base, enabled: false })).toMatch(/SORTIE_AUTO_SUBMIT/);
     expect(autoSubmitBlocker({ ...base, plan: [ok, field({ state: "decide" })] })).toMatch(/your answer/);
     expect(autoSubmitBlocker({ ...base, plan: [{ ...ok, by: "claude" }] })).toMatch(/Claude answered 1 question/);
+    expect(autoSubmitBlocker({ ...base, allowAI: true, plan: [{ ...ok, by: "claude" }] })).toBeNull();
+    expect(autoSubmitBlocker({ ...base, allowAI: true, plan: [ok, field({ state: "decide" })] })).toMatch(/your answer/);
     expect(autoSubmitBlocker({ ...base, fill: [{ ...filled[0], ok: false }] })).toMatch(/didn't fill/);
     expect(autoSubmitBlocker({ ...base, challenge: true })).toMatch(/CAPTCHA/);
   });

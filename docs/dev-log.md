@@ -4,6 +4,18 @@ Newest first. What was built, what broke, how it was fixed, and how it was check
 
 ## 2026-10-23 (Fri)
 
+### First live cycle; records, resume reuse, wider searches (D-060)
+- **First cycle.** 217 boards, +3,460 new jobs. Only 5 of about 32,000 qualified: 442 India roles with
+  no level in the title were "mid", and analyst/QA titles failed the software filter. 19 Haiku reviews
+  cost $0.01; 3 Opus tailorings plus truth checks cost $0.19. 2 Lever forms were filled and held, and
+  2 Workday ones need a person.
+- **Built.** A per-application record in `data/applied/` (answers, files, before and after
+  screenshots, posting, CSV index). Tailored-resume reuse for postings at least 50% alike (skill
+  Jaccard, word cosine fallback). `SORTIE_AUTO_SUBMIT=all`. VP and AVP titles count as lead (match
+  rules v4).
+- **Checked.** 102 tests (new: `similar.test.ts`, a reuse-and-record test in `autopilot.test.ts`, gate
+  cases for `allowAI`, VP/AVP seniority), tsc and eslint clean. Not yet checked on a live cycle.
+
 ### First live AI calls; tailor only when it helps (D-058)
 - **Keys.** A Gemini key was added but its project is on the free tier (`gemini-4-argon` free quota
   is 0; D-057 requires billing anyway), so the owner switched to Claude. A test prompt to Opus 5.5

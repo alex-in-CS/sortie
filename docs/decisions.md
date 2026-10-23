@@ -67,6 +67,7 @@ Index
 | [D-057](#d-057-claude-or-gemini-behind-one-structured-call-paid-tier-only) | Claude or Gemini behind one structured call; paid tier only | Accepted |
 | [D-058](#d-058-your-own-resume-by-default-tailor-only-when-the-review-says-it-undersells-you-cover-letters-only-when-required) | Your own resume by default; tailor only when it undersells you; cover letters only when required | Accepted |
 | [D-059](#d-059-reviews-on-haiku-55-every-ai-calls-usage-recorded-and-shown) | Reviews on Haiku 5.5; every AI call's usage recorded and shown | Accepted |
+| [D-060](#d-060-a-record-of-every-sent-application-one-tailored-resume-per-family-of-postings-wider-fresher-searches) | A record of every sent application; one tailored resume per family of postings; wider fresher searches | Accepted |
 
 ---
 
@@ -899,3 +900,31 @@ Index
   - The price table is hand-kept from Anthropic's list prices (October 2026). The Console bill is
     the real figure.
 
+
+### D-060: A record of every sent application; one tailored resume per family of postings; wider fresher searches
+- **Date:** 2026-10-23 · **Status:** Accepted (owner's choice)
+- **Context:** The owner wants about 300 applications fast, with auto-submit, but wants each sent
+  application saved together with the answers and resume that went in. They also don't want a new
+  tailored resume for postings that are at least 50% alike. The first live cycle qualified 5 of about
+  32,000 jobs: untitled-level roles counted as "mid" and were rejected, and data, analyst and QA roles
+  failed the software-only title filter even though the profile has those skills.
+- **Decision:**
+  - **Record (`archive.ts`).** Every application that reaches `submitted` gets a folder
+    `data/applied/<date>_<company>_<title>_<id>/` holding `application.md` (each field's label, the
+    value entered, where it came from, whether it read back), the resume and cover letter attached,
+    `form.png` (filled, before sending), `sent.png` (after) and `job-description.txt`. There's also one
+    line per application in `data/applied/applications.csv`. This covers Sortie's sends, your Chrome
+    handoffs and "mark as submitted", and the record is never allowed to undo a send.
+  - **Reuse (`similar.ts`).** Before Opus tailors, the posting is compared with every posting that
+    already has a tailored, truth-checked resume. The comparison is the Jaccard index of the skills
+    both name, or word cosine when either names fewer than 3. At 0.5 or more, the closest one's
+    resume and truth report are copied, and an event names the source and the percentage.
+  - **Auto-submit level `all`.** `SORTIE_AUTO_SUBMIT=all` also lets Claude's grounded answers go out
+    without a person checking them first. Missing and owner-only ("decide") questions, failed fills
+    and CAPTCHAs still hold the form. `on` keeps the old rule (stored answers only).
+  - **Matching.** "Vice President" and "AVP" titles count as lead-level (match rules v4), which lets
+    fresher searches include unmarked "mid" titles and leaves the "N+ years" rule and the review to
+    weed out the rest. A second search covers data, analyst and QA titles.
+- **Tradeoffs:** With `all`, an AI-written answer can be wrong in a sent application. The record is
+  how you find that out afterwards. Reuse can send a resume tuned to a sibling posting's wording,
+  which is acceptable at 50% overlap.

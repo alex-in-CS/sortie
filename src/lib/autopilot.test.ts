@@ -193,6 +193,48 @@ describe("prepare", () => {
     expect(fake.structured.mock.calls[0][0].context).toContain("<resume>\nSam Rivera\nBackend engineer");
   });
 
+  it("reuses a tailored resume for a posting at least half alike, and records what was sent", async () => {
+    fake.structured.mockImplementation(async (req) => claude(req));
+    await setup();
+    await upload();
+    const store = await import("./store");
+    store.preferencesStore.save({ ...store.preferencesStore.get().value, maxPerCompany: 2 });
+    const { prepare } = await import("./autopilot");
+    const apps = await import("./applications");
+
+    // Acme's two postings read the same: Opus tailors once, the second reuses it.
+    expect(await prepare()).toMatchObject({ selected: 2, tailored: 1, reused: 1, tailorFailed: 0 });
+    expect(fake.structured.mock.calls.filter(([req]) => req.task === "tailor the resume")).toHaveLength(1);
+    const [second, first] = apps.listApplications().sort((a, b) => b.id - a.id);
+    expect(second.resume).toEqual(first.resume);
+    expect(second.truth).toEqual(first.truth);
+    expect(second.resume_file).toBe(`resumes/${second.id}/Sam-Rivera-Resume.pdf`);
+    expect(fs.readFileSync(path.join(dir, second.resume_file!))).toEqual(fs.readFileSync(path.join(dir, first.resume_file!)));
+    expect(apps.applicationEvents(second.id).find((e) => e.kind === "ready")!.detail).toMatch(/Reused the resume tailored for Acme – Backend Engineer \(#\d+\), 91% alike/);
+
+    // Sent: the record holds the posting, the resume and every answer.
+    const { archiveApplication } = await import("./archive");
+    expect(archiveApplication(first.id)).toBeNull(); // not sent yet
+    apps.saveFormOutcome(first.id, {
+      status: "submitted",
+      detail: "Submitted by Sortie",
+      plan: [
+        { key: "q1", label: "Notice period", kind: "text", required: true, options: [], value: ["14 days"], state: "ok", by: "rule", source: "Preferences" },
+        { key: "resume", label: "Resume", kind: "file", required: true, options: [], value: ["resume"], state: "ok", by: "rule", source: "Your resume" },
+      ],
+      fill: [{ key: "q1", label: "Notice period", ok: true, note: null }],
+    });
+    const folder = archiveApplication(first.id)!;
+    expect(archiveApplication(first.id)).toBe(folder); // again: same folder, one CSV line
+    const md = fs.readFileSync(path.join(dir, folder, "application.md"), "utf8");
+    expect(md).toContain("### Notice period *\n14 days");
+    expect(md).toContain("read back OK");
+    expect(md).toContain("**Resume:** tailored (resume.pdf)");
+    expect(fs.existsSync(path.join(dir, folder, "resume.pdf"))).toBe(true);
+    expect(fs.readFileSync(path.join(dir, folder, "job-description.txt"), "utf8")).toContain("Node.js and PostgreSQL");
+    expect(fs.readFileSync(path.join(dir, "applied", "applications.csv"), "utf8").trim().split("\n")).toHaveLength(2);
+  });
+
   it("retries a failed tailoring, then hands it to the owner", async () => {
     fake.structured.mockImplementation(async (req) => {
       if (req.task === "tailor the resume") throw new Error("overloaded");

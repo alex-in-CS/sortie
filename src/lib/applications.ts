@@ -146,9 +146,10 @@ export function selectionCandidates(searchIds: string[]) {
     .map((r) => plain<SelectionCandidate>(r));
 }
 
-// Applications counted against the caps: anything not skipped, including ones
-// you picked by hand (those are never blocked, but they use up room). Per
-// company over the last 30 days; per day since local midnight.
+// Applications counted against the caps: anything not skipped. Per company over
+// the last 30 days, including ones you picked by hand (those are never blocked,
+// but they use up the company's room). Per day since local midnight, Sortie's
+// own picks only: the daily limit is on what it chooses (D-060).
 export function capUsage(now = new Date()) {
   const since = new Date(now.getTime() - 30 * 86_400_000).toISOString();
   const midnight = new Date(now);
@@ -166,7 +167,7 @@ export function capUsage(now = new Date()) {
   );
   const today = (
     db
-      .prepare("SELECT COUNT(*) AS n FROM applications WHERE status != 'skipped' AND created_at >= ?")
+      .prepare("SELECT COUNT(*) AS n FROM applications WHERE status != 'skipped' AND origin = 'auto' AND created_at >= ?")
       .get(midnight.toISOString()) as { n: number }
   ).n;
   return { perCompany, today };
@@ -273,7 +274,7 @@ export function claimForTailoring(): Application | undefined {
   return toApplication(row);
 }
 
-export function saveTailored(id: number, resume: TailoredResume, truth: TruthReport, resumeFile: string) {
+export function saveTailored(id: number, resume: TailoredResume, truth: TruthReport, resumeFile: string, note?: string) {
   getDb()
     .prepare(
       `UPDATE applications SET status = 'ready', resume = ?, truth = ?, resume_file = ?, error = NULL, updated_at = ?
@@ -281,7 +282,25 @@ export function saveTailored(id: number, resume: TailoredResume, truth: TruthRep
     )
     .run(JSON.stringify(resume), JSON.stringify(truth), resumeFile, new Date().toISOString(), id);
   const n = truth.issues.length;
-  logEvent(id, "ready", `Tailored resume; ${n ? `truth check fixed ${n} item${n === 1 ? "" : "s"}` : "truth check passed"}`);
+  logEvent(id, "ready", note ?? `Tailored resume; ${n ? `truth check fixed ${n} item${n === 1 ? "" : "s"}` : "truth check passed"}`);
+}
+
+// Resumes already tailored (and truth-checked) for other jobs, newest first:
+// a similar posting reuses one instead of tailoring again (D-060).
+export function tailoredResumes(exceptId: number) {
+  const rows = getDb()
+    .prepare(
+      `SELECT a.id, a.resume, a.truth, a.resume_file, j.title, j.description, c.name AS company
+       FROM applications a JOIN jobs j ON j.id = a.job_id JOIN companies c ON c.id = j.company_id
+       WHERE a.resume IS NOT NULL AND a.truth IS NOT NULL AND a.resume_file IS NOT NULL AND a.id != ?
+       ORDER BY a.id DESC`,
+    )
+    .all(exceptId) as { id: number; resume: string; truth: string; resume_file: string; title: string; description: string | null; company: string }[];
+  return rows.map((r) => ({
+    ...r,
+    resume: JSON.parse(r.resume) as TailoredResume,
+    truth: JSON.parse(r.truth) as TruthReport,
+  }));
 }
 
 // Your uploaded resume, as is: no tailoring, no truth report (D-058).

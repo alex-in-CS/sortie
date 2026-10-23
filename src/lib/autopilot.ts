@@ -14,6 +14,7 @@ import {
   saveTailored,
   selectionCandidates,
   setStatus,
+  tailoredResumes,
 } from "./applications";
 import { applyOne } from "./apply";
 import { DATA_DIR } from "./db";
@@ -22,6 +23,7 @@ import { AI, describeError, hasApiKey, isAuthError } from "./llm";
 import { htmlToPdf } from "./pdf";
 import { resumeHtml } from "./resume-html";
 import { reviewAll, type ReviewResult } from "./review";
+import { REUSE_AT, similarity } from "./similar";
 import type { Profile, TailoredResume } from "./schema";
 import { selectJobs } from "./select";
 import { latestDocument, preferencesStore, profileStore, searchesStore } from "./store";
@@ -67,7 +69,19 @@ const asWritten = (p: Profile): TailoredResume => ({
   coverLetter: "",
 });
 
-// One application's documents. Returns "tailored", "as-is" or false (failed).
+// A resume already tailored for a posting at least REUSE_AT alike (D-060).
+function reusable(app: Application, profile: Profile, text: string) {
+  let best: { from: ReturnType<typeof tailoredResumes>[number]; score: number } | null = null;
+  for (const from of tailoredResumes(app.id)) {
+    if (!fs.existsSync(path.join(DATA_DIR, from.resume_file))) continue;
+    const score = similarity(text, `${from.title}
+${from.description ?? ""}`, profile.skills);
+    if (score >= REUSE_AT && (!best || score > best.score)) best = { from, score };
+  }
+  return best;
+}
+
+// One application's documents. Returns "tailored", "reused", "as-is" or false (failed).
 export async function prepareDocuments(app: Application, log: (line: string) => void = () => {}) {
   const job = getJob(app.job_id);
   if (!job || job.closed_at) {
@@ -84,6 +98,17 @@ export async function prepareDocuments(app: Application, log: (line: string) => 
     // Start clean: a redo mustn't leave an earlier pass's resume or cover letter behind.
     fs.rmSync(dir, { recursive: true, force: true });
     fs.mkdirSync(dir, { recursive: true });
+    const similar = advice ? reusable(app, profile, `${job.title}
+${job.description ?? ""}`) : null;
+    if (similar) {
+      const { from, score } = similar;
+      const resumeFile = `resumes/${app.id}/${base}-Resume${path.extname(from.resume_file)}`;
+      fs.copyFileSync(path.join(DATA_DIR, from.resume_file), path.join(DATA_DIR, resumeFile));
+      const note = `Reused the resume tailored for ${from.company} – ${from.title} (#${from.id}), ${Math.round(score * 100)}% alike`;
+      saveTailored(app.id, from.resume, from.truth, resumeFile, note);
+      log(`  ${job.company} – ${job.title}: ${note}`);
+      return "reused";
+    }
     if (advice && hasApiKey()) {
       const { resume, truth } = await tailorAndCheck(profile, prefs, job, advice);
       const resumeFile = `resumes/${app.id}/${base}-Resume.pdf`;
@@ -117,6 +142,7 @@ export type PrepareResult = {
   waitingForReview: number;
   capped: { company: number; daily: number };
   tailored: number;
+  reused: number;
   asIs: number;
   tailorFailed: number;
   forms: { held: number; submitted: number; needsYou: number };
@@ -163,6 +189,7 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
   let blocked: string | null = null;
   if (gaps.length) blocked = `Add ${gaps.join(", ")} to your profile before Sortie can apply.`;
   let tailored = 0;
+  let reused = 0;
   let asIs = 0;
   let tailorFailed = 0;
   if (!blocked) {
@@ -172,6 +199,7 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
       try {
         const done = await prepareDocuments(app, log);
         if (done === "tailored") tailored++;
+        else if (done === "reused") reused++;
         else if (done === "as-is") asIs++;
         else tailorFailed++;
       } catch (err) {
@@ -181,7 +209,8 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
         break;
       }
     }
-    if (tailored + asIs) log(`Documents: ${tailored} tailored, ${asIs} with your resume as uploaded.`);
+    if (tailored + reused + asIs)
+      log(`Documents: ${tailored} tailored, ${reused} reused from a similar job, ${asIs} with your resume as uploaded.`);
   } else log(`Documents paused: ${blocked}`);
 
   // The form step needs no API key (Claude only answers questions nothing
@@ -203,5 +232,5 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
   }
   if (forms.held + forms.submitted + forms.needsYou)
     log(`Forms: ${forms.held} ready for you to submit, ${forms.submitted} submitted, ${forms.needsYou} need you.`);
-  return { reviews, selected, waitingForReview: waiting, capped, tailored, asIs, tailorFailed, forms, blocked };
+  return { reviews, selected, waitingForReview: waiting, capped, tailored, reused, asIs, tailorFailed, forms, blocked };
 }

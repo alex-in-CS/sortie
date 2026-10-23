@@ -99,6 +99,9 @@ describe("title, seniority and years", () => {
     expect(inferSeniority("Staff Engineer", null)).toBe("lead");
     expect(inferSeniority("Software Engineer I", null)).toBe("entry");
     expect(inferSeniority("Software Engineer II", null)).toBe("mid");
+    expect(inferSeniority("Java Fullstack Developer- Vice President", null)).toBe("lead");
+    expect(inferSeniority("IT Quality Senior Analyst - AVP", null)).toBe("lead");
+    expect(inferSeniority("Front End Developer - Assistant Vice President", null)).toBe("lead");
     expect(inferSeniority("Software Engineer", "Entry Level")).toBe("entry");
     const r = matchJob(job({ title: "EMT3_VM_Gen_AI_ML_Senior_Developer" }), search, profile, prefs, now);
     expect(r.rejected).toMatch(/senior-level/);

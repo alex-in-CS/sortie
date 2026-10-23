@@ -31,7 +31,7 @@ npm run dev                    # http://127.0.0.1:3000
 | `SORTIE_REVIEWS_PER_CYCLE` | no | `40` | Most Claude job reviews per cycle (D-050). |
 | `SORTIE_TAILOR_PER_CYCLE` | no | `10` | Most applications given documents per cycle (most go out with your resume as uploaded; D-058). |
 | `SORTIE_APPLY_PER_CYCLE` | no | `10` | Most forms read, filled and checked per cycle (D-056). |
-| `SORTIE_AUTO_SUBMIT` | no | off | `on` lets searches in auto mode send forms that pass every check (D-056). Off, you submit everything. |
+| `SORTIE_AUTO_SUBMIT` | no | off | `on` lets searches in auto mode send forms that pass every check (D-056); `all` also sends Claude's grounded answers unchecked (D-060). Off, you submit everything. Every sent application is recorded in `data/applied/`. |
 | `SORTIE_HANDOFF_MINUTES` | no | `20` | How long **Open in Chrome** waits for you to submit before the form goes back to held. |
 | `SORTIE_CHROME_PATH` | no | Chrome | A Chromium-based browser for PDFs and forms, if Google Chrome isn't installed (D-052). |
 | *(Day 3)* `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | for Gmail | | From the Desktop OAuth client. |

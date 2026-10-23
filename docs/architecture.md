@@ -35,7 +35,7 @@
    geo.ts        location text → ISO countries; city aliases
    match.ts      hard filters + deterministic score with reasons                (D-032, D-040)
    pipeline.ts   runCycle(): registry → fetch boards → details → matchAll() → prepare()
-   autopilot.ts  prepare(): reviewAll → selectJobs → tailorOne × N → applyOne × N (D-050, D-056)
+   autopilot.ts  prepare(): reviewAll → selectJobs → prepareDocuments × N → applyOne × N (D-050, D-056, D-058)
    review.ts     Claude (Sonnet) review per (job, search), hash-cached           (D-050)
    select.ts     pure: bar, dealbreakers, per-company and daily caps            (D-050)
    tailor.ts     Claude (Opus) tailoring + Claude truth check                   (D-051)
@@ -86,7 +86,7 @@
                          │  scheduler ─▶ tasks table (idempotent steps)       │
                          │   fetch.board   every ~2h per company (D-031)      │
                          │   match.job     filters + det. score → LLM score   │
-                         │   tailor.app    resume + cover letter → truth check│
+                         │   tailor.app    your resume, or tailored → truth ck│
                          │   apply.app     Playwright fill → submit | hold    │
                          │   inbox.poll    Gmail → classify → move stage      │
                          │   notify        Telegram (alerts, daily recap)     │
@@ -107,8 +107,9 @@
    Results go in `matches`.
 3. **select.** Pick the best qualifying matches while respecting the per-company and daily caps, and
    create `applications` (status `queued`).
-4. **tailor.app.** Generate the resume and cover letter, run the truth check, render the PDF. Status
-   becomes `ready`.
+4. **tailor.app.** Copy your uploaded resume in as is, unless the job's review left `resumeAdvice`:
+   then tailor the resume from the profile, run the truth check and render the PDF (D-058). Status
+   becomes `ready`. Cover letters are written in step 5, only for forms that require one.
 5. **apply.app** (built, D-054 to D-056). Read the form, plan every answer from stored data, fill it
    and read it back. Submit only through the auto-submit gate; otherwise hold it for you to open in
    Chrome and submit, or ask you the questions nothing stored answers. Phase 5 will send those
@@ -147,7 +148,7 @@ Every step writes to `application_events`, so the history of any application can
 | `src/app/applications/page.tsx` | Applications grouped by status (needs you, ready to submit, being prepared, submitted, skipped): Claude's review, PDF links, the truth report, the form plan with each value's source, the screenshot, open questions, actions. |
 | `src/app/api/applications/**` | Manual pick (POST), actions (PATCH), answers to a form's questions (POST `answers`), PDF and screenshot download (GET, confined to `data/`). |
 | `src/components/apply-button.tsx` | Apply on a job row; shows the application's status once it exists. |
-| `src/components/application-actions.tsx` | Per status: Open in Chrome, Fill again, I submitted it, Re-tailor, Try again, Skip, Restore. |
+| `src/components/application-actions.tsx` | Per status: Open in Chrome, Fill again, I submitted it, Redo documents, Try again, Skip, Restore. |
 | `src/components/application-questions.tsx` | The form's open questions as inputs; saves them to the answer bank and fills again. |
 | `src/lib/apply/*` | The form step: readers, planner, grounded answers, filler, auto-submit gate, orchestration (D-054 to D-056). `fixtures/` holds saved real forms. |
 | `src/app/companies/page.tsx` | Companies: registry table with switches, last fetch result, unsupported and not-found lists. |

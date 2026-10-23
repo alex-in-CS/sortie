@@ -14,7 +14,7 @@ const SENT: Act = { action: "submitted", label: "I submitted it" };
 const ACTIONS: Record<ApplicationStatus, Act[]> = {
   queued: [SKIP],
   tailoring: [],
-  ready: [{ action: "retailor", label: "Re-tailor" }, SKIP],
+  ready: [{ action: "retailor", label: "Redo documents" }, SKIP],
   applying: [],
   held: [{ action: "open", label: "Open in Chrome to submit", variant: "primary" }, { action: "refill", label: "Fill again" }, SENT, SKIP],
   submitting: [SENT, SKIP],

@@ -28,7 +28,9 @@ describe("database migrations", () => {
   it("creates a fresh database at the latest version with defaults", async () => {
     const { getDb } = await import("./db");
     const store = await import("./store");
-    expect(version(getDb())).toBe(5);
+    expect(version(getDb())).toBe(6);
+    const reviewColumns = (getDb().prepare("PRAGMA table_info(reviews)").all() as { name: string }[]).map((c) => c.name);
+    expect(reviewColumns).toContain("resume_advice");
     expect(store.searchesStore.get().updatedAt).toBeNull();
     expect(store.searchesStore.get().value).toHaveLength(1);
     expect(store.answersStore.get().value.salaryFallback).toBe("Negotiable");
@@ -79,7 +81,7 @@ describe("database migrations", () => {
     const { getDb } = await import("./db");
     const store = await import("./store");
     const db = getDb();
-    expect(version(db)).toBe(5);
+    expect(version(db)).toBe(6);
     expect(db.prepare("SELECT name FROM sqlite_master WHERE name IN ('profile','preferences')").all()).toEqual([]);
 
     expect(store.getProfile().value.contact.fullName).toBe("Old");

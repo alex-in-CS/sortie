@@ -6,10 +6,11 @@ import {
   capUsage,
   claimForApplying,
   claimForTailoring,
-  coverLetterFile,
   createApplication,
   failTailoring,
   pruneReviews,
+  reviewsFor,
+  saveAsIs,
   saveTailored,
   selectionCandidates,
   setStatus,
@@ -17,19 +18,22 @@ import {
 import { applyOne } from "./apply";
 import { DATA_DIR } from "./db";
 import { getJob } from "./jobs";
-import { AI, describeError, hasApiKey, isAuthError, KEY_NAME } from "./llm";
+import { AI, describeError, hasApiKey, isAuthError } from "./llm";
 import { htmlToPdf } from "./pdf";
-import { coverLetterHtml, resumeHtml } from "./resume-html";
+import { resumeHtml } from "./resume-html";
 import { reviewAll, type ReviewResult } from "./review";
-import type { Profile } from "./schema";
+import type { Profile, TailoredResume } from "./schema";
 import { selectJobs } from "./select";
-import { preferencesStore, profileStore, searchesStore } from "./store";
+import { latestDocument, preferencesStore, profileStore, searchesStore } from "./store";
 import { tailorAndCheck } from "./tailor";
 
 // Phases 3 and 4 of every cycle, after fetching and matching: Claude reviews
-// the best candidates, Sortie picks jobs within the caps, each pick gets a
-// tailored resume and cover letter that passed the truth check (D-050, D-051,
-// D-052), and then the form step fills and checks its application (D-056).
+// the best candidates, Sortie picks jobs within the caps, each pick gets its
+// documents, and then the form step fills and checks its application (D-050,
+// D-056). The documents are the resume you uploaded, unless the job's review
+// says it undersells you there; then Opus tailors one and the truth check
+// clears it (D-051, D-058). Cover letters come later, only for forms that
+// require one (apply/index.ts).
 
 const TAILOR_PER_CYCLE = Number(process.env.SORTIE_TAILOR_PER_CYCLE) || 10;
 const APPLY_PER_CYCLE = Number(process.env.SORTIE_APPLY_PER_CYCLE) || 10;
@@ -53,29 +57,51 @@ const fileSlug = (s: string) =>
     .trim()
     .replace(/\s+/g, "-") || "Candidate";
 
-export async function tailorOne(app: Application, log: (line: string) => void = () => {}) {
+// The profile as a resume, word for word: for when nothing was uploaded.
+const asWritten = (p: Profile): TailoredResume => ({
+  headline: p.headline,
+  summary: p.summary,
+  skills: p.skills.map((s) => s.name),
+  experience: p.experience.map((e) => ({ id: e.id, bullets: e.bullets })),
+  projects: p.projects.map((x) => ({ id: x.id, bullets: x.bullets })),
+  coverLetter: "",
+});
+
+// One application's documents. Returns "tailored", "as-is" or false (failed).
+export async function prepareDocuments(app: Application, log: (line: string) => void = () => {}) {
   const job = getJob(app.job_id);
   if (!job || job.closed_at) {
-    setStatus(app.id, "skipped", "The posting closed before tailoring");
+    setStatus(app.id, "skipped", "The posting closed before its documents were ready");
     return false;
   }
   const profile = profileStore.get().value;
   const prefs = preferencesStore.get().value;
+  const advice = reviewsFor(app.search_id, [app.job_id]).get(app.job_id)?.resumeAdvice ?? null;
+  const upload = latestDocument("resume");
+  const dir = path.join(RESUME_DIR, String(app.id));
+  const base = fileSlug(profile.contact.fullName);
   try {
-    const { resume, truth } = await tailorAndCheck(profile, prefs, job);
-    const dir = path.join(RESUME_DIR, String(app.id));
+    // Start clean: a redo mustn't leave an earlier pass's resume or cover letter behind.
+    fs.rmSync(dir, { recursive: true, force: true });
     fs.mkdirSync(dir, { recursive: true });
-    const base = fileSlug(profile.contact.fullName);
-    const resumeFile = `resumes/${app.id}/${base}-Resume.pdf`;
-    fs.writeFileSync(path.join(DATA_DIR, resumeFile), await htmlToPdf(resumeHtml(profile, resume)));
-    if (resume.coverLetter.trim())
-      fs.writeFileSync(
-        path.join(DATA_DIR, coverLetterFile(resumeFile)),
-        await htmlToPdf(coverLetterHtml(profile, resume.coverLetter, job.company)),
-      );
-    saveTailored(app.id, resume, truth, resumeFile);
-    log(`  Tailored for ${job.company} – ${job.title}${truth.issues.length ? ` (truth check fixed ${truth.issues.length})` : ""}`);
-    return true;
+    if (advice && hasApiKey()) {
+      const { resume, truth } = await tailorAndCheck(profile, prefs, job, advice);
+      const resumeFile = `resumes/${app.id}/${base}-Resume.pdf`;
+      fs.writeFileSync(path.join(DATA_DIR, resumeFile), await htmlToPdf(resumeHtml(profile, resume)));
+      saveTailored(app.id, resume, truth, resumeFile);
+      log(`  Tailored for ${job.company} – ${job.title}${truth.issues.length ? ` (truth check fixed ${truth.issues.length})` : ""}`);
+      return "tailored";
+    }
+    let resumeFile: string;
+    if (upload) {
+      resumeFile = `resumes/${app.id}/${base}-Resume${path.extname(upload.path).toLowerCase()}`;
+      fs.copyFileSync(upload.path, path.join(DATA_DIR, resumeFile));
+    } else {
+      resumeFile = `resumes/${app.id}/${base}-Resume.pdf`;
+      fs.writeFileSync(path.join(DATA_DIR, resumeFile), await htmlToPdf(resumeHtml(profile, asWritten(profile))));
+    }
+    saveAsIs(app.id, resumeFile);
+    return "as-is";
   } catch (err) {
     const msg = describeError(err);
     failTailoring(app, msg);
@@ -91,6 +117,7 @@ export type PrepareResult = {
   waitingForReview: number;
   capped: { company: number; daily: number };
   tailored: number;
+  asIs: number;
   tailorFailed: number;
   forms: { held: number; submitted: number; needsYou: number };
   blocked: string | null;
@@ -131,17 +158,21 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
       ".",
   );
 
+  // Your own resume needs no API key; only tailoring does, and only reviewed
+  // jobs (which need the key) can ask for it.
   let blocked: string | null = null;
-  if (!llm) blocked = `Add ${KEY_NAME} to .env.local to tailor resumes.`;
-  else if (gaps.length) blocked = `Add ${gaps.join(", ")} to your profile before Sortie can tailor resumes.`;
+  if (gaps.length) blocked = `Add ${gaps.join(", ")} to your profile before Sortie can apply.`;
   let tailored = 0;
+  let asIs = 0;
   let tailorFailed = 0;
   if (!blocked) {
     for (let i = 0; i < TAILOR_PER_CYCLE; i++) {
       const app = claimForTailoring();
       if (!app) break;
       try {
-        if (await tailorOne(app, log)) tailored++;
+        const done = await prepareDocuments(app, log);
+        if (done === "tailored") tailored++;
+        else if (done === "as-is") asIs++;
         else tailorFailed++;
       } catch (err) {
         // The key itself was refused: every other job would fail the same way.
@@ -150,7 +181,8 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
         break;
       }
     }
-  } else log(`Tailoring paused: ${blocked}`);
+    if (tailored + asIs) log(`Documents: ${tailored} tailored, ${asIs} with your resume as uploaded.`);
+  } else log(`Documents paused: ${blocked}`);
 
   // The form step needs no API key (Claude only answers questions nothing
   // stored covers), so it runs even while tailoring is paused.
@@ -171,5 +203,5 @@ export async function prepare(log: (line: string) => void = () => {}): Promise<P
   }
   if (forms.held + forms.submitted + forms.needsYou)
     log(`Forms: ${forms.held} ready for you to submit, ${forms.submitted} submitted, ${forms.needsYou} need you.`);
-  return { reviews, selected, waitingForReview: waiting, capped, tailored, tailorFailed, forms, blocked };
+  return { reviews, selected, waitingForReview: waiting, capped, tailored, asIs, tailorFailed, forms, blocked };
 }

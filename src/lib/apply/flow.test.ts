@@ -258,6 +258,27 @@ describe("an application through the form step", () => {
     expect(apps.actOnApplication(id, "skip")).toMatchObject({ code: 409 });
   });
 
+  it("writes a cover letter only for a form that requires one, next to your own resume", async () => {
+    const { apps, id } = await oneApplication();
+    const { requiresCoverLetter } = await import("./plan");
+    const upload = (over: Partial<PlannedField>) => field({ kind: "file", ...over });
+    expect(requiresCoverLetter(upload({ key: "cover_letter", label: "Cover Letter" }))).toBe(true);
+    expect(requiresCoverLetter(upload({ key: "question_9", label: "Cover letter (PDF)" }))).toBe(true);
+    expect(requiresCoverLetter(upload({ key: "cover_letter", label: "Cover Letter", required: false }))).toBe(false);
+    expect(requiresCoverLetter(upload({ key: "resume", label: "Resume/CV" }))).toBe(false);
+    expect(requiresCoverLetter(field({ key: "cover_letter_text", label: "Cover letter", kind: "textarea" }))).toBe(false);
+
+    apps.saveAsIs(id, `resumes/${id}/Sam-Rivera-Resume.docx`);
+    expect(apps.getApplication(id)).toMatchObject({ status: "ready", resume: null, truth: null });
+    expect(apps.coverLetterFile(`resumes/${id}/Sam-Rivera-Resume.docx`)).toBe(`resumes/${id}/Sam-Rivera-Cover-Letter.pdf`);
+    expect(apps.hasCoverLetter(apps.getApplication(id)!)).toBe(false);
+
+    const issue = { where: "cover letter", text: "x", reason: "Not stated", action: "removed" as const };
+    apps.saveCoverLetter(id, { checkedAt: "now", claudeChecked: true, issues: [issue] });
+    expect(apps.getApplication(id)!.truth).toEqual({ checkedAt: "now", claudeChecked: true, issues: [issue] });
+    expect(apps.applicationEvents(id).at(-1)).toMatchObject({ kind: "cover_letter", detail: expect.stringMatching(/fixed 1 item/) });
+  });
+
   it("learns your answers and uses them on the next fill", async () => {
     const { apps, id } = await oneApplication();
     apps.claimForApplying();

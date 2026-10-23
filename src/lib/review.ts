@@ -1,17 +1,19 @@
 import "server-only";
+import fs from "node:fs/promises";
 import * as z from "zod";
 import { type Review, reviewCandidates, saveReview } from "./applications";
 import { sha1 } from "./jobs";
-import { BULK_MODEL, describeError, isAuthError, structured } from "./llm";
+import { BULK_MODEL, describeError, isAuthError, resumeText, structured } from "./llm";
 import { constraintsText, profileText } from "./profile-text";
-import { preferencesStore, profileStore, searchesStore } from "./store";
+import { latestDocument, preferencesStore, profileStore, searchesStore } from "./store";
 
 // Claude's second opinion on the jobs the rules liked (D-032, D-050). The rules
 // are fast and explainable but can't tell a must-have from a nice-to-have or
-// read "3+ years of production Go" in context; Sonnet can.
+// read "3+ years of production Go" in context; Sonnet can. The same call says
+// whether your resume, as written, undersells you for the job (D-058).
 
 // Bump when the prompt or schema changes, so stored reviews are redone.
-export const REVIEW_PROMPT_VERSION = 1;
+export const REVIEW_PROMPT_VERSION = 2;
 // Jobs this far under a search's bar still get a review: Claude may lift them.
 export const REVIEW_MARGIN = 10;
 const PER_CYCLE = Number(process.env.SORTIE_REVIEWS_PER_CYCLE) || 40;
@@ -24,6 +26,7 @@ const ReviewSchema = z.object({
   reasons: z.array(z.string()),
   gaps: z.array(z.string()),
   dealbreaker: z.string().nullable(),
+  resumeAdvice: z.string().nullable(),
 });
 
 const SYSTEM = `You assess how well a candidate fits a job posting, for an assistant that applies to jobs on the candidate's behalf. Your score decides whether it applies, so be calibrated and honest: a wasted application costs the candidate credibility with that employer.
@@ -38,12 +41,16 @@ Score 0-100:
 
 reasons: up to 4 short, concrete sentences on the fit, naming specific requirements from the posting.
 gaps: up to 5 must-have requirements the profile doesn't show, in the posting's words. Leave out nice-to-haves.
-dealbreaker: a hard requirement the candidate clearly can't meet given their profile and constraints (for example citizenship or security clearance they don't have, a degree the posting says is mandatory, work authorization the posting won't sponsor, far more years than they have). Otherwise null.`;
+dealbreaker: a hard requirement the candidate clearly can't meet given their profile and constraints (for example citizenship or security clearance they don't have, a degree the posting says is mandatory, work authorization the posting won't sponsor, far more years than they have). Otherwise null.
 
-export type ReviewInputs = { profile: string; constraints: string };
+resumeAdvice: the candidate will send their resume exactly as written (in <resume>; if there is none, judge the profile as their resume). Would a recruiter or applicant-tracking system skimming it for this posting likely pass it over even though the candidate's real experience fits, because the relevant experience or skills are buried, worded differently from the posting, or crowded out by unrelated material? If so, one sentence on what a tailored version should bring forward, using only what the candidate actually has. Otherwise null: when the resume already makes the case, or when the gaps are real and no rewording could fix them.`;
 
-export function reviewInputs(): ReviewInputs {
-  return { profile: profileText(profileStore.get().value), constraints: constraintsText(preferencesStore.get().value) };
+export type ReviewInputs = { profile: string; constraints: string; resume: string | null };
+
+export async function reviewInputs(): Promise<ReviewInputs> {
+  const doc = latestDocument("resume");
+  const resume = doc ? await resumeText({ data: await fs.readFile(doc.path), mime: doc.mime }).catch(() => null) : null;
+  return { profile: profileText(profileStore.get().value), constraints: constraintsText(preferencesStore.get().value), resume };
 }
 
 export function reviewHash(inputs: ReviewInputs, search: { titles: string[]; seniority: string[] }, jobHash: string) {
@@ -57,7 +64,9 @@ export async function reviewJob(
   const out = await structured({
     model: BULK_MODEL,
     system: SYSTEM,
-    context: `<candidate>\n${inputs.profile}\n</candidate>\n\n<constraints>\n${inputs.constraints}\n</constraints>`,
+    context:
+      `<candidate>\n${inputs.profile}\n</candidate>\n\n<constraints>\n${inputs.constraints}\n</constraints>` +
+      (inputs.resume ? `\n\n<resume>\n${inputs.resume}\n</resume>` : ""),
     content: [
       {
         type: "text",
@@ -78,6 +87,7 @@ export async function reviewJob(
     reasons: out.reasons.slice(0, 4),
     gaps: out.gaps.slice(0, 5),
     dealbreaker: out.dealbreaker?.trim() || null,
+    resumeAdvice: out.resumeAdvice?.trim() || null,
   };
 }
 
@@ -86,7 +96,7 @@ export type ReviewResult = { reviewed: number; failed: number; errors: string[] 
 // Reviews the best unreviewed candidates of every enabled search, at most
 // PER_CYCLE per run, best first. A job whose inputs haven't changed keeps its review.
 export async function reviewAll(log: (line: string) => void = () => {}, limit = PER_CYCLE): Promise<ReviewResult> {
-  const inputs = reviewInputs();
+  const inputs = await reviewInputs();
   const queue: { candidate: ReturnType<typeof reviewCandidates>[number]; hash: string }[] = [];
   for (const search of searchesStore.get().value.filter((s) => s.enabled)) {
     for (const c of reviewCandidates(search.id, search.minMatch - REVIEW_MARGIN, 500)) {

@@ -15,7 +15,8 @@ once. Sortie then:
 
 1. **finds** openings at ~250 strong companies (plus newly discovered ones) that fit your skills and that
    you're eligible for;
-2. **tailors** a truthful resume and cover letter for each;
+2. sends **your resume**, **tailored** truthfully only where it would otherwise undersell you, with a cover
+   letter only when a form requires one;
 3. **applies**: submitting on its own where it can do so safely, and preparing everything for a single
    click where it can't;
 4. **watches Gmail** and tracks every application through to an outcome;
@@ -64,7 +65,7 @@ Status: ✅ done · 🟡 partial · ⬜ not started. Phase numbers match [plan.m
 
 | ID | Requirement | Status |
 | --- | --- | --- |
-| FR-18 | Per job: a tailored resume (reordered and reworded from the profile, emphasising relevant skills) and a cover letter. | ✅ (D-050, D-051) |
+| FR-18 | Per job: your uploaded resume, or a tailored one (reordered and reworded from the profile, emphasising relevant skills) when the review says yours undersells you there; a cover letter only when the form requires one. | ✅ (D-050, D-051, D-058) |
 | FR-19 | Truth check: every claim in the tailored output must trace to the profile; anything that doesn't is rejected. | ✅ rules + Claude, removes or reverts (D-051) |
 | FR-20 | Export to PDF from a clean, ATS-friendly template. | ✅ (D-052) |
 

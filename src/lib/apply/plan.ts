@@ -145,10 +145,16 @@ type Rule = { test: RegExp; keys?: RegExp; answer: (f: FormField, ctx: PlanConte
 const L = (f: FormField) => f.label.toLowerCase();
 
 // Order matters: the first rule whose pattern matches the label (or the key) decides.
+const COVER_LETTER = { test: /^cover letter/, keys: /^cover_letter$/ };
+
+// A cover letter upload the form won't go without: the one case Sortie writes a letter (D-058).
+export const requiresCoverLetter = (f: FormField) =>
+  f.kind === "file" && f.required && (COVER_LETTER.test.test(L(f)) || COVER_LETTER.keys.test(f.key));
+
 const RULES: Rule[] = [
   // documents
-  { test: /^resume|^cv\b|resume\/cv/, keys: /^resume$/, answer: (f, c) => (f.kind === "file" && c.documents.resume ? { value: ["resume"], source: "Tailored resume (PDF)" } : null) },
-  { test: /^cover letter/, keys: /^cover_letter$/, answer: (f, c) => (f.kind === "file" && c.documents.coverLetter ? { value: ["cover"], source: "Tailored cover letter (PDF)" } : null) },
+  { test: /^resume|^cv\b|resume\/cv/, keys: /^resume$/, answer: (f, c) => (f.kind === "file" && c.documents.resume ? { value: ["resume"], source: "Your resume" } : null) },
+  { ...COVER_LETTER, answer: (f, c) => (f.kind === "file" && c.documents.coverLetter ? { value: ["cover"], source: "Cover letter written for this job (PDF)" } : null) },
 
   // names and contact
   { test: /^first name|^given name/, keys: /^first_name$/, answer: (_, c) => nameAnswer(c, "first") },

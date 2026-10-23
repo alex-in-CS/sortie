@@ -1,7 +1,8 @@
 # Sortie
 
 A personal job-application copilot. You give it your resume and every skill you have. It finds software
-jobs at good companies that you're actually eligible for, tailors your resume to each one, applies, and
+jobs at good companies that you're actually eligible for, applies with your resume (tailored only where it
+would otherwise undersell you), and
 watches your Gmail so you only hear about the replies that need you.
 
 It runs on your own machine, with your own Anthropic API key. Your resume and profile never leave your
@@ -9,7 +10,8 @@ computer except in the requests Sortie sends to Claude.
 
 > **Status: phases 1–3 of 6 done.** Profile, resume reading, searches, answers and preferences; live job
 > sourcing from 217 verified company boards with filtering and match scores; and Claude reviews,
-> selection under your limits, and a tailored, fact-checked resume and cover letter PDF per job.
+> selection under your limits, and your resume per job: as uploaded, or tailored and fact-checked where
+> the review says it undersells you.
 > Applying, Gmail and Telegram are next (see [Roadmap](#roadmap)). The full engineering record (requirements, architecture, data model,
 > every decision and tradeoff, plan, risks) is in **[docs/](docs/README.md)**.
 
@@ -62,8 +64,11 @@ _Screenshots use a made-up demo profile._
   changes.
 - **Picking within your limits.** Each cycle picks the best jobs that clear your bar, best first, at
   most N per company in 30 days and M a day. You can also press **Apply** on any job yourself.
-- **Tailored resume and cover letter, fact-checked.** For each pick, Claude (Opus 5.5) rewords and
-  reorders your profile for that job and writes a short cover letter. A truth check then removes
+- **Your resume, tailored only when it helps.** Each pick goes out with the resume you uploaded. The
+  review also reads that resume as written and says when it would likely be passed over for this job
+  even though your experience fits (relevant work buried, worded differently, crowded out). Only then
+  does Claude (Opus 5.5) reword and reorder your profile for that job. A cover letter is written only
+  when a form requires one. Anything Sortie writes passes a truth check that removes
   anything your profile doesn't back up: first with rules (no new numbers, skills or technologies, and
   a bullet may only use facts from its own role), then with a second Claude pass. Employers, titles
   and dates always come straight from your profile. The result is a clean one-column PDF that
@@ -136,7 +141,7 @@ These shape every phase, not just the current one:
 | `src/lib/jobs.ts` | Companies, jobs, matches and the worker's task queue. |
 | `src/lib/match.ts`, `src/lib/geo.ts` | Hard filters and the deterministic score; location text to countries. |
 | `src/lib/pipeline.ts` | One cycle: registry, fetch boards, fill descriptions, match, then prepare. |
-| `src/lib/autopilot.ts` | Prepare: Claude reviews, selection under the caps, tailoring, PDFs. |
+| `src/lib/autopilot.ts` | Prepare: Claude reviews, selection under the caps, your resume or a tailored one (D-058). |
 | `src/lib/review.ts`, `src/lib/select.ts` | Claude's job review (cached by input hash); the pure selection rules. |
 | `src/lib/tailor.ts`, `src/lib/truth.ts` | Tailoring and the two-pass truth check. |
 | `src/lib/resume-html.ts`, `src/lib/pdf.ts` | The ATS-friendly resume and cover letter, printed to PDF by your installed Chrome. |
@@ -203,7 +208,7 @@ Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind 
 | --- | --- | --- |
 | 1 | Profile, resume reading, skills, searches, screening answers, preferences | **Done** |
 | 2 | Jobs: 217 verified company boards, checks every 2 hours, deduplication, filters with reasons, and a match score against your skills | **Done** (discovery API pending a key) |
-| 3 | Tailoring: Claude reviews the best matches; picks within your caps; a resume and cover letter per job, with a two-pass truth check, exported to PDF | **Done** |
+| 3 | Tailoring: Claude reviews the best matches; picks within your caps; your resume per job, tailored (two-pass truth check, PDF) only where it undersells you; cover letters only when a form requires one | **Done** |
 | 4 | Applying: Greenhouse and Lever forms filled and checked from your data, held for you to submit in Chrome (or auto-submitted through a strict gate), answers learned, other boards handed off with a link | **Done** (stages after Submitted come with phase 5) |
 | 5 | Inbox: read-only Gmail that matches replies to applications and moves them on the board | Next |
 | 6 | Telegram: alerts only when something needs you, a daily recap, and approving from your phone | Planned |

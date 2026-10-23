@@ -28,7 +28,7 @@ npm run dev                    # http://127.0.0.1:3000
 | `SORTIE_FETCH_HOURS` | no | `2` | Hours between fetch cycles in the worker (±10% jitter). |
 | `SORTIE_BULK_MODEL` | no | `claude-sonnet-5-5` / `gemini-3.8-flash` | Job reviews and answers to form questions; later email sorting (D-035, D-055, D-057). |
 | `SORTIE_REVIEWS_PER_CYCLE` | no | `40` | Most Claude job reviews per cycle (D-050). |
-| `SORTIE_TAILOR_PER_CYCLE` | no | `10` | Most applications tailored per cycle. |
+| `SORTIE_TAILOR_PER_CYCLE` | no | `10` | Most applications given documents per cycle (most go out with your resume as uploaded; D-058). |
 | `SORTIE_APPLY_PER_CYCLE` | no | `10` | Most forms read, filled and checked per cycle (D-056). |
 | `SORTIE_AUTO_SUBMIT` | no | off | `on` lets searches in auto mode send forms that pass every check (D-056). Off, you submit everything. |
 | `SORTIE_HANDOFF_MINUTES` | no | `20` | How long **Open in Chrome** waits for you to submit before the form goes back to held. |
@@ -65,9 +65,10 @@ Before every commit: `npm run typecheck && npm run lint && npm test && npm run b
 3. Open **Jobs**. Matching reruns on every page load for anything that changed (D-041), so edits to
    skills, searches or preferences show up straight away.
 4. With an API key and a complete profile, each cycle then reviews the best candidates with Claude,
-   picks jobs within your limits, and tailors a resume and cover letter for each (D-050 to D-052).
-   **Applications** shows them with their PDFs and what the truth check changed. Press **Apply** on
-   any job to pick it by hand; the worker tailors it within ~30 s.
+   picks jobs within your limits, and gives each your uploaded resume, tailored only when the review
+   says it undersells you for that job (D-050 to D-052, D-058). A cover letter is written only when a
+   form requires one. **Applications** shows the documents and what the truth check changed. Press
+   **Apply** on any job to pick it by hand; the worker prepares it within ~30 s.
 6. Then the form step reads each application's form and fills it from your stored data (D-054 to
    D-056). On **Applications**:
    - **Needs you** lists the questions nothing stored answers. Answer them once; they go into your
@@ -150,7 +151,8 @@ weekly unless the app is moved to production (see [risks.md](risks.md)).
 | **Open in Chrome** does nothing | The worker isn't running; it opens the window | Start `npm run worker`. The card says "Opening in Chrome" until it does. |
 | "Clicked submit but saw no confirmation" | Auto mode pressed submit and no confirmation page appeared | It may have gone through. Check your email and the company's site before applying again; Sortie never retries it (D-056). |
 | A dropdown field "didn't fill" | No option matched the stored value exactly or by its first words (D-056) | Open in Chrome and pick it there; or store an answer in the answer bank worded like the option. |
-| Applications page says tailoring is paused | No API key, or the profile lacks a name, email, a role/project or skills | Add what it names; the next cycle continues. |
+| Applications page says documents are paused | The profile lacks a name, email, a role/project or skills | Add what it names; the next cycle continues. |
+| Applications page warns about the API key | No API key: jobs go out with your resume as uploaded, but nothing is reviewed, tailored or given a cover letter | Add the key and restart the worker. |
 | "Fetching…" never ends after a killed `npm run fetch` | The task row was left `running` | Fixed by D-053: after 3 h it's abandoned automatically; starting the worker requeues it at once. |
 | Page error: "Only plain objects can be passed to Client Components" | A `node:sqlite` row (null prototype) reached a client prop | Return it through `plain()` in `jobs.ts` (D-047). |
 | "Waiting for the worker" never clears | No worker is running | Start `npm run worker`, or run `npm run fetch`. |

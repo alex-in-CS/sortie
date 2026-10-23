@@ -8,18 +8,21 @@ import {
   type FormOutcome,
   getApplication,
   logEvent,
+  saveCoverLetter,
   saveFormOutcome,
 } from "../applications";
 import { DATA_DIR } from "../db";
 import { getJob } from "../jobs";
 import { AI, describeError, hasApiKey, isAuthError } from "../llm";
-import { launchChrome } from "../pdf";
+import { htmlToPdf, launchChrome } from "../pdf";
+import { coverLetterHtml } from "../resume-html";
 import { answersStore, preferencesStore, profileStore, searchesStore } from "../store";
+import { coverLetterAndCheck } from "../tailor";
 import { challengeVisible, type Files, fillForm, submit, waitForConfirmation } from "./fill";
 import { fetchGreenhouseForm, greenhouseApplyUrl, leverFields } from "./forms";
 import { autoSubmitBlocker, autoSubmitEnabled } from "./gate";
 import { groundAnswers } from "./ground";
-import { type PlanContext, planForm, unresolved } from "./plan";
+import { type PlanContext, planForm, requiresCoverLetter, unresolved } from "./plan";
 import type { ApplyProvider, FormField, PlannedField } from "./types";
 
 // The form step (D-056). For each application whose documents are ready:
@@ -101,6 +104,24 @@ async function planWithGrounding(fields: FormField[], ctx: PlanContext, app: App
   return plan;
 }
 
+// The form won't go without a cover letter and there isn't one yet: Opus
+// writes it and the truth check clears it (D-058). If that can't happen, the
+// field stays missing and the application waits for you.
+async function writeCoverLetter(app: Application, job: JobInfo, log: (l: string) => void) {
+  if (!hasApiKey() || !app.resume_file) return;
+  try {
+    const profile = profileStore.get().value;
+    const { letter, truth } = await coverLetterAndCheck(profile, preferencesStore.get().value, job);
+    if (!letter.trim()) return;
+    fs.writeFileSync(path.join(DATA_DIR, coverLetterFile(app.resume_file)), await htmlToPdf(coverLetterHtml(profile, letter, job.company)));
+    saveCoverLetter(app.id, truth);
+    log(`  ${job.company} – ${job.title}: wrote the cover letter the form requires`);
+  } catch (err) {
+    if (isAuthError(err)) throw err;
+    log(`  ${job.company} – ${job.title}: couldn't write the cover letter: ${describeError(err)}`);
+  }
+}
+
 const shotPath = (id: number) => `${SHOT_DIR}/${id}/form.png`;
 
 async function screenshot(page: Page, id: number) {
@@ -132,8 +153,8 @@ export async function applyOne(app: Application, log: (line: string) => void = (
       error: `Sortie can't fill ${job.provider} forms yet. Apply with the link and your tailored PDFs, then mark it as submitted.`,
     });
 
-  const files = documents(app);
-  if (!files.resume) return done({ status: "needs_you", applyUrl: target.url, detail: "The resume PDF is missing", error: "The resume PDF is missing. Re-tailor to make it again." });
+  let files = documents(app);
+  if (!files.resume) return done({ status: "needs_you", applyUrl: target.url, detail: "The resume file is missing", error: "The resume file is missing. Use Try again to make it again." });
 
   let browser: Browser | null = null;
   try {
@@ -141,6 +162,10 @@ export async function applyOne(app: Application, log: (line: string) => void = (
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     const fields = await openForm(page, target);
     if (!fields.length) throw new Error("Sortie couldn't find any questions on the form.");
+    if (!files.cover && fields.some(requiresCoverLetter)) {
+      await writeCoverLetter(app, job, log);
+      files = documents(app);
+    }
     const ctx = context(job, files);
     const plan = await planWithGrounding(fields, ctx, app, job, log);
     const open = unresolved(plan);

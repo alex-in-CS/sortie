@@ -197,6 +197,11 @@ const MIGRATIONS: Migration[] = [
   ALTER TABLE applications ADD COLUMN submitted_at TEXT;
   ALTER TABLE applications ADD COLUMN submitted_by TEXT;
   `,
+  // v6: applications go out with your own resume (D-058). A review says when
+  // that resume, as written, undersells you for the job; only then is it tailored.
+  `
+  ALTER TABLE reviews ADD COLUMN resume_advice TEXT;
+  `,
 ];
 
 const userVersion = (db: DatabaseSync) =>

@@ -2,6 +2,30 @@
 
 Newest first. What was built, what broke, how it was fixed, and how it was checked.
 
+## 2026-10-23 (Fri)
+
+### First live AI calls; tailor only when it helps (D-058)
+- **Keys.** A Gemini key was added but its project is on the free tier (`gemini-4-argon` free quota
+  is 0; D-057 requires billing anyway), so the owner switched to Claude. A test prompt to Opus 5.5
+  and Sonnet 5.5 returned 200.
+- **First resume read.** The owner's DOCX resume parsed in 44 s: 52 skills, 3 roles, 2 projects, 1
+  education entry, 6 certifications.
+- **Cost.** Tailoring every pick (resume, cover letter, Opus truth check) was about $0.20 of the
+  estimated $0.25 per application. Owner: tailor only if necessary, send their uploaded resume
+  otherwise, write cover letters only when a form requires one, and tailor where the resume as
+  written has a low chance of a shortlist.
+  - The review (Sonnet) now reads the resume as written and returns `resumeAdvice`. Only when it's
+    set does Opus tailor, guided by that sentence. Prompt version 2; DB v6 adds
+    `reviews.resume_advice`.
+  - Otherwise the upload is copied as `Name-Resume.<ext>`. With no upload, the profile is rendered as is.
+  - The form step writes a cover letter (Opus + truth check) only when a required file field is a
+    cover letter.
+  - The UI says which resume went out and why one was tailored. The file route serves DOCX.
+- Checked: new tests for the as-uploaded path (bytes untouched, renamed, only reviews paid for, the
+  review sees the resume text), tailoring guided by the advice, the cover-letter detector and
+  storage, and DB v6. 95 tests, tsc and lint pass. **Not yet checked:** a live cycle against real
+  boards with the new review prompt.
+
 ## 2026-10-19 (Mon)
 
 ### Gemini as a second AI provider (D-057)

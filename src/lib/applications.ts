@@ -1,5 +1,7 @@
 import "server-only";
-import { getDb } from "./db";
+import fs from "node:fs";
+import path from "node:path";
+import { DATA_DIR, getDb } from "./db";
 import { plain, tx } from "./jobs";
 import type { FillResult, PlannedField } from "./apply/types";
 import type { ApplicationStatus, TailoredResume, TruthReport } from "./schema";
@@ -18,6 +20,9 @@ export type Review = {
   reasons: string[];
   gaps: string[];
   dealbreaker: string | null;
+  // What a tailored resume should bring forward, when the one you uploaded
+  // undersells you for this job; null when it already makes the case (D-058).
+  resumeAdvice: string | null;
 };
 
 export type ReviewCandidate = {
@@ -53,10 +58,11 @@ export function reviewCandidates(searchId: string, floor: number, limit: number)
 export function saveReview(jobId: number, searchId: string, review: Review, model: string, inputHash: string) {
   getDb()
     .prepare(
-      `INSERT INTO reviews (job_id, search_id, score, verdict, reasons, gaps, dealbreaker, model, input_hash, reviewed_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO reviews (job_id, search_id, score, verdict, reasons, gaps, dealbreaker, resume_advice, model, input_hash, reviewed_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(job_id, search_id) DO UPDATE SET score = excluded.score, verdict = excluded.verdict,
-         reasons = excluded.reasons, gaps = excluded.gaps, dealbreaker = excluded.dealbreaker, model = excluded.model,
+         reasons = excluded.reasons, gaps = excluded.gaps, dealbreaker = excluded.dealbreaker,
+         resume_advice = excluded.resume_advice, model = excluded.model,
          input_hash = excluded.input_hash, reviewed_at = excluded.reviewed_at`,
     )
     .run(
@@ -67,23 +73,35 @@ export function saveReview(jobId: number, searchId: string, review: Review, mode
       JSON.stringify(review.reasons),
       JSON.stringify(review.gaps),
       review.dealbreaker,
+      review.resumeAdvice,
       model,
       inputHash,
       new Date().toISOString(),
     );
 }
 
-type ReviewRow = Omit<Review, "reasons" | "gaps"> & { job_id: number; reasons: string; gaps: string; reviewed_at: string };
+type ReviewRow = Omit<Review, "reasons" | "gaps" | "resumeAdvice"> & {
+  job_id: number;
+  reasons: string;
+  gaps: string;
+  resume_advice: string | null;
+  reviewed_at: string;
+};
 export type StoredReview = Review & { job_id: number; reviewed_at: string };
 
-const toReview = (r: ReviewRow): StoredReview => ({ ...r, reasons: JSON.parse(r.reasons), gaps: JSON.parse(r.gaps) });
+const toReview = ({ resume_advice, ...r }: ReviewRow): StoredReview => ({
+  ...r,
+  reasons: JSON.parse(r.reasons),
+  gaps: JSON.parse(r.gaps),
+  resumeAdvice: resume_advice,
+});
 
 // Reviews for a set of jobs in one search, keyed by job id.
 export function reviewsFor(searchId: string, jobIds: number[]) {
   if (!jobIds.length) return new Map<number, StoredReview>();
   const rows = getDb()
     .prepare(
-      `SELECT job_id, score, verdict, reasons, gaps, dealbreaker, reviewed_at FROM reviews
+      `SELECT job_id, score, verdict, reasons, gaps, dealbreaker, resume_advice, reviewed_at FROM reviews
        WHERE search_id = ? AND job_id IN (${jobIds.map(() => "?").join(",")})`,
     )
     .all(searchId, ...jobIds) as ReviewRow[];
@@ -195,8 +213,11 @@ const toApplication = (r: ApplicationRow): Application => ({
   fill: r.fill ? JSON.parse(r.fill) : null,
 });
 
-// The cover letter sits next to the resume: …/Name-Resume.pdf → …/Name-Cover-Letter.pdf.
-export const coverLetterFile = (resumeFile: string) => resumeFile.replace(/Resume\.pdf$/, "Cover-Letter.pdf");
+// The cover letter sits next to the resume: …/Name-Resume.docx → …/Name-Cover-Letter.pdf.
+export const coverLetterFile = (resumeFile: string) => resumeFile.replace(/Resume\.\w+$/, "Cover-Letter.pdf");
+
+export const hasCoverLetter = (app: Pick<Application, "resume_file">) =>
+  !!app.resume_file && fs.existsSync(path.join(DATA_DIR, coverLetterFile(app.resume_file)));
 
 export function logEvent(applicationId: number, kind: string, detail: string | null = null) {
   getDb()
@@ -260,7 +281,28 @@ export function saveTailored(id: number, resume: TailoredResume, truth: TruthRep
     )
     .run(JSON.stringify(resume), JSON.stringify(truth), resumeFile, new Date().toISOString(), id);
   const n = truth.issues.length;
-  logEvent(id, "ready", n ? `Truth check fixed ${n} item${n === 1 ? "" : "s"}` : "Truth check passed");
+  logEvent(id, "ready", `Tailored resume; ${n ? `truth check fixed ${n} item${n === 1 ? "" : "s"}` : "truth check passed"}`);
+}
+
+// Your uploaded resume, as is: no tailoring, no truth report (D-058).
+export function saveAsIs(id: number, resumeFile: string) {
+  getDb()
+    .prepare(
+      `UPDATE applications SET status = 'ready', resume = NULL, truth = NULL, resume_file = ?, error = NULL, updated_at = ?
+       WHERE id = ?`,
+    )
+    .run(resumeFile, new Date().toISOString(), id);
+  logEvent(id, "ready", "Your resume as uploaded");
+}
+
+// A cover letter written for a form that requires one. Its truth check joins
+// the resume's, if the resume was tailored too.
+export function saveCoverLetter(id: number, truth: TruthReport) {
+  const app = getApplication(id)!;
+  const merged: TruthReport = app.truth ? { ...truth, issues: [...app.truth.issues, ...truth.issues] } : truth;
+  getDb().prepare("UPDATE applications SET truth = ?, updated_at = ? WHERE id = ?").run(JSON.stringify(merged), new Date().toISOString(), id);
+  const n = truth.issues.length;
+  logEvent(id, "cover_letter", `The form requires a cover letter; ${n ? `truth check fixed ${n} item${n === 1 ? "" : "s"}` : "truth check passed"}`);
 }
 
 // A failed tailoring goes back to the queue until it has had three tries.
@@ -370,7 +412,7 @@ export function listApplications(statuses?: ApplicationStatus[]) {
       `SELECT a.*, j.title, c.name AS company, c.provider, j.location, j.url,
          (SELECT e.detail FROM application_events e WHERE e.application_id = a.id ORDER BY e.id DESC LIMIT 1) AS last_detail,
          r.score AS r_score, r.verdict AS r_verdict, r.reasons AS r_reasons, r.gaps AS r_gaps,
-         r.dealbreaker AS r_dealbreaker, r.reviewed_at AS r_reviewed_at
+         r.dealbreaker AS r_dealbreaker, r.resume_advice AS r_resume_advice, r.reviewed_at AS r_reviewed_at
        FROM applications a JOIN jobs j ON j.id = a.job_id JOIN companies c ON c.id = j.company_id
        LEFT JOIN reviews r ON r.job_id = a.job_id AND r.search_id = a.search_id
        ${where} ORDER BY a.updated_at DESC`,
@@ -387,10 +429,11 @@ export function listApplications(statuses?: ApplicationStatus[]) {
     r_reasons: string | null;
     r_gaps: string | null;
     r_dealbreaker: string | null;
+    r_resume_advice: string | null;
     r_reviewed_at: string | null;
   })[];
   return rows.map((r): ApplicationView => {
-    const { r_score, r_verdict, r_reasons, r_gaps, r_dealbreaker, r_reviewed_at, ...rest } = plain<typeof r>(r);
+    const { r_score, r_verdict, r_reasons, r_gaps, r_dealbreaker, r_resume_advice, r_reviewed_at, ...rest } = plain<typeof r>(r);
     return {
       ...toApplication(rest),
       title: rest.title,
@@ -409,6 +452,7 @@ export function listApplications(statuses?: ApplicationStatus[]) {
               reasons: JSON.parse(r_reasons!),
               gaps: JSON.parse(r_gaps!),
               dealbreaker: r_dealbreaker,
+              resumeAdvice: r_resume_advice,
               reviewed_at: r_reviewed_at!,
             },
     };
@@ -436,7 +480,8 @@ export type ApplicationAction = (typeof APPLICATION_ACTIONS)[number];
 // The owner's controls on the Applications page. Returns the new status, or an
 // error when the action doesn't fit the current one.
 //   skip / restore   take it out of the run, or put it back
-//   retailor         write the resume and cover letter again
+//   retailor         make the documents again (your latest resume, tailored
+//                    if its review says so; a cover letter when a form asks)
 //   refill           read and fill the form again (after you answered questions)
 //   open             open the filled form in Chrome for you to submit
 //   submitted        you sent it yourself
@@ -457,7 +502,7 @@ export function actOnApplication(id: number, action: ApplicationAction): { statu
   if (app.status === "submitting" && action !== "skip")
     return { error: "It's open in Chrome. Submit it there, or close the window first.", code: 409 };
   if (action === "refill" || action === "open") {
-    if (!app.resume) return { error: "The resume isn't ready yet.", code: 409 };
+    if (!app.resume_file) return { error: "The resume isn't ready yet.", code: 409 };
     if (action === "open" && !app.plan) return { error: "Sortie hasn't read this form yet.", code: 409 };
     const status: ApplicationStatus = action === "open" ? "submitting" : "ready";
     setStatus(id, status, action === "open" ? "Opening in Chrome for you" : "Filling the form again, as you asked");
@@ -470,14 +515,14 @@ export function actOnApplication(id: number, action: ApplicationAction): { statu
   }
   if (action === "restore") {
     if (app.status !== "skipped") return { error: "Only a skipped application can be restored.", code: 409 };
-    const status: ApplicationStatus = app.resume ? "ready" : "queued";
+    const status: ApplicationStatus = app.resume_file ? "ready" : "queued";
     setStatus(id, status, "Restored by you");
     return { status };
   }
   getDb()
     .prepare("UPDATE applications SET status = 'queued', attempts = 0, error = NULL, updated_at = ? WHERE id = ?")
     .run(new Date().toISOString(), id);
-  logEvent(id, "queued", "Re-tailoring requested by you");
+  logEvent(id, "queued", "New documents requested by you");
   return { status: "queued" };
 }
 

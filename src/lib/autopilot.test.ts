@@ -7,7 +7,8 @@ import type { StructuredRequest } from "./llm";
 import type { SourceJob } from "./sources/types";
 
 // The whole phase 3 path on a temp database, with Claude and Chrome replaced by
-// fakes: review → select under caps → tailor → truth check → files on disk →
+// fakes: review → select under caps → your resume as uploaded, or (when the
+// review says it undersells you) tailor → truth check → files on disk →
 // handed to the form step.
 
 const fake = vi.hoisted(() => ({
@@ -63,15 +64,15 @@ const sj = (id: string, over: Partial<SourceJob> = {}): SourceJob => ({
   ...over,
 });
 
-// Claude, played by a script: reviews by company, a tailoring with one
-// invented bullet (caught by the rules) and one overstated headline (caught by
-// the Claude check).
-function claude(req: StructuredRequest<never>) {
+// Claude, played by a script: reviews by company (Acme's says the resume
+// undersells you unless `advice` is null), a tailoring with one invented bullet
+// (caught by the rules) and one overstated headline (caught by the Claude check).
+function claude(req: StructuredRequest<never>, advice: string | null = "Buries the payment API work") {
   const text = req.content.map((c) => ("text" in c ? c.text : "")).join("");
   if (req.task === "review this job")
     return text.includes("Company: Beta")
-      ? { score: 90, verdict: "strong", reasons: ["Fits"], gaps: [], dealbreaker: "Requires US citizenship" }
-      : { score: 82, verdict: "good", reasons: ["Node.js and PostgreSQL match"], gaps: ["Kafka"], dealbreaker: null };
+      ? { score: 90, verdict: "strong", reasons: ["Fits"], gaps: [], dealbreaker: "Requires US citizenship", resumeAdvice: null }
+      : { score: 82, verdict: "good", reasons: ["Node.js and PostgreSQL match"], gaps: ["Kafka"], dealbreaker: null, resumeAdvice: advice };
   if (req.task === "tailor the resume")
     return {
       headline: "Senior payments architect",
@@ -79,9 +80,8 @@ function claude(req: StructuredRequest<never>) {
       skills: ["Node.js", "PostgreSQL"],
       experience: [{ id: "e1", bullets: ["Built payment APIs in Node.js", "Scaled the platform to 9 regions"] }],
       projects: [],
-      coverLetter: "I build payment APIs in Node.js at Acme Pay.\n\nI'd like to bring that to your team.",
     };
-  if (req.task === "fact-check the tailored resume") return { unsupported: [{ key: "headline", reason: "Not senior" }] };
+  if (req.task === "fact-check the documents") return { unsupported: [{ key: "headline", reason: "Not senior" }] };
   throw new Error(`unexpected task ${req.task}`);
 }
 
@@ -130,34 +130,67 @@ async function setup() {
   return { search };
 }
 
+// Your resume as uploaded: a text file, so the review can read it as written.
+async function upload() {
+  const { addDocument } = await import("./store");
+  const file = path.join(dir, "uploaded.txt");
+  fs.writeFileSync(file, "Sam Rivera\nBackend engineer\nBuilt payment APIs in Node.js and PostgreSQL");
+  addDocument({ id: "doc1", kind: "resume", filename: "Sam_Master.txt", path: file, mime: "text/plain" });
+  return file;
+}
+
 describe("prepare", () => {
-  it("reviews, selects under the caps, tailors and checks the truth", async () => {
+  it("reviews, selects under the caps, tailors when the review says so and checks the truth", async () => {
     fake.structured.mockImplementation(async (req) => claude(req));
     await setup();
+    await upload();
     const { prepare } = await import("./autopilot");
     const apps = await import("./applications");
 
     const r = await prepare();
     expect(r.reviews).toMatchObject({ reviewed: 3, failed: 0 });
     // Acme's cap is 1; Beta has a dealbreaker.
-    expect(r).toMatchObject({ selected: 1, capped: { company: 1, daily: 0 }, tailored: 1, tailorFailed: 0, blocked: null });
+    expect(r).toMatchObject({ selected: 1, capped: { company: 1, daily: 0 }, tailored: 1, asIs: 0, tailorFailed: 0, blocked: null });
     expect(r.forms).toEqual({ held: 1, submitted: 0, needsYou: 0 });
 
     const [app] = apps.listApplications();
-    expect(app).toMatchObject({ status: "held", company: "Acme", origin: "auto", review: { score: 82, gaps: ["Kafka"] } });
+    expect(app).toMatchObject({ status: "held", company: "Acme", origin: "auto", review: { score: 82, gaps: ["Kafka"], resumeAdvice: "Buries the payment API work" } });
     expect(app.resume!.headline).toBe("Backend engineer"); // reverted by the Claude check
     expect(app.resume!.experience[0].bullets).toEqual(["Built payment APIs in Node.js"]); // "9 regions" removed by the rules
     expect(app.truth!.issues.map((i) => i.reason)).toEqual(["States 9, which isn't in your profile", "Not senior"]);
     expect(app.resume_file).toBe(`resumes/${app.id}/Sam-Rivera-Resume.pdf`);
     expect(fs.existsSync(path.join(dir, app.resume_file!))).toBe(true);
-    expect(fs.existsSync(path.join(dir, `resumes/${app.id}/Sam-Rivera-Cover-Letter.pdf`))).toBe(true);
+    // No form asked for a cover letter, so none was written.
+    expect(apps.hasCoverLetter(app)).toBe(false);
     expect(apps.applicationEvents(app.id).map((e) => e.kind)).toEqual(["selected", "tailoring", "ready", "applying", "held"]);
+    // The tailoring was told what the review found.
+    const tailorCall = fake.structured.mock.calls.find(([req]) => req.task === "tailor the resume")![0];
+    expect(JSON.stringify(tailorCall.content)).toContain("Buries the payment API work");
     expect(app.last_detail).toMatch(/review mode/);
 
     // Nothing changed: no new reviews, and Acme is at its cap.
     fake.structured.mockClear();
     expect(await prepare()).toMatchObject({ reviews: { reviewed: 0 }, selected: 0, tailored: 0, forms: { held: 0 } });
     expect(fake.structured).not.toHaveBeenCalled();
+  });
+
+  it("sends your resume as uploaded when the review finds nothing to fix", async () => {
+    fake.structured.mockImplementation(async (req) => claude(req, null));
+    await setup();
+    const file = await upload();
+    const { prepare } = await import("./autopilot");
+    const apps = await import("./applications");
+
+    const r = await prepare();
+    expect(r).toMatchObject({ selected: 1, tailored: 0, asIs: 1, tailorFailed: 0, blocked: null });
+    const [app] = apps.listApplications();
+    expect(app).toMatchObject({ status: "held", resume: null, truth: null, review: { resumeAdvice: null } });
+    // Named for recruiters, not "Sam_Master.txt"; the bytes are yours, untouched.
+    expect(app.resume_file).toBe(`resumes/${app.id}/Sam-Rivera-Resume.txt`);
+    expect(fs.readFileSync(path.join(dir, app.resume_file!), "utf8")).toBe(fs.readFileSync(file, "utf8"));
+    // Only reviews were paid for, and they read the resume as written.
+    expect(fake.structured.mock.calls.map(([req]) => req.task)).toEqual(["review this job", "review this job", "review this job"]);
+    expect(fake.structured.mock.calls[0][0].context).toContain("<resume>\nSam Rivera\nBackend engineer");
   });
 
   it("retries a failed tailoring, then hands it to the owner", async () => {
@@ -167,14 +200,15 @@ describe("prepare", () => {
     });
     await setup();
     const apps = await import("./applications");
-    const { tailorOne } = await import("./autopilot");
+    const { prepareDocuments } = await import("./autopilot");
     const { search } = await import("./store").then((s) => ({ search: s.searchesStore.get().value[0] }));
     const { id } = apps.createApplication({ jobId: 1, searchId: search.id, origin: "manual", score: 80, mode: "review", reason: "Picked by hand" });
+    apps.saveReview(1, search.id, { score: 80, verdict: "good", reasons: [], gaps: [], dealbreaker: null, resumeAdvice: "Buries it" }, "m", "h");
 
     for (let i = 1; i <= 3; i++) {
       const app = apps.claimForTailoring()!;
       expect(app).toMatchObject({ id, attempts: i });
-      expect(await tailorOne(app)).toBe(false);
+      expect(await prepareDocuments(app)).toBe(false);
     }
     expect(apps.getApplication(id)).toMatchObject({ status: "needs_you", error: "overloaded" });
     expect(apps.claimForTailoring()).toBeUndefined();

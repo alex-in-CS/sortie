@@ -65,6 +65,7 @@ Index
 | [D-055](#d-055-answers-come-from-rules-then-the-answer-bank-then-grounded-claude-consent-is-yours) | Answers: rules, then the bank, then grounded Claude; consent is yours | Accepted |
 | [D-056](#d-056-fill-and-check-without-files-hold-for-you-auto-submit-only-through-a-strict-gate) | Fill and check without files, hold for you, auto-submit through a strict gate | Accepted |
 | [D-057](#d-057-claude-or-gemini-behind-one-structured-call-paid-tier-only) | Claude or Gemini behind one structured call; paid tier only | Accepted |
+| [D-058](#d-058-your-own-resume-by-default-tailor-only-when-the-review-says-it-undersells-you-cover-letters-only-when-required) | Your own resume by default; tailor only when it undersells you; cover letters only when required | Accepted |
 
 ---
 
@@ -831,4 +832,42 @@ Index
   - Claude's explicit prompt caching becomes Gemini's implicit caching. The repeated profile text is
     kept at the end of the system instruction so its prefix can be reused.
   - Reviews are cached by a hash that includes the model, so switching provider re-reviews jobs once.
+
+### D-058: Your own resume by default; tailor only when the review says it undersells you; cover letters only when required
+- **Date:** 2026-10-23 · **Status:** Accepted (owner's request; amends D-050 and FR-18)
+- **Context:** Every picked job got an Opus-tailored resume and cover letter plus an Opus truth check:
+  about $0.20 per application, roughly 80% of the projected spend. The owner asked to tailor only
+  when it's needed, to send their uploaded resume otherwise, and to write a cover letter only when a
+  form requires one. Tailoring stays allowed when the resume as written has a low chance of being
+  shortlisted.
+- **Decision:**
+  - **Default: your resume as uploaded.** The latest uploaded resume is copied byte for byte into the
+    application as `Name-Resume.<ext>`, so recruiters don't see the upload's own file name. With no
+    upload, the profile is rendered word for word (no AI call).
+  - **The review decides when to tailor.** The existing review call (D-050) gets your resume's text
+    (DOCX, TXT or Markdown; PDFs fall back to the profile) and a new field, `resumeAdvice`. It is
+    null when the resume already makes the case, or when the gaps are real and rewording can't help.
+    Otherwise it is one sentence on what a tailored version should bring forward. Only then does Opus
+    tailor the resume, guided by that sentence, and the two-pass truth check (D-051) clears it.
+    Prompt version 2, so stored reviews are redone once. DB v6 adds `reviews.resume_advice`.
+  - **Cover letters only when required.** The form step reads the form first. If a required file
+    field is a cover letter and none exists, Opus writes one and the truth check clears it; it is
+    saved next to the resume as `Name-Cover-Letter.pdf`. Optional cover letter uploads are left empty.
+    If it can't be written (no key, an error), the field stays missing and the application waits for you.
+  - Without an API key, applications still go out with your resume; only tailoring and cover
+    letters need the key.
+- **Alternatives:**
+  - Tailor only above a score bar. Rejected: a strong match is exactly where your own resume already
+    works; tailoring helps where the fit is real but hidden.
+  - A separate call to judge the resume. Rejected: one more call per job, when the review already
+    reads the job and the profile.
+  - Always write a cover letter. Rejected: most Greenhouse and Lever forms make it optional.
+- **Tradeoffs:**
+  - Most applications now cost only their review (about 1 cent on Sonnet 5.5) and any form answers.
+    Tailored ones cost what they did before, minus the cover letter.
+  - The judgement is Sonnet's. A wrong "fine" sends an untailored resume; a wrong "tailor" costs one
+    tailoring. The advice is shown on the application.
+  - The review now carries the resume text, a few thousand tokens more per review. It sits in the
+    cached context block, so repeated reviews mostly pay the cache-read rate.
+  - A PDF upload isn't read as text, so its review judges the profile in its place.
 

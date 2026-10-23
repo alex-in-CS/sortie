@@ -7,7 +7,7 @@ import { Empty, Loading, PageHeader, Section } from "@/components/ui";
 import { autoSubmitEnabled } from "@/lib/apply/gate";
 import { unresolved } from "@/lib/apply/plan";
 import { APPLY_PROVIDERS } from "@/lib/apply/types";
-import { applicationCounts, listApplications, type ApplicationView } from "@/lib/applications";
+import { applicationCounts, hasCoverLetter, listApplications, type ApplicationView } from "@/lib/applications";
 import { profileGaps } from "@/lib/autopilot";
 import { formatDateTime } from "@/lib/format";
 import { lastTask } from "@/lib/jobs";
@@ -29,7 +29,7 @@ const GROUPS: { status: ApplicationStatus[]; title: string; hint: string }[] = [
   {
     status: ["queued", "tailoring", "ready", "applying"],
     title: "Being prepared",
-    hint: "Picked and waiting for the worker to tailor the documents and fill the form.",
+    hint: "Picked and waiting for the worker to get the documents ready and fill the form.",
   },
   { status: ["submitted"], title: "Submitted", hint: "Sent, by Sortie or by you." },
   { status: ["skipped"], title: "Skipped", hint: "You said no to these. They don't count toward your limits." },
@@ -39,9 +39,11 @@ export default function ApplicationsPage() {
   return (
     <>
       <PageHeader title="Applications">
-        Jobs Sortie picked for you, or that you picked yourself. Each gets a resume and cover letter tailored from your
-        profile and a truth check that removes anything your profile doesn&apos;t back up. Then Sortie fills the
-        application form from your stored answers and holds it for you to submit.
+        Jobs Sortie picked for you, or that you picked yourself. Each goes out with the resume you uploaded. When{" "}
+        {AI}&apos;s review finds that resume undersells you for a job, Sortie tailors one from your profile, and it
+        writes a cover letter only when a form requires one; both pass a truth check that removes anything your profile
+        doesn&apos;t back up. Then Sortie fills the application form from your stored answers and holds it for you to
+        submit.
       </PageHeader>
       <Suspense fallback={<Loading />}>
         <ApplicationsData />
@@ -59,9 +61,9 @@ async function ApplicationsData() {
   const gaps = profileGaps(profileStore.get().value);
   const last = lastTask("fetch", "done");
   const blocked = !hasApiKey()
-    ? `Add ${KEY_NAME} to .env.local and restart the worker. Until then Sortie picks jobs by the rule score alone and can't tailor.`
+    ? `Add ${KEY_NAME} to .env.local and restart the worker. Until then Sortie picks jobs by the rule score alone, sends your resume as uploaded and can't write cover letters.`
     : gaps.length
-      ? `Add ${gaps.join(", ")} to your profile. Tailoring waits until it can say something true about you.`
+      ? `Add ${gaps.join(", ")} to your profile before Sortie can apply.`
       : null;
 
   return (
@@ -114,7 +116,7 @@ function ApplicationCard({ app: a, searchName }: { app: ApplicationView; searchN
           </a>
           <p className="mt-0.5 text-xs text-muted">
             {a.company} · {a.location || "Location not given"} · {searchName ?? "deleted search"} ·{" "}
-            {a.origin === "manual" ? "picked by you" : "picked by Sortie"} · {a.mode} mode · {a.status === "tailoring" ? "tailoring now" : `updated ${formatDateTime(a.updated_at)}`}
+            {a.origin === "manual" ? "picked by you" : "picked by Sortie"} · {a.mode} mode · {a.status === "tailoring" ? "preparing documents now" : `updated ${formatDateTime(a.updated_at)}`}
           </p>
           {a.review && (
             <div className="mt-2 text-xs">
@@ -138,19 +140,24 @@ function ApplicationCard({ app: a, searchName }: { app: ApplicationView; searchN
           {a.resume_file && (
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
               <a href={`/api/applications/${a.id}/files/resume`} target="_blank" rel="noreferrer" className="font-medium text-accent underline-offset-2 hover:underline">
-                Resume PDF
+                {a.resume ? "Tailored resume (PDF)" : "Your resume, as uploaded"}
               </a>
-              {a.resume?.coverLetter && (
+              {hasCoverLetter(a) && (
                 <a href={`/api/applications/${a.id}/files/cover-letter`} target="_blank" rel="noreferrer" className="font-medium text-accent underline-offset-2 hover:underline">
                   Cover letter PDF
                 </a>
               )}
-              <span className="text-faint">
-                {issues.length
-                  ? `Truth check fixed ${issues.length} item${issues.length === 1 ? "" : "s"}`
-                  : "Truth check passed with nothing to fix"}
-              </span>
+              {a.truth && (
+                <span className="text-faint">
+                  {issues.length
+                    ? `Truth check fixed ${issues.length} item${issues.length === 1 ? "" : "s"}`
+                    : "Truth check passed with nothing to fix"}
+                </span>
+              )}
             </div>
+          )}
+          {a.resume && a.review?.resumeAdvice && (
+            <p className="mt-1 text-xs text-faint">Tailored because your resume undersold this: {a.review.resumeAdvice}</p>
           )}
           {(a.apply_url || a.screenshot) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs">
@@ -221,7 +228,7 @@ function PlanDetails({ app: a }: { app: ApplicationView }) {
                 <span className="min-w-0">
                   {p.state === "ok" ? (
                     <span className={p.by === "claude" ? "font-medium text-warn" : "text-ink"}>
-                      {p.kind === "file" ? (p.value[0] === "cover" ? "Cover letter PDF" : "Resume PDF") : p.value.join(", ")}
+                      {p.kind === "file" ? (p.value[0] === "cover" ? "Cover letter PDF" : "Resume") : p.value.join(", ")}
                     </span>
                   ) : (
                     <span className="text-danger">{p.state === "decide" ? "Your decision" : "No answer"}</span>

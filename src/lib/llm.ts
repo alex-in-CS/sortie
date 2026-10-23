@@ -71,6 +71,14 @@ async function resumeContent(file: ResumeFile): Promise<Anthropic.Beta.BetaConte
   return { type: "text", text: `<resume filename="${file.filename}">\n${text}\n</resume>` };
 }
 
+// Your uploaded resume as plain text, so a review can judge it as written
+// (D-058). PDFs give null: the review then judges from the profile alone.
+export async function resumeText(file: { data: Buffer; mime: string }): Promise<string | null> {
+  if (file.mime === DOCX) return (await mammoth.extractRawText({ buffer: file.data })).value.trim() || null;
+  if (file.mime === "text/plain" || file.mime === "text/markdown") return file.data.toString("utf8").trim() || null;
+  return null;
+}
+
 export type StructuredRequest<S extends z.ZodType> = {
   model: string;
   system: string;
